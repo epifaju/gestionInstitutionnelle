@@ -200,10 +200,13 @@ public class FactureService {
         if (!ok) {
             throw BusinessException.badRequest("FACTURE_STATUT_TRANSITION");
         }
+        Map<String, Object> avant = snapshot(f);
         if (cur == StatutFacture.BROUILLON && next == StatutFacture.A_PAYER) {
+            // Valider le justificatif au moment où la facture quitte le statut BROUILLON.
+            // (validerJustificatifObligatoire ne s'applique pas aux BROUILLONS)
+            f.setStatut(next);
             validerJustificatifObligatoire(orgId, f);
         }
-        Map<String, Object> avant = snapshot(f);
         f.setStatut(next);
         f = factureRepository.save(f);
         auditLogService.log(orgId, userId, "UPDATE", "Facture", f.getId(), avant, snapshot(f));

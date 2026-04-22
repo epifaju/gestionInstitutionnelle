@@ -16,8 +16,12 @@ services:
     image: minio/minio:latest
     command: server /data --console-address ":9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      # Defaults guard against missing .env loading
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minio}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minio12345}
+    ports:
+      - "9100:9000"
+      - "9101:9001"
     volumes:
       - minio_data:/data
     healthcheck:
@@ -37,8 +41,8 @@ services:
       JWT_PUBLIC_KEY_B64: ${JWT_PUBLIC_KEY_B64}
       MINIO_ENDPOINT: http://minio:9000
       MINIO_PUBLIC_ENDPOINT: ${MINIO_PUBLIC_ENDPOINT:-http://localhost:9000}
-      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
-      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-minio}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minio12345}
       MINIO_BUCKET: ${MINIO_BUCKET}
       FRONTEND_URL: ${FRONTEND_URL}
       REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-false}

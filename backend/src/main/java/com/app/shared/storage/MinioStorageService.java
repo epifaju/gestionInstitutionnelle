@@ -72,7 +72,10 @@ public class MinioStorageService {
             base = base.substring(0, base.length() - 1);
         }
         int q = url.indexOf('?');
-        String pathAndQuery = q >= 0 ? url.substring(url.indexOf('/', url.indexOf("://") + 3), url.length()) : url.substring(url.indexOf('/', url.indexOf("://") + 3));
+        String pathAndQuery =
+                q >= 0
+                        ? url.substring(url.indexOf('/', url.indexOf("://") + 3))
+                        : url.substring(url.indexOf('/', url.indexOf("://") + 3));
         // pathAndQuery already begins with "/..."
         return base + pathAndQuery;
     }

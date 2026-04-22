@@ -34,10 +34,9 @@ function fmt(v: string | number) {
   return Number.isNaN(n) ? String(v) : n.toFixed(2);
 }
 
-function downloadCsv(rows: FactureResponse[]) {
-  const header = ["Référence", "Fournisseur", "Date", "HT", "TTC", "Catégorie", "Statut"];
+function downloadCsv(rows: FactureResponse[], headerLine: string) {
   const lines = [
-    header.join(";"),
+    headerLine,
     ...rows.map((r) =>
       [r.reference, r.fournisseur, r.dateFacture, fmt(r.montantHt), fmt(r.montantTtc), r.categorieLibelle ?? "", r.statut].join(
         ";"
@@ -98,7 +97,7 @@ export default function FacturesPage() {
     () => [
       {
         accessorKey: "reference",
-        header: "Référence",
+        header: t("thReference"),
         cell: ({ row }) => (
           <Link
             className="text-indigo-700 hover:underline"
@@ -109,16 +108,16 @@ export default function FacturesPage() {
           </Link>
         ),
       },
-      { accessorKey: "fournisseur", header: "Fournisseur" },
-      { accessorKey: "dateFacture", header: "Date" },
+      { accessorKey: "fournisseur", header: t("thFournisseur") },
+      { accessorKey: "dateFacture", header: t("thDate") },
       {
         id: "ht",
-        header: "HT",
+        header: t("thHt"),
         cell: ({ row }) => <span>{fmt(row.original.montantHt)}</span>,
       },
       {
         id: "ttc",
-        header: "TTC",
+        header: t("thTtc"),
         cell: ({ row }) => (
           <span>
             {fmt(row.original.montantTtc)} {row.original.devise}
@@ -127,12 +126,12 @@ export default function FacturesPage() {
       },
       {
         accessorKey: "categorieLibelle",
-        header: "Catégorie",
-        cell: ({ row }) => row.original.categorieLibelle ?? "—",
+        header: t("thCategorie"),
+        cell: ({ row }) => row.original.categorieLibelle ?? tc("emDash"),
       },
       {
         accessorKey: "statut",
-        header: "Statut",
+        header: t("thStatut"),
         cell: ({ row }) => <Badge variant={statutBadge(row.original.statut)}>{row.original.statut}</Badge>,
       },
       {
@@ -144,12 +143,12 @@ export default function FacturesPage() {
             onClick={(e) => e.stopPropagation()}
             className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
           >
-            Détail
+            {t("detailLink")}
           </Link>
         ),
       },
     ],
-    []
+    [t, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
@@ -157,23 +156,23 @@ export default function FacturesPage() {
   return (
     <div className="flex gap-6">
       <aside className="hidden w-56 shrink-0 space-y-3 rounded-lg border border-slate-200 bg-white p-3 lg:block">
-        <p className="text-xs font-semibold uppercase text-slate-500">Filtres</p>
+        <p className="text-xs font-semibold uppercase text-slate-500">{t("filters")}</p>
         <div>
-          <label className="text-xs text-slate-500">Du</label>
+          <label className="text-xs text-slate-500">{t("debut")}</label>
           <Input type="date" className="h-8 text-sm" value={debut} onChange={(e) => setDebut(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs text-slate-500">Au</label>
+          <label className="text-xs text-slate-500">{t("fin")}</label>
           <Input type="date" className="h-8 text-sm" value={fin} onChange={(e) => setFin(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs text-slate-500">Catégorie</label>
+          <label className="text-xs text-slate-500">{t("categorie")}</label>
           <select
             className="flex h-8 w-full rounded border border-slate-200 px-1 text-sm"
             value={categorieId}
             onChange={(e) => setCategorieId(e.target.value)}
           >
-            <option value="">Toutes</option>
+            <option value="">{tc("allFeminine")}</option>
             {(categories ?? []).map((c) => (
               <option key={c.id} value={c.id}>
                 {c.libelle}
@@ -182,13 +181,13 @@ export default function FacturesPage() {
           </select>
         </div>
         <div>
-          <label className="text-xs text-slate-500">Statut</label>
+          <label className="text-xs text-slate-500">{t("statut")}</label>
           <select
             className="flex h-8 w-full rounded border border-slate-200 px-1 text-sm"
             value={statut}
             onChange={(e) => setStatut(e.target.value)}
           >
-            <option value="">Tous</option>
+            <option value="">{tc("all")}</option>
             <option value="BROUILLON">BROUILLON</option>
             <option value="A_PAYER">A_PAYER</option>
             <option value="PAYE">PAYE</option>
@@ -196,7 +195,7 @@ export default function FacturesPage() {
           </select>
         </div>
         <div>
-          <label className="text-xs text-slate-500">Fournisseur</label>
+          <label className="text-xs text-slate-500">{t("fournisseur")}</label>
           <Input className="h-8 text-sm" value={fournisseur} onChange={(e) => setFournisseur(e.target.value)} />
         </div>
       </aside>
@@ -213,7 +212,7 @@ export default function FacturesPage() {
                 + {t("create")}
               </Button>
             )}
-            <Button type="button" variant="outline" onClick={() => downloadCsv(rows)}>
+            <Button type="button" variant="outline" onClick={() => downloadCsv(rows, t("csvHeader"))}>
               {t("exportCsv")}
             </Button>
           </div>
@@ -233,11 +232,11 @@ export default function FacturesPage() {
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length}>Chargement…</TableCell>
+                  <TableCell colSpan={columns.length}>{tc("loading")}</TableCell>
                 </TableRow>
               ) : table.getRowModel().rows.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={columns.length}>Aucune facture</TableCell>
+                  <TableCell colSpan={columns.length}>{t("emptyList")}</TableCell>
                 </TableRow>
               ) : (
                 table.getRowModel().rows.map((row) => (
@@ -259,10 +258,10 @@ export default function FacturesPage() {
         {listData && listData.totalPages > 1 && (
           <div className="flex justify-between text-sm">
             <Button type="button" variant="outline" size="sm" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
-              Précédent
+              {tc("previous")}
             </Button>
             <Button type="button" variant="outline" size="sm" disabled={listData.last} onClick={() => setPage((p) => p + 1)}>
-              Suivant
+              {tc("next")}
             </Button>
           </div>
         )}

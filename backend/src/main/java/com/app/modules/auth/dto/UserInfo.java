@@ -11,7 +11,8 @@ public record UserInfo(
         String prenom,
         String role,
         UUID organisationId,
-        String organisationNom
+        String organisationNom,
+        String langue
 ) {
     public static UserInfo from(CustomUserDetails user) {
         return new UserInfo(
@@ -21,7 +22,8 @@ public record UserInfo(
                 user.getUtilisateur().getPrenom(),
                 user.getUtilisateur().getRole().name(),
                 user.getOrganisationId(),
-                user.getOrganisationNom()
+                user.getOrganisationNom(),
+                user.getUtilisateur().getLangue()
         );
     }
 }

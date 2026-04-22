@@ -19,6 +19,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockMultipartFile;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -27,6 +29,8 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -157,5 +161,103 @@ class FactureServiceTest {
         ArgumentCaptor<Facture> cap = ArgumentCaptor.forClass(Facture.class);
         verify(factureRepository).save(cap.capture());
         assertThat(cap.getValue().getStatut()).isEqualTo(StatutFacture.PAYE);
+    }
+
+    @Test
+    void testModifier_FactureDejaPayee_Refuse() {
+        UUID id = UUID.fromString("f0000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setStatut(StatutFacture.PAYE);
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        FactureRequest req =
+                new FactureRequest(
+                        "Fournisseur Z",
+                        LocalDate.of(2024, 1, 1),
+                        new BigDecimal("10.00"),
+                        new BigDecimal("20"),
+                        "EUR",
+                        null,
+                        "A_PAYER",
+                        null);
+
+        assertThatThrownBy(() -> factureService.modifier(id, req, orgId, userId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "FACTURE_DEJA_PAYEE");
+        verify(factureRepository, never()).save(any());
+    }
+
+    @Test
+    void testChangerStatut_BrouillonVersAPayer_JustificatifRequis_Refuse() {
+        UUID id = UUID.fromString("f1000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setStatut(StatutFacture.BROUILLON);
+        f.setMontantTtc(new BigDecimal("1000.00"));
+        f.setJustificatifUrl(null);
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        Organisation org = new Organisation();
+        org.setSeuilJustificatif(new BigDecimal("500"));
+        when(organisationRepository.findById(orgId)).thenReturn(Optional.of(org));
+
+        assertThatThrownBy(() -> factureService.changerStatut(id, "A_PAYER", orgId, userId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "JUSTIFICATIF_REQUIS");
+    }
+
+    @Test
+    void testUploadJustificatif_UploadOk_SetUrl() throws Exception {
+        UUID id = UUID.fromString("f2000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setStatut(StatutFacture.BROUILLON);
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        when(factureRepository.save(any(Facture.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        byte[] pdf = "%PDF-1.4\n".getBytes();
+        MockMultipartFile file = new MockMultipartFile("justificatif", "j.pdf", "application/pdf", pdf);
+
+        factureService.uploadJustificatif(id, file, orgId, userId);
+
+        verify(minioStorageService).upload(eq("factures/" + orgId + "/" + id + "/j.pdf"), any(), eq((long) pdf.length), eq("application/pdf"));
+        ArgumentCaptor<Facture> cap = ArgumentCaptor.forClass(Facture.class);
+        verify(factureRepository).save(cap.capture());
+        assertThat(cap.getValue().getJustificatifUrl()).isEqualTo("factures/" + orgId + "/" + id + "/j.pdf");
+    }
+
+    @Test
+    void testModifier_CategorieAbsente_Refuse() {
+        UUID id = UUID.fromString("f3000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setStatut(StatutFacture.BROUILLON);
+        f.setMontantTtc(new BigDecimal("120.00"));
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+        when(tauxChangeService.tauxVersEur(orgId, "EUR", LocalDate.of(2024, 2, 1))).thenReturn(BigDecimal.ONE);
+
+        UUID catId = UUID.fromString("aaaaaaaa-0000-0000-0000-000000000001");
+        when(categorieDepenseRepository.findById(catId)).thenReturn(Optional.empty());
+
+        FactureRequest req =
+                new FactureRequest(
+                        "F",
+                        LocalDate.of(2024, 2, 1),
+                        new BigDecimal("100.00"),
+                        new BigDecimal("20"),
+                        "EUR",
+                        catId,
+                        "BROUILLON",
+                        null);
+
+        assertThatThrownBy(() -> factureService.modifier(id, req, orgId, userId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "CATEGORIE_ABSENTE");
     }
 }

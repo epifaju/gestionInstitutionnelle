@@ -11,6 +11,7 @@ export type UserInfo = {
   role: string;
   organisationId: string;
   organisationNom: string | null;
+  langue?: string | null;
 };
 
 type AuthState = {

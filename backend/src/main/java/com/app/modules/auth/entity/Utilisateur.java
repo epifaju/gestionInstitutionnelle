@@ -45,6 +45,13 @@ public class Utilisateur extends BaseEntity {
     @Column(name = "dernier_login")
     private Instant dernierLogin;
 
+    /**
+     * Langue UI préférée (ex: fr, en, pt-PT).
+     * Stockée sur le profil utilisateur.
+     */
+    @Column(nullable = false, length = 10)
+    private String langue = "fr";
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organisation_id", insertable = false, updatable = false)
     private Organisation organisation;

@@ -8,7 +8,8 @@ import {
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -18,15 +19,16 @@ import type { MarquerPayeRequest } from "@/lib/types/rh";
 import { useAuthStore } from "@/lib/store";
 import { annulerPaie, listPaieOrganisation, marquerPaye } from "@/services/paie.service";
 
-function fmtMoney(v: string | number, devise: string) {
+function fmtMoney(v: string | number, devise: string, localeTag: string) {
   const n = typeof v === "string" ? parseFloat(v) : v;
   if (Number.isNaN(n)) return String(v);
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: devise || "EUR" }).format(n);
+  return new Intl.NumberFormat(localeTag, { style: "currency", currency: devise || "EUR" }).format(n);
 }
 
 export default function PaieOrganisationPage() {
   const t = useTranslations("RH.paie");
   const tc = useTranslations("Common");
+  const localeTag = intlLocaleTag(useLocale());
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const canMark = user?.role === "RH" || user?.role === "FINANCIER" || user?.role === "ADMIN";
@@ -77,11 +79,11 @@ export default function PaieOrganisationPage() {
 
   const columns = useMemo<ColumnDef<PaieResponse>[]>(
     () => [
-      { accessorKey: "salarieNomComplet", header: "Salarié" },
-      { accessorKey: "matricule", header: "Matricule" },
+      { accessorKey: "salarieNomComplet", header: t("thSalarie") },
+      { accessorKey: "matricule", header: t("thMatricule") },
       {
         id: "periode",
-        header: "Période",
+        header: t("thPeriode"),
         cell: ({ row }) => (
           <span>
             {row.original.mois}/{row.original.annee}
@@ -90,28 +92,28 @@ export default function PaieOrganisationPage() {
       },
       {
         id: "montant",
-        header: "Montant",
-        cell: ({ row }) => <span>{fmtMoney(row.original.montant, row.original.devise)}</span>,
+        header: t("thMontant"),
+        cell: ({ row }) => <span>{fmtMoney(row.original.montant, row.original.devise, localeTag)}</span>,
       },
-      { accessorKey: "statut", header: "Statut" },
+      { accessorKey: "statut", header: t("thStatut") },
       ...(canMark
         ? ([
             {
               id: "actions",
-              header: () => <div className="text-right">Actions</div>,
+              header: () => <div className="text-right">{t("thActions")}</div>,
               cell: ({ row }) => {
                 const p = row.original;
                 if (p.statut !== "EN_ATTENTE") {
-                  return <div className="text-right text-slate-400">—</div>;
+                  return <div className="text-right text-slate-400">{tc("emDash")}</div>;
                 }
                 return (
                   <div className="text-right">
                     <div className="inline-flex items-center justify-end gap-2">
                       <Button type="button" size="sm" variant="secondary" onClick={() => openMarkPaid(p)}>
-                        Marquer payé
+                        {tc("markPaid")}
                       </Button>
                       <Button type="button" size="sm" variant="outline" onClick={() => setCancelId(p.id)}>
-                        Annuler
+                        {tc("cancel")}
                       </Button>
                     </div>
                   </div>
@@ -121,7 +123,7 @@ export default function PaieOrganisationPage() {
           ] as ColumnDef<PaieResponse>[])
         : []),
     ],
-    [canMark]
+    [canMark, localeTag, t, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
@@ -135,7 +137,7 @@ export default function PaieOrganisationPage() {
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm text-slate-600" htmlFor="annee-paie">
-            Année
+            {tc("year")}
           </label>
           <Input
             id="annee-paie"
@@ -186,10 +188,10 @@ export default function PaieOrganisationPage() {
       {data && data.totalPages > 1 && (
         <div className="flex justify-between text-sm">
           <Button type="button" variant="outline" size="sm" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
-            Précédent
+            {tc("previous")}
           </Button>
           <Button type="button" variant="outline" size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-            Suivant
+            {tc("next")}
           </Button>
         </div>
       )}
@@ -197,13 +199,14 @@ export default function PaieOrganisationPage() {
       {markOpen && markTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
-            <h3 className="mb-1 font-semibold">Marquer comme payé</h3>
+            <h3 className="mb-1 font-semibold">{t("markPaidTitle")}</h3>
             <p className="mb-3 text-xs text-slate-600">
-              {markTarget.salarieNomComplet} · {markTarget.mois}/{markTarget.annee} · {fmtMoney(markTarget.montant, markTarget.devise)}
+              {markTarget.salarieNomComplet} · {markTarget.mois}/{markTarget.annee} ·{" "}
+              {fmtMoney(markTarget.montant, markTarget.devise, localeTag)}
             </p>
             <div className="space-y-2">
               <div>
-                <Label>Date paiement</Label>
+                <Label>{t("labelDatePaiement")}</Label>
                 <Input
                   type="date"
                   value={markForm.datePaiement}
@@ -211,24 +214,24 @@ export default function PaieOrganisationPage() {
                 />
               </div>
               <div>
-                <Label>Mode</Label>
+                <Label>{t("labelMode")}</Label>
                 <Input value={markForm.modePaiement} onChange={(e) => setMarkForm((f) => ({ ...f, modePaiement: e.target.value }))} />
               </div>
               <div>
-                <Label>Notes</Label>
+                <Label>{t("labelNotes")}</Label>
                 <Input value={markForm.notes ?? ""} onChange={(e) => setMarkForm((f) => ({ ...f, notes: e.target.value }))} />
               </div>
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setMarkOpen(false)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
                 disabled={mutMarkPaid.isPending}
                 onClick={() => mutMarkPaid.mutate({ id: markTarget.id, body: markForm })}
               >
-                Confirmer
+                {tc("confirm")}
               </Button>
             </div>
           </div>
@@ -238,14 +241,14 @@ export default function PaieOrganisationPage() {
       {cancelId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
-            <h3 className="mb-1 font-semibold">Annuler le paiement</h3>
-            <p className="mb-3 text-xs text-slate-600">Cette action passera le paiement au statut ANNULE.</p>
+            <h3 className="mb-1 font-semibold">{t("cancelPaymentTitle")}</h3>
+            <p className="mb-3 text-xs text-slate-600">{t("cancelPaymentHint")}</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setCancelId(null)}>
-                Retour
+                {tc("back")}
               </Button>
               <Button type="button" disabled={mutCancel.isPending} onClick={() => mutCancel.mutate(cancelId)}>
-                Confirmer l&apos;annulation
+                {t("confirmCancelPayment")}
               </Button>
             </div>
           </div>

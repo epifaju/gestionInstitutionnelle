@@ -6,6 +6,7 @@ import com.app.modules.auth.dto.LoginResponse;
 import com.app.modules.auth.dto.MessageResponse;
 import com.app.modules.auth.dto.RefreshResponse;
 import com.app.modules.auth.dto.ResetPasswordRequest;
+import com.app.modules.auth.dto.UpdateLangueRequest;
 import com.app.modules.auth.dto.UserInfo;
 import com.app.modules.auth.service.AuthService;
 import com.app.shared.dto.ApiResponse;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -68,5 +70,11 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserInfo>> me() {
         return ResponseEntity.ok(ApiResponse.ok(authService.getMe()));
+    }
+
+    @PutMapping("/me/langue")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserInfo>> updateLangue(@Valid @RequestBody UpdateLangueRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.updateLangue(req.langue())));
     }
 }

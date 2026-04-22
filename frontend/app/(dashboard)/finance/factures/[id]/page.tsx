@@ -20,6 +20,7 @@ import {
   updateFacture,
 } from "@/services/finance.service";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 function statutBadge(s: string): "muted" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
@@ -34,6 +35,8 @@ function fmt(v: string | number) {
 }
 
 export default function FactureDetailPage() {
+  const t = useTranslations("Finance.factures");
+  const tc = useTranslations("Common");
   const params = useParams();
   const id = String(params.id);
   const qc = useQueryClient();
@@ -54,7 +57,7 @@ export default function FactureDetailPage() {
   const mutUpdate = useMutation({
     mutationFn: ({ fid, req }: { fid: string; req: FactureRequest }) => updateFacture(fid, req),
     onSuccess: () => {
-      toast.success("Enregistré.");
+      toast.success(t("toastSaved"));
       qc.invalidateQueries({ queryKey: ["finance", "facture", id] });
       qc.invalidateQueries({ queryKey: ["finance", "factures"] });
       setEditOpen(false);
@@ -72,7 +75,7 @@ export default function FactureDetailPage() {
   const mutStatut = useMutation({
     mutationFn: ({ fid, s }: { fid: string; s: string }) => changerStatutFacture(fid, s),
     onSuccess: () => {
-      toast.success("Enregistré.");
+      toast.success(t("toastSaved"));
       qc.invalidateQueries({ queryKey: ["finance", "facture", id] });
       qc.invalidateQueries({ queryKey: ["finance", "factures"] });
     },
@@ -81,7 +84,7 @@ export default function FactureDetailPage() {
   const mutPay = useMutation({
     mutationFn: (b: PaiementRequest) => enregistrerPaiement(b),
     onSuccess: () => {
-      toast.success("Paiement enregistré.");
+      toast.success(t("toastPaymentSaved"));
       qc.invalidateQueries({ queryKey: ["finance", "facture", id] });
       qc.invalidateQueries({ queryKey: ["finance", "factures"] });
       qc.invalidateQueries({ queryKey: ["finance", "paiements"] });
@@ -90,14 +93,14 @@ export default function FactureDetailPage() {
   });
 
   if (isLoading || !detail) {
-    return <p className="text-sm text-slate-600">Chargement…</p>;
+    return <p className="text-sm text-slate-600">{tc("loading")}</p>;
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link href="/finance/factures" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
-          ← Factures
+          {t("backToList")}
         </Link>
       </div>
 
@@ -112,17 +115,17 @@ export default function FactureDetailPage() {
 
         <dl className="mt-6 space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-2">
-            <dt className="text-slate-500">Date</dt>
+            <dt className="text-slate-500">{t("fieldDate")}</dt>
             <dd>{detail.dateFacture}</dd>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <dt className="text-slate-500">TTC</dt>
+            <dt className="text-slate-500">{t("fieldTtc")}</dt>
             <dd>
               {fmt(detail.montantTtc)} {detail.devise} (≈ {fmt(detail.montantTtcEur)} EUR)
             </dd>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <dt className="text-slate-500">Payé / Restant</dt>
+            <dt className="text-slate-500">{t("fieldPaidRemaining")}</dt>
             <dd>
               {fmt(detail.montantPaye)} / {fmt(detail.montantRestant)}
             </dd>
@@ -136,7 +139,7 @@ export default function FactureDetailPage() {
             target="_blank"
             rel="noreferrer"
           >
-            Voir justificatif
+            {t("viewJustificatif")}
           </a>
         )}
 
@@ -144,12 +147,12 @@ export default function FactureDetailPage() {
           <div className="mt-8 flex flex-col gap-2 border-t border-slate-100 pt-6">
             {detail.statut === "A_PAYER" && parseFloat(String(detail.montantRestant)) > 0 && (
               <Button type="button" onClick={() => setPayOpen(true)}>
-                Enregistrer paiement
+                {t("registerPayment")}
               </Button>
             )}
             {detail.statut === "BROUILLON" && (
               <Button type="button" variant="outline" onClick={() => mutStatut.mutate({ fid: detail.id, s: "A_PAYER" })}>
-                Passer à payer
+                {t("setToPay")}
               </Button>
             )}
             {(detail.statut === "BROUILLON" || detail.statut === "A_PAYER") && (
@@ -159,12 +162,12 @@ export default function FactureDetailPage() {
                 className="text-red-700"
                 onClick={() => mutStatut.mutate({ fid: detail.id, s: "ANNULE" })}
               >
-                Annuler
+                {t("cancelInvoice")}
               </Button>
             )}
             {detail.statut !== "PAYE" && detail.statut !== "ANNULE" && (
               <Button type="button" variant="secondary" onClick={() => setEditOpen(true)}>
-                Modifier
+                {t("edit")}
               </Button>
             )}
           </div>

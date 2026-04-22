@@ -1,0 +1,3 @@
+ALTER TABLE utilisateurs
+    ADD COLUMN langue VARCHAR(10) NOT NULL DEFAULT 'fr';
+

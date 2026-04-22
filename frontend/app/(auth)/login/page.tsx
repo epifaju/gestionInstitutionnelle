@@ -11,6 +11,8 @@ import { useTranslations } from "next-intl";
 import { post } from "@/lib/api";
 import { getDefaultHomePath } from "@/lib/post-login";
 import { useAuthStore } from "@/lib/store";
+import { setLocaleCookie } from "@/lib/locale-cookie";
+import { useAppLocale } from "@/lib/locale-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,6 +30,7 @@ type LoginResponse = {
     role: string;
     organisationId: string;
     organisationNom: string | null;
+    langue?: string | null;
   };
 };
 
@@ -36,9 +39,11 @@ type ErrorBody = { code?: string; message?: string };
 export default function LoginPage() {
   const t = useTranslations("Login");
   const tv = useTranslations("Validation");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState<string | null>(null);
+  const { locale, setLocale } = useAppLocale();
 
   const schema = useMemo(
     () =>
@@ -61,6 +66,14 @@ export default function LoginPage() {
     try {
       const data = await post<LoginResponse>("auth/login", values);
       setAuth(data.user, data.accessToken, data.expiresIn);
+      // Applique la langue préférée après login
+      if (typeof window !== "undefined" && data.user.langue) {
+        const { setLocaleCookie } = await import("@/lib/locale-cookie");
+        const l = data.user.langue === "pt_pt" ? "pt-PT" : data.user.langue;
+        if (l === "fr" || l === "en" || l === "pt-PT") {
+          setLocaleCookie(l);
+        }
+      }
       router.push(getDefaultHomePath(data.user.role));
     } catch (e) {
       const err = e as AxiosError<ErrorBody>;
@@ -82,6 +95,41 @@ export default function LoginPage() {
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="mt-2 text-sm text-indigo-100/80">{t("subtitle")}</p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              variant={locale === "fr" ? "secondary" : "ghost"}
+              onClick={() => {
+                setLocaleCookie("fr");
+                setLocale("fr");
+              }}
+            >
+              {tc("localeFr")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={locale === "en" ? "secondary" : "ghost"}
+              onClick={() => {
+                setLocaleCookie("en");
+                setLocale("en");
+              }}
+            >
+              {tc("localeEn")}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={locale === "pt-PT" ? "secondary" : "ghost"}
+              onClick={() => {
+                setLocaleCookie("pt-PT");
+                setLocale("pt-PT");
+              }}
+            >
+              {tc("localePt")}
+            </Button>
+          </div>
         </div>
 
         <Card className="border-slate-200 shadow-xl shadow-indigo-950/40">

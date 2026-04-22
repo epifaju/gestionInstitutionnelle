@@ -166,6 +166,37 @@ public class AuthService {
         return UserInfo.from(details);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public UserInfo updateLangue(String langue) {
+        String l = langue == null ? "" : langue.trim();
+        if (l.isEmpty()) {
+            throw BusinessException.badRequest("LANGUE_INVALIDE");
+        }
+        // Normalisation minimale: fr / en / pt-PT
+        l = l.equalsIgnoreCase("pt_pt") ? "pt-PT" : l;
+        if (!("fr".equalsIgnoreCase(l) || "en".equalsIgnoreCase(l) || "pt-PT".equalsIgnoreCase(l))) {
+            throw BusinessException.badRequest("LANGUE_INVALIDE");
+        }
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof CustomUserDetails details)) {
+            throw BusinessException.unauthorized("TOKEN_INVALIDE");
+        }
+        UUID userId = details.getId();
+        Utilisateur u =
+                utilisateurRepository
+                        .findById(userId)
+                        .orElseThrow(() -> BusinessException.notFound("USER_NOT_FOUND"));
+        u.setLangue("pt-PT".equalsIgnoreCase(l) ? "pt-PT" : l.toLowerCase());
+        utilisateurRepository.save(u);
+
+        // Rafraîchir l'objet dans le UserDetails (utile pour /me sans relog)
+        details.getUtilisateur().setLangue(u.getLangue());
+
+        return UserInfo.from(details);
+    }
+
     @PermitAll
     @Transactional
     public MessageResponse forgotPassword(ForgotPasswordRequest req) {

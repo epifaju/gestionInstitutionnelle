@@ -8,6 +8,8 @@ import {
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,6 +57,9 @@ function canAnnulerCongeValide(dateDebutIso: string) {
 }
 
 export default function CongesPage() {
+  const t = useTranslations("RH.conges");
+  const tc = useTranslations("Common");
+  const localeTag = intlLocaleTag(useLocale());
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isRhOrAdmin = user?.role === "RH" || user?.role === "ADMIN";
@@ -131,38 +136,38 @@ export default function CongesPage() {
     () => [
       {
         accessorKey: "salarieNomComplet",
-        header: "Salarié",
+        header: t("thSalarie"),
       },
-      { accessorKey: "service", header: "Service" },
-      { accessorKey: "typeConge", header: "Type" },
+      { accessorKey: "service", header: t("thService") },
+      { accessorKey: "typeConge", header: t("thType") },
       {
         id: "periode",
-        header: "Période",
+        header: t("thPeriode"),
         cell: ({ row }) => (
           <span>
             {row.original.dateDebut} → {row.original.dateFin}
           </span>
         ),
       },
-      { accessorKey: "nbJours", header: "Jours" },
+      { accessorKey: "nbJours", header: t("thJours") },
       {
         accessorKey: "statut",
-        header: "Statut",
+        header: t("thStatut"),
         cell: ({ row }) => <Badge>{row.original.statut}</Badge>,
       },
       {
         id: "actions",
-        header: () => <div className="text-right">Actions</div>,
+        header: () => <div className="text-right">{t("thActions")}</div>,
         cell: ({ row }) => {
           const r = row.original;
           if (isRhOrAdmin && r.statut === "EN_ATTENTE") {
             return (
               <div className="flex justify-end gap-2">
                 <Button type="button" size="sm" variant="outline" onClick={() => setConfirmValidateId(r.id)}>
-                  Valider
+                  {tc("validate")}
                 </Button>
                 <Button type="button" size="sm" variant="outline" onClick={() => setRejectId(r.id)}>
-                  Rejeter
+                  {tc("reject")}
                 </Button>
               </div>
             );
@@ -177,16 +182,16 @@ export default function CongesPage() {
                   disabled={mutAnnul.isPending}
                   onClick={() => mutAnnul.mutate(r.id)}
                 >
-                  Annuler
+                  {tc("cancel")}
                 </Button>
               </div>
             );
           }
-          return <div className="text-right text-slate-400">—</div>;
+          return <div className="text-right text-slate-400">{tc("emDash")}</div>;
         },
       },
     ],
-    [isRhOrAdmin, mutAnnul]
+    [isRhOrAdmin, mutAnnul, t, tc]
   );
 
   const table = useReactTable({
@@ -203,15 +208,15 @@ export default function CongesPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Congés</h1>
-          <p className="text-sm text-slate-600">Demandes et calendrier.</p>
+          <h1 className="text-2xl font-semibold text-slate-900">{t("pageTitle")}</h1>
+          <p className="text-sm text-slate-600">{t("pageSubtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button type="button" variant={view === "liste" ? "default" : "outline"} size="sm" onClick={() => setView("liste")}>
-            Liste
+            {t("viewList")}
           </Button>
           <Button type="button" variant={view === "cal" ? "default" : "outline"} size="sm" onClick={() => setView("cal")}>
-            Calendrier
+            {t("viewCalendar")}
           </Button>
         </div>
       </div>
@@ -220,7 +225,7 @@ export default function CongesPage() {
         <>
           {isEmploye && mySalarie?.id ? (
             <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-2 font-semibold text-slate-900">Nouvelle demande</h2>
+              <h2 className="mb-2 font-semibold text-slate-900">{t("newRequest")}</h2>
               <CongeForm
                 salarieId={mySalarie.id}
                 onSubmit={async (b) => {
@@ -231,7 +236,7 @@ export default function CongesPage() {
           ) : null}
           <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-3">
             <div>
-              <Label className="text-xs text-slate-500">Statut</Label>
+              <Label className="text-xs text-slate-500">{t("filterStatut")}</Label>
               <select
                 className="flex h-9 w-40 rounded-md border border-slate-200 bg-white px-2 text-sm"
                 value={statut}
@@ -240,7 +245,7 @@ export default function CongesPage() {
                   setPage(0);
                 }}
               >
-                <option value="">Tous</option>
+                <option value="">{tc("all")}</option>
                 <option value="EN_ATTENTE">EN_ATTENTE</option>
                 <option value="VALIDE">VALIDE</option>
                 <option value="REJETE">REJETE</option>
@@ -248,7 +253,7 @@ export default function CongesPage() {
               </select>
             </div>
             <div>
-              <Label className="text-xs text-slate-500">Type</Label>
+              <Label className="text-xs text-slate-500">{t("filterType")}</Label>
               <select
                 className="flex h-9 w-44 rounded-md border border-slate-200 bg-white px-2 text-sm"
                 value={typeConge}
@@ -257,7 +262,7 @@ export default function CongesPage() {
                   setPage(0);
                 }}
               >
-                <option value="">Tous</option>
+                <option value="">{tc("all")}</option>
                 <option value="ANNUEL">ANNUEL</option>
                 <option value="MALADIE">MALADIE</option>
                 <option value="EXCEPTIONNEL">EXCEPTIONNEL</option>
@@ -290,10 +295,10 @@ export default function CongesPage() {
           {liste && liste.totalPages > 1 && (
             <div className="flex justify-between text-sm text-slate-600">
               <Button type="button" variant="outline" size="sm" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
-                Précédent
+                {tc("previous")}
               </Button>
               <Button type="button" variant="outline" size="sm" disabled={liste.last} onClick={() => setPage((p) => p + 1)}>
-                Suivant
+                {tc("next")}
               </Button>
             </div>
           )}
@@ -312,7 +317,7 @@ export default function CongesPage() {
               ←
             </Button>
             <span className="font-semibold capitalize">
-              {cursor.toLocaleString("fr-FR", { month: "long", year: "numeric" })}
+              {cursor.toLocaleString(localeTag, { month: "long", year: "numeric" })}
             </span>
             <Button
               type="button"
@@ -324,7 +329,15 @@ export default function CongesPage() {
             </Button>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-500">
-            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((d) => (
+            {[
+              t("weekdayMon"),
+              t("weekdayTue"),
+              t("weekdayWed"),
+              t("weekdayThu"),
+              t("weekdayFri"),
+              t("weekdaySat"),
+              t("weekdaySun"),
+            ].map((d) => (
               <div key={d}>{d}</div>
             ))}
           </div>
@@ -354,19 +367,19 @@ export default function CongesPage() {
       {rejectId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
-            <h3 className="mb-1 font-semibold">Rejeter la demande</h3>
-            <p className="mb-2 text-xs text-slate-600">Confirmez le rejet en indiquant un motif.</p>
-            <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder="Obligatoire" />
+            <h3 className="mb-1 font-semibold">{t("rejectModalTitle")}</h3>
+            <p className="mb-2 text-xs text-slate-600">{t("rejectModalHint")}</p>
+            <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder={t("placeholderMotif")} />
             <div className="mt-3 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
                 disabled={!motif.trim() || mutRej.isPending}
                 onClick={() => mutRej.mutate({ id: rejectId, motifRejet: motif.trim() })}
               >
-                Confirmer le rejet
+                {t("confirmRejectAction")}
               </Button>
             </div>
           </div>
@@ -376,18 +389,18 @@ export default function CongesPage() {
       {confirmValidateId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
-            <h3 className="mb-1 font-semibold">Valider la demande</h3>
-            <p className="mb-3 text-xs text-slate-600">Cette action passera la demande au statut VALIDE.</p>
+            <h3 className="mb-1 font-semibold">{t("validateModalTitle")}</h3>
+            <p className="mb-3 text-xs text-slate-600">{t("validateModalHint")}</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirmValidateId(null)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
                 disabled={mutVal.isPending}
                 onClick={() => mutVal.mutate(confirmValidateId, { onSuccess: () => setConfirmValidateId(null) })}
               >
-                Confirmer la validation
+                {t("confirmValidateAction")}
               </Button>
             </div>
           </div>

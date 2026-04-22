@@ -30,6 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -73,6 +74,44 @@ class CongeServiceTest {
     @AfterEach
     void clearSecurity() {
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void testCalendrier_EMPLOYE_VoitSeulementSesConges() {
+        // switch to EMPLOYE context
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("emp@test.com");
+        u.setRole(Role.EMPLOYE);
+        Organisation o = new Organisation();
+        o.setId(orgId);
+        u.setOrganisation(o);
+        CustomUserDetails ud = new CustomUserDetails(u);
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities()));
+
+        Salarie s = new Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(orgId);
+        when(salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)).thenReturn(Optional.of(s));
+
+        CongeAbsence c = new CongeAbsence();
+        c.setId(UUID.fromString("d2000000-0000-0000-0000-000000000001"));
+        c.setOrganisationId(orgId);
+        c.setSalarie(s);
+        c.setTypeConge(TypeConge.ANNUEL);
+        c.setDateDebut(LocalDate.of(2026, 4, 22));
+        c.setDateFin(LocalDate.of(2026, 4, 30));
+        c.setNbJours(new BigDecimal("7"));
+        c.setStatut(StatutConge.VALIDE);
+
+        when(congeRepository.findCalendrierSalarie(orgId, salarieId, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30)))
+                .thenReturn(List.of(c));
+
+        var res = congeService.getCalendrier(orgId, LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30));
+        assertThat(res).hasSize(1);
+        assertThat(res.getFirst().salarieId()).isEqualTo(salarieId);
     }
 
     @Test

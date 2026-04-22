@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { RecetteModal } from "@/components/finance/RecetteModal";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -21,6 +22,8 @@ function fmt(v: string | number) {
 }
 
 export default function RecettesPage() {
+  const t = useTranslations("Finance.recettes");
+  const tc = useTranslations("Common");
   const qc = useQueryClient();
   const role = useAuthStore((s) => s.user?.role);
   const isFin = role === "FINANCIER";
@@ -67,27 +70,27 @@ export default function RecettesPage() {
 
   const columns = useMemo<ColumnDef<RecetteResponse>[]>(
     () => [
-      { accessorKey: "dateRecette", header: "Date" },
-      { accessorKey: "typeRecette", header: "Type" },
+      { accessorKey: "dateRecette", header: t("thDate") },
+      { accessorKey: "typeRecette", header: t("thType") },
       {
         accessorKey: "description",
-        header: "Description",
-        cell: ({ row }) => row.original.description ?? "—",
+        header: t("thDescription"),
+        cell: ({ row }) => row.original.description ?? tc("emDash"),
       },
       {
         id: "m",
-        header: "Montant",
+        header: t("thMontant"),
         cell: ({ row }) => <span>{fmt(row.original.montant)}</span>,
       },
-      { accessorKey: "devise", header: "Devise" },
+      { accessorKey: "devise", header: t("thDevise") },
       {
         accessorKey: "categorieLibelle",
-        header: "Catégorie",
-        cell: ({ row }) => row.original.categorieLibelle ?? "—",
+        header: t("thCategorie"),
+        cell: ({ row }) => row.original.categorieLibelle ?? tc("emDash"),
       },
       {
         id: "actions",
-        header: "Actions",
+        header: t("thActions"),
         cell: ({ row }) => {
           const url = row.original.justificatifUrl;
           return (
@@ -102,7 +105,7 @@ export default function RecettesPage() {
                     setEditOpen(true);
                   }}
                 >
-                  Modifier
+                  {tc("modify")}
                 </Button>
               )}
               {canEdit && (
@@ -115,7 +118,7 @@ export default function RecettesPage() {
                     setDeleteOpen(true);
                   }}
                 >
-                  Supprimer
+                  {tc("delete")}
                 </Button>
               )}
               {url ? (
@@ -125,17 +128,17 @@ export default function RecettesPage() {
                 type="button"
                 onClick={() => window.open(url, "_blank", "noopener,noreferrer")}
               >
-                Justificatif
+                {t("justificatif")}
               </Button>
               ) : (
-                <span className="text-slate-400">—</span>
+                <span className="text-slate-400">{tc("emDash")}</span>
               )}
             </div>
           );
         },
       },
     ],
-    [canEdit]
+    [canEdit, t, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
@@ -144,12 +147,12 @@ export default function RecettesPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Recettes</h1>
-          <p className="text-sm text-slate-600">Encaissements.</p>
+          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
+          <p className="text-sm text-slate-600">{t("subtitle")}</p>
         </div>
         {canCreate && (
           <Button type="button" onClick={() => setOpen(true)}>
-            + Nouvelle recette
+            {t("create")}
           </Button>
         )}
       </div>
@@ -168,7 +171,7 @@ export default function RecettesPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7}>Chargement…</TableCell>
+                <TableCell colSpan={7}>{tc("loading")}</TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
@@ -186,10 +189,10 @@ export default function RecettesPage() {
       {data && data.totalPages > 1 && (
         <div className="flex justify-between text-sm">
           <Button type="button" variant="outline" size="sm" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
-            Précédent
+            {tc("previous")}
           </Button>
           <Button type="button" variant="outline" size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-            Suivant
+            {tc("next")}
           </Button>
         </div>
       )}
@@ -209,8 +212,8 @@ export default function RecettesPage() {
           setEditOpen(false);
           setEditing(null);
         }}
-        title={editing ? `Modifier la recette` : "Modifier la recette"}
-        submitLabel="Enregistrer"
+        title={t("editModalTitle")}
+        submitLabel={tc("save")}
         allowFile
         initial={
           editing
@@ -238,13 +241,15 @@ export default function RecettesPage() {
       {deleteOpen && deleting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-slate-900">Supprimer la recette</h2>
+            <h2 className="text-lg font-semibold text-slate-900">{t("deleteTitle")}</h2>
             <p className="mt-2 text-sm text-slate-600">
-              Confirmez la suppression de la recette du{" "}
-              <span className="font-medium">{deleting.dateRecette}</span> pour{" "}
-              <span className="font-medium">{fmt(deleting.montant)}</span> {deleting.devise}.
+              {t("deleteBody", {
+                date: deleting.dateRecette,
+                montant: fmt(deleting.montant),
+                devise: deleting.devise,
+              })}
             </p>
-            <p className="mt-2 text-xs text-slate-500">Le justificatif associé (s’il existe) sera aussi supprimé.</p>
+            <p className="mt-2 text-xs text-slate-500">{t("deleteHint")}</p>
 
             <div className="mt-6 flex justify-end gap-2">
               <Button
@@ -256,7 +261,7 @@ export default function RecettesPage() {
                   setDeleting(null);
                 }}
               >
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
@@ -264,7 +269,7 @@ export default function RecettesPage() {
                 disabled={mutDelete.isPending}
                 onClick={() => mutDelete.mutate(deleting.id)}
               >
-                {mutDelete.isPending ? "Suppression…" : "Supprimer"}
+                {mutDelete.isPending ? tc("deleting") : tc("delete")}
               </Button>
             </div>
           </div>

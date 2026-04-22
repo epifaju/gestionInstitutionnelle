@@ -16,6 +16,6 @@ public class MinioProperties {
      */
     private String publicEndpoint;
     private String accessKey = "minio";
-    private String secretKey = "minio123";
+    private String secretKey = "minio12345";
     private String bucket = "gestion";
 }

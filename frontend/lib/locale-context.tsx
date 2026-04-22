@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-export type AppLocale = "fr" | "en";
+export type AppLocale = "fr" | "en" | "pt-PT";
 
 type LocaleContextValue = {
   locale: AppLocale;
@@ -19,7 +19,16 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const s = localStorage.getItem(STORAGE_KEY);
-      if (s === "en" || s === "fr") setLocaleState(s);
+      if (s === "en" || s === "fr" || s === "pt-PT") {
+        setLocaleState(s);
+        return;
+      }
+      // fallback cookie (optional)
+      const m = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
+      const v = m ? decodeURIComponent(m[1]) : "";
+      if (v === "en" || v === "fr" || v === "pt-PT") {
+        setLocaleState(v);
+      }
     } catch {
       /* ignore */
     }

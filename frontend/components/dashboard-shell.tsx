@@ -118,7 +118,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const rhItems: NavItem[] = [
     ...(showRhSalaries ? [{ href: "/rh/salaries", label: tRhSal("title") }] : []),
     { href: "/rh/conges", label: tRhCong("title") },
-    ...(showMyPaie ? [{ href: "/rh/me/paie", label: "Ma paie" }] : []),
+    ...(showMyPaie ? [{ href: "/rh/me/paie", label: t("myPaie") }] : []),
     ...(showPaie ? [{ href: "/rh/paie", label: tRhPaie("title") }] : []),
   ];
 

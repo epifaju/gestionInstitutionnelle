@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,13 +41,17 @@ function paieVariant(s: string): "success" | "warning" | "default" {
   return "default";
 }
 
-function fmtMoney(v: string | number, devise: string) {
+function fmtMoney(v: string | number, devise: string, localeTag: string) {
   const n = typeof v === "string" ? parseFloat(v) : v;
   if (Number.isNaN(n)) return String(v);
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: devise || "EUR" }).format(n);
+  return new Intl.NumberFormat(localeTag, { style: "currency", currency: devise || "EUR" }).format(n);
 }
 
 export default function SalarieDetailPage() {
+  const ts = useTranslations("RH.salaries");
+  const tdt = useTranslations("RH.salaries.detail");
+  const tc = useTranslations("Common");
+  const localeTag = intlLocaleTag(useLocale());
   const params = useParams();
   const id = String(params.id);
   const qc = useQueryClient();
@@ -147,7 +153,7 @@ export default function SalarieDetailPage() {
   const [confirmValidateCongeId, setConfirmValidateCongeId] = useState<string | null>(null);
 
   if (isLoading || !salarie) {
-    return <p className="p-4 text-slate-600">Chargement…</p>;
+    return <p className="p-4 text-slate-600">{tc("loading")}</p>;
   }
 
   const droitNum = droits ? parseFloat(String(droits.joursDroit)) : 0;
@@ -179,7 +185,7 @@ export default function SalarieDetailPage() {
     <div className="space-y-4">
       <div className="flex items-center gap-3">
         <Link href="/rh/salaries" className="text-sm text-indigo-600 hover:underline">
-          ← Salariés
+          {ts("backToList")}
         </Link>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -195,12 +201,18 @@ export default function SalarieDetailPage() {
       </div>
 
       <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
-        {(["infos", "conges", "paie", "docs"] as const).map((t) => (
-          <Button key={t} type="button" variant={tab === t ? "default" : "outline"} size="sm" onClick={() => setTab(t)}>
-            {t === "infos" && "Infos"}
-            {t === "conges" && "Congés"}
-            {t === "paie" && "Paie"}
-            {t === "docs" && "Documents"}
+        {(["infos", "conges", "paie", "docs"] as const).map((tabKey) => (
+          <Button
+            key={tabKey}
+            type="button"
+            variant={tab === tabKey ? "default" : "outline"}
+            size="sm"
+            onClick={() => setTab(tabKey)}
+          >
+            {tabKey === "infos" && ts("tabInfos")}
+            {tabKey === "conges" && ts("tabConges")}
+            {tabKey === "paie" && ts("tabPaie")}
+            {tabKey === "docs" && ts("tabDocs")}
           </Button>
         ))}
       </div>
@@ -208,62 +220,72 @@ export default function SalarieDetailPage() {
       {tab === "infos" && (
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="p-4">
-            <h2 className="mb-3 font-semibold text-slate-900">Fiche</h2>
+            <h2 className="mb-3 font-semibold text-slate-900">{ts("cardFiche")}</h2>
             <dl className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
               <div>
-                <dt className="text-slate-500">Email</dt>
-                <dd>{salarie.email ?? "—"}</dd>
+                <dt className="text-slate-500">{tdt("dtEmail")}</dt>
+                <dd>{salarie.email ?? tc("emDash")}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Téléphone</dt>
-                <dd>{salarie.telephone ?? "—"}</dd>
+                <dt className="text-slate-500">{tdt("dtTelephone")}</dt>
+                <dd>{salarie.telephone ?? tc("emDash")}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Poste</dt>
+                <dt className="text-slate-500">{tdt("dtPoste")}</dt>
                 <dd>{salarie.poste}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Contrat</dt>
+                <dt className="text-slate-500">{tdt("dtContrat")}</dt>
                 <dd>{salarie.typeContrat}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Embauche</dt>
+                <dt className="text-slate-500">{tdt("dtEmbauche")}</dt>
                 <dd>{salarie.dateEmbauche}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">Nationalité</dt>
-                <dd>{salarie.nationalite ?? "—"}</dd>
+                <dt className="text-slate-500">{tdt("dtNationalite")}</dt>
+                <dd>{salarie.nationalite ?? tc("emDash")}</dd>
               </div>
             </dl>
             {isRh && salarie.statut === "BROUILLON" && (
               <Button className="mt-4" type="button" onClick={() => mutValider.mutate()} disabled={mutValider.isPending}>
-                Valider le dossier
+                {ts("validateDossier")}
               </Button>
             )}
           </Card>
           <Card className="p-4">
-            <h2 className="mb-3 font-semibold text-slate-900">Modifier</h2>
-            <SalarieForm defaultValues={defaultEdit} submitLabel="Enregistrer" onSubmit={onUpdate} salaireEditable={false} />
+            <h2 className="mb-3 font-semibold text-slate-900">{ts("cardEdit")}</h2>
+            <SalarieForm defaultValues={defaultEdit} submitLabel={tc("save")} onSubmit={onUpdate} salaireEditable={false} />
           </Card>
           <Card className="p-4 lg:col-span-2">
-            <h2 className="mb-3 font-semibold text-slate-900">Historique salaires</h2>
+            <h2 className="mb-3 font-semibold text-slate-900">{ts("histSalaires")}</h2>
             <div className="relative space-y-4 border-l-2 border-indigo-200 pl-4">
               {(historique ?? []).map((h, i) => (
                 <div key={i} className="relative">
                   <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-indigo-500" />
                   <p className="text-sm font-medium text-slate-900">
-                    {fmtMoney(h.montantNet, h.devise)} net ({fmtMoney(h.montantBrut, h.devise)} brut)
+                    {ts("netBrut", {
+                      net: fmtMoney(h.montantNet, h.devise, localeTag),
+                      brut: fmtMoney(h.montantBrut, h.devise, localeTag),
+                    })}
                   </p>
                   <p className="text-xs text-slate-600">
                     {h.dateDebut}
-                    {h.dateFin ? ` → ${h.dateFin}` : " (en cours)"}
+                    {h.dateFin ? ` → ${h.dateFin}` : ` ${ts("ongoing")}`}
                   </p>
                 </div>
               ))}
             </div>
             <div className="mt-6 border-t border-slate-100 pt-4">
-              <h3 className="mb-2 text-sm font-semibold text-slate-800">Nouvelle grille</h3>
+              <h3 className="mb-2 text-sm font-semibold text-slate-800">{ts("newGrille")}</h3>
               <GrilleInline
+                labels={{
+                  brut: ts("labelBrut"),
+                  net: ts("labelNet"),
+                  devise: ts("labelDevise"),
+                  depuis: ts("labelDepuis"),
+                  submit: ts("addGrille"),
+                }}
                 onSubmit={async (b) => {
                   await mutGrille.mutateAsync({
                     brut: b.brut,
@@ -281,19 +303,19 @@ export default function SalarieDetailPage() {
       {tab === "conges" && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-4">
-            <h2 className="mb-2 font-semibold text-slate-900">Solde {year}</h2>
+            <h2 className="mb-2 font-semibold text-slate-900">{ts("soldeYear", { year })}</h2>
             {droits && (
               <>
                 <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
                   <div className="h-full bg-indigo-500 transition-all" style={{ width: `${pct}%` }} />
                 </div>
                 <p className="mt-2 text-sm text-slate-600">
-                  Pris : {droits.joursPris} / {droits.joursDroit} · Restants : {droits.joursRestants}
+                  {ts("soldeTaken", { pris: droits.joursPris, droit: droits.joursDroit, restants: droits.joursRestants })}
                 </p>
               </>
             )}
             <div className="mt-6 border-t border-slate-100 pt-4">
-              <h3 className="mb-2 text-sm font-semibold">Nouvelle demande</h3>
+              <h3 className="mb-2 text-sm font-semibold">{ts("newRequest")}</h3>
               <CongeForm
                 salarieId={id}
                 onSubmit={async (b) => {
@@ -303,16 +325,16 @@ export default function SalarieDetailPage() {
             </div>
           </Card>
           <Card className="p-4">
-            <h2 className="mb-2 font-semibold text-slate-900">Demandes</h2>
+            <h2 className="mb-2 font-semibold text-slate-900">{ts("demandes")}</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b text-left text-slate-500">
-                    <th className="py-1">Période</th>
-                    <th>Type</th>
-                    <th>Jours</th>
-                    <th>Statut</th>
-                    <th className="text-right">Actions</th>
+                    <th className="py-1">{ts("thPeriode")}</th>
+                    <th>{ts("thType")}</th>
+                    <th>{ts("thJours")}</th>
+                    <th>{ts("thStatut")}</th>
+                    <th className="text-right">{ts("thActions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -336,14 +358,14 @@ export default function SalarieDetailPage() {
                               disabled={mutCongeValider.isPending}
                               onClick={() => setConfirmValidateCongeId(c.id)}
                             >
-                              Valider
+                              {tc("validate")}
                             </Button>
                             <Button type="button" size="sm" variant="outline" onClick={() => setRejectId(c.id)}>
-                              Rejeter
+                              {tc("reject")}
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-slate-400">—</span>
+                          <span className="text-slate-400">{tc("emDash")}</span>
                         )}
                       </td>
                     </tr>
@@ -357,14 +379,14 @@ export default function SalarieDetailPage() {
 
       {tab === "paie" && (
         <Card className="p-4">
-          <h2 className="mb-3 font-semibold text-slate-900">Paie {year}</h2>
+          <h2 className="mb-3 font-semibold text-slate-900">{ts("paieYear", { year })}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left text-slate-500">
-                  <th className="py-1">Mois</th>
-                  <th>Montant</th>
-                  <th>Statut</th>
+                  <th className="py-1">{ts("thMois")}</th>
+                  <th>{ts("thMontant")}</th>
+                  <th>{ts("thStatut")}</th>
                   <th />
                 </tr>
               </thead>
@@ -372,14 +394,14 @@ export default function SalarieDetailPage() {
                 {(paiePage?.content ?? []).map((p) => (
                   <tr key={p.id} className="border-b border-slate-100">
                     <td className="py-1">{p.mois}</td>
-                    <td>{fmtMoney(p.montant, p.devise)}</td>
+                    <td>{fmtMoney(p.montant, p.devise, localeTag)}</td>
                     <td>
                       <Badge variant={paieVariant(p.statut)}>{p.statut}</Badge>
                     </td>
                     <td className="text-right">
                       {p.statut === "EN_ATTENTE" && isRhOrFin && (
                         <Button type="button" size="sm" variant="outline" onClick={() => setPayOpen(p.id)}>
-                          Marquer payé
+                          {tc("markPaid")}
                         </Button>
                       )}
                     </td>
@@ -393,7 +415,7 @@ export default function SalarieDetailPage() {
 
       {tab === "docs" && (
         <Card className="p-4">
-          <h2 className="mb-3 font-semibold text-slate-900">Contrats (PDF)</h2>
+          <h2 className="mb-3 font-semibold text-slate-900">{ts("contractsPdf")}</h2>
           <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-600 hover:bg-slate-100">
             <input
               type="file"
@@ -405,14 +427,14 @@ export default function SalarieDetailPage() {
                 e.target.value = "";
               }}
             />
-            Glisser-déposer ou cliquer pour envoyer un PDF (max 10 Mo)
+            {ts("uploadPdfHint")}
           </label>
           <ul className="mt-4 space-y-2">
             {(documents ?? []).map((d) => (
               <li key={d.url} className="flex items-center justify-between text-sm">
                 <span>{d.nomFichier}</span>
                 <a className="text-indigo-600 hover:underline" href={d.url} target="_blank" rel="noreferrer">
-                  Ouvrir
+                  {tc("open")}
                 </a>
               </li>
             ))}
@@ -423,10 +445,10 @@ export default function SalarieDetailPage() {
       {payOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <Card className="w-full max-w-md p-4">
-            <h3 className="mb-3 font-semibold">Marquer comme payé</h3>
+            <h3 className="mb-3 font-semibold">{ts("markPaidTitle")}</h3>
             <div className="space-y-2">
               <div>
-                <Label>Date paiement</Label>
+                <Label>{ts("labelDatePaiement")}</Label>
                 <Input
                   type="date"
                   value={payForm.datePaiement}
@@ -434,14 +456,14 @@ export default function SalarieDetailPage() {
                 />
               </div>
               <div>
-                <Label>Mode</Label>
+                <Label>{ts("labelMode")}</Label>
                 <Input
                   value={payForm.modePaiement}
                   onChange={(e) => setPayForm((p) => ({ ...p, modePaiement: e.target.value }))}
                 />
               </div>
               <div>
-                <Label>Notes</Label>
+                <Label>{ts("labelNotes")}</Label>
                 <Input
                   value={payForm.notes ?? ""}
                   onChange={(e) => setPayForm((p) => ({ ...p, notes: e.target.value }))}
@@ -450,7 +472,7 @@ export default function SalarieDetailPage() {
             </div>
             <div className="mt-4 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setPayOpen(null)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
@@ -461,7 +483,7 @@ export default function SalarieDetailPage() {
                   )
                 }
               >
-                Confirmer
+                {tc("confirm")}
               </Button>
             </div>
           </Card>
@@ -471,19 +493,19 @@ export default function SalarieDetailPage() {
       {rejectId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <Card className="w-full max-w-md p-4">
-            <h3 className="mb-1 font-semibold">Rejeter la demande</h3>
-            <p className="mb-2 text-xs text-slate-600">Confirmez le rejet en indiquant un motif.</p>
-            <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder="Obligatoire" />
+            <h3 className="mb-1 font-semibold">{ts("rejectTitle")}</h3>
+            <p className="mb-2 text-xs text-slate-600">{ts("rejectHint")}</p>
+            <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder={ts("placeholderRequired")} />
             <div className="mt-3 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
                 disabled={!motif.trim() || mutCongeRejeter.isPending}
                 onClick={() => mutCongeRejeter.mutate({ congeId: rejectId, motifRejet: motif.trim() })}
               >
-                Confirmer le rejet
+                {ts("confirmReject")}
               </Button>
             </div>
           </Card>
@@ -493,11 +515,11 @@ export default function SalarieDetailPage() {
       {confirmValidateCongeId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <Card className="w-full max-w-md p-4">
-            <h3 className="mb-1 font-semibold">Valider la demande</h3>
-            <p className="mb-3 text-xs text-slate-600">Cette action passera la demande au statut VALIDE.</p>
+            <h3 className="mb-1 font-semibold">{ts("validateCongeTitle")}</h3>
+            <p className="mb-3 text-xs text-slate-600">{ts("validateCongeHint")}</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirmValidateCongeId(null)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 type="button"
@@ -506,7 +528,7 @@ export default function SalarieDetailPage() {
                   mutCongeValider.mutate(confirmValidateCongeId, { onSuccess: () => setConfirmValidateCongeId(null) })
                 }
               >
-                Confirmer la validation
+                {ts("confirmValidation")}
               </Button>
             </div>
           </Card>
@@ -517,8 +539,10 @@ export default function SalarieDetailPage() {
 }
 
 function GrilleInline({
+  labels,
   onSubmit,
 }: {
+  labels: { brut: string; net: string; devise: string; depuis: string; submit: string };
   onSubmit: (b: { brut: number; net: number; devise: string; dateDebut: string }) => Promise<void>;
 }) {
   const [brut, setBrut] = useState("3000");
@@ -545,24 +569,24 @@ function GrilleInline({
       }}
     >
       <div>
-        <Label>Brut</Label>
+        <Label>{labels.brut}</Label>
         <Input value={brut} onChange={(e) => setBrut(e.target.value)} />
       </div>
       <div>
-        <Label>Net</Label>
+        <Label>{labels.net}</Label>
         <Input value={net} onChange={(e) => setNet(e.target.value)} />
       </div>
       <div>
-        <Label>Devise</Label>
+        <Label>{labels.devise}</Label>
         <Input value={devise} onChange={(e) => setDevise(e.target.value)} maxLength={3} />
       </div>
       <div>
-        <Label>Depuis</Label>
+        <Label>{labels.depuis}</Label>
         <Input type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} />
       </div>
       <div className="md:col-span-4">
         <Button type="submit" disabled={loading}>
-          Ajouter la grille
+          {labels.submit}
         </Button>
       </div>
     </form>

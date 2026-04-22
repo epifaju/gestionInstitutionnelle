@@ -22,6 +22,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.InputStreamResource;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -117,6 +120,23 @@ public class RhController {
                         @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) throws Exception {
                 return ResponseEntity.ok(
                                 ApiResponse.ok(salarieService.listDocuments(id, user.getOrganisationId())));
+        }
+
+        @GetMapping("/salaries/{id}/documents/{filename}")
+        @PreAuthorize("hasAnyRole('RH','ADMIN')")
+        public ResponseEntity<InputStreamResource> downloadDocument(
+                        @AuthenticationPrincipal CustomUserDetails user,
+                        @PathVariable UUID id,
+                        @PathVariable String filename) throws Exception {
+                var dl = salarieService.downloadContrat(id, filename, user.getOrganisationId());
+                String contentType = dl.contentType() != null && !dl.contentType().isBlank()
+                        ? dl.contentType()
+                        : MediaType.APPLICATION_OCTET_STREAM_VALUE;
+                String safeName = filename.replace("\"", "");
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + safeName + "\"")
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .body(new InputStreamResource(dl.stream()));
         }
 
         @GetMapping("/salaries/{id}/historique-salaires")

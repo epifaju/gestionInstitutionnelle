@@ -212,7 +212,7 @@ public class SalarieService {
                 s.getId(),
                 null,
                 Map.of("action", "UPLOAD_CONTRAT", "object", objectName));
-        return minioStorageService.presignedGetUrl(objectName);
+        return "/api/v1/rh/salaries/" + id + "/documents/" + safe;
     }
 
     @PreAuthorize("hasAnyRole('RH','ADMIN')")
@@ -224,9 +224,21 @@ public class SalarieService {
         List<DocumentUrlResponse> out = new java.util.ArrayList<>();
         for (String objectName : names) {
             String nom = objectName.substring(objectName.lastIndexOf('/') + 1);
-            out.add(new DocumentUrlResponse(nom, minioStorageService.presignedGetUrl(objectName)));
+            out.add(new DocumentUrlResponse(nom, "/api/v1/rh/salaries/" + id + "/documents/" + nom));
         }
         return out;
+    }
+
+    @PreAuthorize("hasAnyRole('RH','ADMIN')")
+    @Transactional(readOnly = true)
+    public MinioStorageService.Download downloadContrat(UUID salarieId, String filename, UUID orgId) throws Exception {
+        loadOwned(salarieId, orgId);
+        if (filename == null || filename.isBlank()) {
+            throw BusinessException.badRequest("FICHIER_MANQUANT");
+        }
+        String safe = SAFE_NAME.matcher(filename).replaceAll("_");
+        String objectName = "contrats/" + salarieId + "/" + safe;
+        return minioStorageService.download(objectName);
     }
 
     @PreAuthorize("hasAnyRole('RH','ADMIN')")

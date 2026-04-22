@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import { BienModal } from "@/components/inventaire/BienModal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,11 +22,11 @@ import {
 } from "@/services/inventaire.service";
 import { listSalaries } from "@/services/salarie.service";
 
-function fmtEur(n: string | number) {
+function fmtEur(n: string | number, localeTag: string, empty: string) {
   const x = typeof n === "number" ? n : parseFloat(String(n));
   return Number.isFinite(x)
-    ? new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(x)
-    : "—";
+    ? new Intl.NumberFormat(localeTag, { style: "currency", currency: "EUR" }).format(x)
+    : empty;
 }
 
 function etatVariant(e: string): "dangerSolid" | "warning" | "muted" {
@@ -34,6 +36,9 @@ function etatVariant(e: string): "dangerSolid" | "warning" | "muted" {
 }
 
 export default function InventairePage() {
+  const ti = useTranslations("Inventaire");
+  const tc = useTranslations("Common");
+  const localeTag = intlLocaleTag(useLocale());
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const canWrite = user?.role === "ADMIN" || user?.role === "LOGISTIQUE";
@@ -80,8 +85,8 @@ export default function InventairePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Inventaire</h1>
-          <p className="mt-1 text-sm text-slate-600">Biens matériels et mouvements.</p>
+          <h1 className="text-2xl font-semibold text-slate-900">{ti("title")}</h1>
+          <p className="mt-1 text-sm text-slate-600">{ti("pageSubtitle")}</p>
         </div>
         {canWrite && (
           <Button
@@ -90,19 +95,19 @@ export default function InventairePage() {
               setModalOpen(true);
             }}
           >
-            + Nouveau bien
+            {ti("createBien")}
           </Button>
         )}
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Valeur totale du parc (hors service exclu)</CardTitle>
+          <CardTitle className="text-base">{ti("totalParcTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           {stats ? (
             <p className="text-3xl font-semibold tracking-tight text-slate-900">
-              {fmtEur(stats.valeurTotaleParc)}
+              {fmtEur(stats.valeurTotaleParc, localeTag, tc("emDash"))}
             </p>
           ) : (
             <Skeleton className="h-10 w-48" />
@@ -118,13 +123,13 @@ export default function InventairePage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Code</TableHead>
-                  <TableHead>Libellé</TableHead>
-                  <TableHead>Catégorie</TableHead>
-                  <TableHead>Localisation</TableHead>
-                  <TableHead>État</TableHead>
-                  <TableHead className="text-right">Valeur</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{ti("thCode")}</TableHead>
+                  <TableHead>{ti("thLibelle")}</TableHead>
+                  <TableHead>{ti("thCategorie")}</TableHead>
+                  <TableHead>{ti("thLocalisation")}</TableHead>
+                  <TableHead>{ti("thEtat")}</TableHead>
+                  <TableHead className="text-right">{ti("thValeur")}</TableHead>
+                  <TableHead className="text-right">{ti("thActions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -133,15 +138,15 @@ export default function InventairePage() {
                     <TableCell className="font-mono text-xs">{b.codeInventaire}</TableCell>
                     <TableCell>{b.libelle}</TableCell>
                     <TableCell>{b.categorie}</TableCell>
-                    <TableCell>{b.localisation ?? "—"}</TableCell>
+                    <TableCell>{b.localisation ?? tc("emDash")}</TableCell>
                     <TableCell>
                       <Badge variant={etatVariant(b.etat)}>{b.etat}</Badge>
                     </TableCell>
-                    <TableCell className="text-right tabular-nums">{fmtEur(b.valeurAchat)}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fmtEur(b.valeurAchat, localeTag, tc("emDash"))}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex flex-wrap justify-end gap-1">
                         <Button size="sm" variant="outline" onClick={() => setHistId(b.id)}>
-                          Historique
+                          {tc("history")}
                         </Button>
                         {canWrite && (
                           <>
@@ -153,17 +158,17 @@ export default function InventairePage() {
                                 setModalOpen(true);
                               }}
                             >
-                              Modifier
+                              {tc("modify")}
                             </Button>
                             <Button
                               size="sm"
                               variant="destructive"
                               onClick={() => {
-                                const motif = window.prompt("Motif de réforme ?");
+                                const motif = window.prompt(ti("reformePrompt"));
                                 if (motif) mutReforme.mutate({ id: b.id, motif });
                               }}
                             >
-                              Réformer
+                              {ti("reforme")}
                             </Button>
                           </>
                         )}
@@ -179,17 +184,17 @@ export default function InventairePage() {
 
       <div className="flex items-center justify-between text-sm">
         <Button variant="outline" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-          Précédent
+          {tc("previous")}
         </Button>
         <span className="text-slate-600">
-          Page {page + 1} / {Math.max(1, listData?.totalPages ?? 1)}
+          {tc("page", { current: page + 1, total: Math.max(1, listData?.totalPages ?? 1) })}
         </span>
         <Button
           variant="outline"
           disabled={listData ? listData.last : true}
           onClick={() => setPage((p) => p + 1)}
         >
-          Suivant
+          {tc("next")}
         </Button>
       </div>
 
@@ -209,9 +214,9 @@ export default function InventairePage() {
         <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
           <div className="h-full w-full max-w-md overflow-y-auto bg-white p-6 shadow-xl">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Historique des mouvements</h2>
+              <h2 className="text-lg font-semibold">{ti("drawerTitle")}</h2>
               <Button variant="ghost" size="sm" onClick={() => setHistId(null)}>
-                Fermer
+                {ti("drawerClose")}
               </Button>
             </div>
             <ul className="mt-6 space-y-4 border-l-2 border-slate-200 pl-4">
@@ -219,7 +224,7 @@ export default function InventairePage() {
                 <li key={m.id} className="relative">
                   <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-slate-400" />
                   <p className="text-xs text-slate-500">
-                    {m.dateMouvement ? new Date(m.dateMouvement).toLocaleString("fr-FR") : ""}
+                    {m.dateMouvement ? new Date(m.dateMouvement).toLocaleString(localeTag) : ""}
                   </p>
                   <p className="font-medium text-slate-900">
                     {m.typeMouvement}
@@ -230,7 +235,7 @@ export default function InventairePage() {
                       {m.ancienneValeur} → {m.nouvelleValeur}
                     </p>
                   )}
-                  {m.motif && <p className="text-sm text-slate-500">Motif : {m.motif}</p>}
+                  {m.motif && <p className="text-sm text-slate-500">{ti("movementMotif", { motif: m.motif })}</p>}
                   <p className="text-xs text-slate-400">{m.auteurNomComplet}</p>
                 </li>
               ))}
