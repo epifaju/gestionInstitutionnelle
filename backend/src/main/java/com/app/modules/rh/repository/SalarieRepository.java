@@ -16,4 +16,6 @@ public interface SalarieRepository extends JpaRepository<Salarie, UUID>, JpaSpec
     List<Salarie> findByOrganisationIdAndStatut(UUID organisationId, StatutSalarie statut);
 
     Optional<Salarie> findByOrganisationIdAndUtilisateur_Id(UUID organisationId, UUID utilisateurId);
+
+    Optional<Salarie> findByOrganisationIdAndEmailIgnoreCase(UUID organisationId, String email);
 }

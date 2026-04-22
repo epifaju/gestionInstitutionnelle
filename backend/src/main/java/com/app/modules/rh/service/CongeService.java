@@ -66,15 +66,28 @@ public class CongeService {
         boolean rhOuAdmin = isRhOrAdmin(auth);
         if (!rhOuAdmin) {
             UUID userId = currentUserId();
-            UUID ownSalarieId =
-                    salarieRepository
-                            .findByOrganisationIdAndUtilisateur_Id(orgId, userId)
-                            .map(Salarie::getId)
-                            .orElseThrow(() -> BusinessException.forbidden("CONGE_NON_AUTORISE"));
+            UUID ownSalarieId = salarieRepository
+                    .findByOrganisationIdAndUtilisateur_Id(orgId, userId)
+                    .map(Salarie::getId)
+                    .orElseGet(() -> {
+                        // Fallback PRD-friendly: si le lien utilisateur_id n'est pas fait,
+                        // on tente de retrouver le salarié par email (même org).
+                        String email = utilisateurRepository.findById(userId).map(Utilisateur::getEmail).orElse(null);
+                        if (email == null || email.isBlank()) return null;
+                        return salarieRepository
+                                .findByOrganisationIdAndEmailIgnoreCase(orgId, email.trim())
+                                .map(Salarie::getId)
+                                .orElse(null);
+                    });
+            if (ownSalarieId == null) {
+                // Cas: utilisateur EMPLOYE non relié à un salarié -> pas de fuite d'info, page vide
+                return Page.empty(pageable);
+            }
             if (salarieId != null && !salarieId.equals(ownSalarieId)) {
                 throw BusinessException.forbidden("CONGE_NON_AUTORISE");
             }
-            // Forcer le filtre salarié pour éviter toute fuite (EMPLOYE -> ses congés uniquement)
+            // Forcer le filtre salarié pour éviter toute fuite (EMPLOYE -> ses congés
+            // uniquement)
             salarieId = ownSalarieId;
             service = null;
         }
@@ -83,21 +96,19 @@ public class CongeService {
         TypeConge tc = parseTypeConge(typeConge);
         String svc = service == null || service.isBlank() ? null : service.trim();
 
-        Specification<CongeAbsence> spec =
-                Specification.where(CongeSpecifications.organisationId(orgId))
-                        .and(CongeSpecifications.statutOptional(st))
-                        .and(CongeSpecifications.typeCongeOptional(tc))
-                        .and(CongeSpecifications.dateDebutFilter(debut))
-                        .and(CongeSpecifications.dateFinFilter(fin))
-                        .and(CongeSpecifications.salarieJoinFilters(svc, salarieId));
+        Specification<CongeAbsence> spec = Specification.where(CongeSpecifications.organisationId(orgId))
+                .and(CongeSpecifications.statutOptional(st))
+                .and(CongeSpecifications.typeCongeOptional(tc))
+                .and(CongeSpecifications.dateDebutFilter(debut))
+                .and(CongeSpecifications.dateFinFilter(fin))
+                .and(CongeSpecifications.salarieJoinFilters(svc, salarieId));
 
-        Pageable sorted =
-                pageable.getSort().isSorted()
-                        ? pageable
-                        : PageRequest.of(
-                                pageable.getPageNumber(),
-                                pageable.getPageSize(),
-                                Sort.by(Sort.Order.desc("createdAt")));
+        Pageable sorted = pageable.getSort().isSorted()
+                ? pageable
+                : PageRequest.of(
+                        pageable.getPageNumber(),
+                        pageable.getPageSize(),
+                        Sort.by(Sort.Order.desc("createdAt")));
 
         return congeRepository.findAll(spec, sorted).map(this::toResponse);
     }
@@ -109,15 +120,15 @@ public class CongeService {
         if (!auteurId.equals(userId)) {
             throw BusinessException.unauthorized("TOKEN_INVALIDE");
         }
-        Salarie s = salarieRepository.findById(req.salarieId()).orElseThrow(() -> BusinessException.notFound("SALARIE_ABSENT"));
+        Salarie s = salarieRepository.findById(req.salarieId())
+                .orElseThrow(() -> BusinessException.notFound("SALARIE_ABSENT"));
         if (!s.getOrganisationId().equals(orgId)) {
             throw BusinessException.forbidden("SALARIE_ORG_MISMATCH");
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean rhOuAdmin = isRhOrAdmin(auth);
         if (!rhOuAdmin) {
-            UUID link = s.getUtilisateurId();
-            if (link == null || !link.equals(auteurId)) {
+            if (!isSelfSalarie(s, auteurId)) {
                 throw BusinessException.forbidden("CONGE_NON_AUTORISE");
             }
         }
@@ -135,10 +146,9 @@ public class CongeService {
             // Soumission immédiate -> contrôles au dépôt
             if (consommeSolde(type)) {
                 int annee = req.dateDebut().getYear();
-                DroitsConges droits =
-                        droitsCongesRepository
-                                .findBySalarie_IdAndAnnee(s.getId(), annee)
-                                .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+                DroitsConges droits = droitsCongesRepository
+                        .findBySalarie_IdAndAnnee(s.getId(), annee)
+                        .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
                 if (droits.getJoursRestants().compareTo(nb) < 0) {
                     throw BusinessException.badRequest("CONGE_SOLDE_INSUFFISANT");
                 }
@@ -180,8 +190,7 @@ public class CongeService {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         boolean rhOuAdmin = isRhOrAdmin(auth);
         if (!rhOuAdmin) {
-            UUID link = c.getSalarie().getUtilisateurId();
-            if (link == null || !link.equals(auteurId)) {
+            if (!isSelfSalarie(c.getSalarie(), auteurId)) {
                 throw BusinessException.forbidden("CONGE_NON_AUTORISE");
             }
         }
@@ -189,15 +198,15 @@ public class CongeService {
         // Contrôles avant soumission
         if (consommeSolde(c.getTypeConge())) {
             int annee = c.getDateDebut().getYear();
-            DroitsConges droits =
-                    droitsCongesRepository
-                            .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
-                            .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+            DroitsConges droits = droitsCongesRepository
+                    .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
+                    .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
             if (droits.getJoursRestants().compareTo(c.getNbJours()) < 0) {
                 throw BusinessException.badRequest("CONGE_SOLDE_INSUFFISANT");
             }
         }
-        if (congeRepository.existsChevauchement(c.getSalarie().getId(), c.getDateDebut(), c.getDateFin(), StatutConge.VALIDE)) {
+        if (congeRepository.existsChevauchement(c.getSalarie().getId(), c.getDateDebut(), c.getDateFin(),
+                StatutConge.VALIDE)) {
             throw BusinessException.badRequest("CONGE_CHEVAUCHEMENT");
         }
 
@@ -221,10 +230,9 @@ public class CongeService {
         }
         Map<String, Object> avant = snapshotConge(c);
         int annee = c.getDateDebut().getYear();
-        DroitsConges droits =
-                droitsCongesRepository
-                        .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
-                        .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+        DroitsConges droits = droitsCongesRepository
+                .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
+                .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
         if (consommeSolde(c.getTypeConge())) {
             if (droits.getJoursRestants().compareTo(c.getNbJours()) < 0) {
                 throw BusinessException.badRequest("CONGE_SOLDE_INSUFFISANT");
@@ -261,7 +269,8 @@ public class CongeService {
     }
 
     /**
-     * Annulation d'un congé déjà validé : restauration du solde si besoin. Uniquement si la date de début est
+     * Annulation d'un congé déjà validé : restauration du solde si besoin.
+     * Uniquement si la date de début est
      * strictement postérieure à aujourd'hui (PRD §8.1).
      */
     @PreAuthorize("hasAnyRole('RH','ADMIN')")
@@ -279,10 +288,9 @@ public class CongeService {
         Map<String, Object> avant = snapshotConge(c);
         if (consommeSolde(c.getTypeConge())) {
             int annee = c.getDateDebut().getYear();
-            DroitsConges droits =
-                    droitsCongesRepository
-                            .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
-                            .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+            DroitsConges droits = droitsCongesRepository
+                    .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
+                    .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
             droits.setJoursPris(droits.getJoursPris().subtract(c.getNbJours()));
             droits.setJoursRestants(droits.getJoursRestants().add(c.getNbJours()));
             droitsCongesRepository.save(droits);
@@ -294,10 +302,30 @@ public class CongeService {
         return toResponse(c);
     }
 
-    @PreAuthorize("hasAnyRole('RH','ADMIN')")
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public List<CongeResponse> getCalendrier(UUID orgId, LocalDate debut, LocalDate fin) {
-        return congeRepository.findCalendrier(orgId, debut, fin).stream().map(this::toResponse).toList();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean rhOuAdmin = isRhOrAdmin(auth);
+        if (rhOuAdmin) {
+            return congeRepository.findCalendrier(orgId, debut, fin).stream().map(this::toResponse).toList();
+        }
+        UUID userId = currentUserId();
+        UUID ownSalarieId = salarieRepository
+                .findByOrganisationIdAndUtilisateur_Id(orgId, userId)
+                .map(Salarie::getId)
+                .orElseGet(() -> {
+                    String email = utilisateurRepository.findById(userId).map(Utilisateur::getEmail).orElse(null);
+                    if (email == null || email.isBlank()) return null;
+                    return salarieRepository
+                            .findByOrganisationIdAndEmailIgnoreCase(orgId, email.trim())
+                            .map(Salarie::getId)
+                            .orElse(null);
+                });
+        if (ownSalarieId == null) {
+            return List.of();
+        }
+        return congeRepository.findCalendrierSalarie(orgId, ownSalarieId, debut, fin).stream().map(this::toResponse).toList();
     }
 
     @PreAuthorize("hasAnyRole('RH','ADMIN') or @securityService.isSelf(#salarieId, authentication)")
@@ -307,12 +335,11 @@ public class CongeService {
         return droitsCongesRepository
                 .findBySalarie_IdAndAnnee(s.getId(), annee)
                 .map(
-                        d ->
-                                new DroitsCongesDto(
-                                        d.getAnnee(),
-                                        d.getJoursDroit(),
-                                        d.getJoursPris(),
-                                        d.getJoursRestants()))
+                        d -> new DroitsCongesDto(
+                                d.getAnnee(),
+                                d.getJoursDroit(),
+                                d.getJoursPris(),
+                                d.getJoursRestants()))
                 .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
     }
 
@@ -340,14 +367,12 @@ public class CongeService {
             Utilisateur v = c.getValideur();
             valideurNc = (v.getNom() + " " + v.getPrenom()).trim();
         }
-        LocalDateTime dtVal =
-                c.getDateValidation() == null
-                        ? null
-                        : LocalDateTime.ofInstant(c.getDateValidation(), ZoneId.systemDefault());
-        LocalDateTime created =
-                c.getCreatedAt() == null
-                        ? null
-                        : LocalDateTime.ofInstant(c.getCreatedAt(), ZoneId.systemDefault());
+        LocalDateTime dtVal = c.getDateValidation() == null
+                ? null
+                : LocalDateTime.ofInstant(c.getDateValidation(), ZoneId.systemDefault());
+        LocalDateTime created = c.getCreatedAt() == null
+                ? null
+                : LocalDateTime.ofInstant(c.getCreatedAt(), ZoneId.systemDefault());
         return new CongeResponse(
                 c.getId(),
                 sal.getId(),
@@ -421,5 +446,17 @@ public class CongeService {
             }
         }
         return false;
+    }
+
+    private boolean isSelfSalarie(Salarie s, UUID auteurId) {
+        UUID link = s.getUtilisateurId();
+        if (link != null) {
+            return link.equals(auteurId);
+        }
+        // fallback (si utilisateur_id non lié) : comparer l'email utilisateur à l'email salarié
+        String userEmail = utilisateurRepository.findById(auteurId).map(Utilisateur::getEmail).orElse(null);
+        if (userEmail == null || userEmail.isBlank()) return false;
+        String salEmail = s.getEmail();
+        return salEmail != null && !salEmail.isBlank() && salEmail.equalsIgnoreCase(userEmail.trim());
     }
 }

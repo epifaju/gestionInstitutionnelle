@@ -89,6 +89,21 @@ public class SalarieService {
         return toResponse(s, orgId);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public SalarieResponse getMe(UUID orgId, UUID userId, String email) {
+        Salarie s = salarieRepository
+                .findByOrganisationIdAndUtilisateur_Id(orgId, userId)
+                .orElseGet(() -> {
+                    if (email == null || email.isBlank()) return null;
+                    return salarieRepository.findByOrganisationIdAndEmailIgnoreCase(orgId, email.trim()).orElse(null);
+                });
+        if (s == null) {
+            throw BusinessException.notFound("SALARIE_ABSENT");
+        }
+        return toResponse(s, orgId);
+    }
+
     @PreAuthorize("hasAnyRole('RH','ADMIN')")
     @Transactional
     public SalarieResponse creer(SalarieRequest req, UUID orgId) {

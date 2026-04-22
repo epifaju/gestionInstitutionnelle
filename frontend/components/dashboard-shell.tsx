@@ -100,6 +100,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const showFinance = isAdmin || isFin;
   const showRhSalaries = isAdmin || isRh;
   const showPaie = isAdmin || isRh || isFin;
+  const showMyPaie = isEmploye;
   const showBudget = isAdmin || isFin || isRh;
   const showInv = isAdmin || isLog;
   const showRapports = isAdmin || isFin || isRh || isLog;
@@ -117,6 +118,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const rhItems: NavItem[] = [
     ...(showRhSalaries ? [{ href: "/rh/salaries", label: tRhSal("title") }] : []),
     { href: "/rh/conges", label: tRhCong("title") },
+    ...(showMyPaie ? [{ href: "/rh/me/paie", label: "Ma paie" }] : []),
     ...(showPaie ? [{ href: "/rh/paie", label: tRhPaie("title") }] : []),
   ];
 

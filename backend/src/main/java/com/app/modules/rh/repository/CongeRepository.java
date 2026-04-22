@@ -42,6 +42,18 @@ public interface CongeRepository extends JpaRepository<CongeAbsence, UUID>, JpaS
     List<CongeAbsence> findCalendrier(
             @Param("orgId") UUID orgId, @Param("debut") LocalDate debut, @Param("fin") LocalDate fin);
 
+    @Query(
+            """
+                    SELECT c FROM CongeAbsence c
+                    WHERE c.organisationId = :orgId
+                    AND c.salarie.id = :salarieId
+                    AND c.dateDebut <= :fin
+                    AND c.dateFin >= :debut
+                    ORDER BY c.dateDebut ASC
+                    """)
+    List<CongeAbsence> findCalendrierSalarie(
+            @Param("orgId") UUID orgId, @Param("salarieId") UUID salarieId, @Param("debut") LocalDate debut, @Param("fin") LocalDate fin);
+
     /**
      * Somme des jours de congés validés consommant le solde (annuel / exceptionnel) dont la date de début
      * tombe dans l'intervalle [deb, fin] (typiquement une année civile).

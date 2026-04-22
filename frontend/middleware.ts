@@ -26,6 +26,10 @@ function hasRoleAccess(pathname: string, role: string): boolean {
     return true;
   }
 
+  if (pathname.startsWith("/rh/me/paie") || pathname.startsWith("/dashboard/rh/me/paie")) {
+    return true; // page "Ma paie" (lecture) autorisée pour tous les rôles authentifiés
+  }
+
   if (pathname.startsWith("/rh/paie") || pathname.startsWith("/dashboard/rh/paie")) {
     return isAdmin || role === "RH" || role === "FINANCIER";
   }

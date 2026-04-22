@@ -22,6 +22,10 @@ export async function getSalarie(id: string) {
   return get<SalarieResponse>(`rh/salaries/${id}`);
 }
 
+export async function getMySalarie() {
+  return get<SalarieResponse>("rh/me/salarie");
+}
+
 export async function createSalarie(body: SalarieRequest) {
   return post<SalarieResponse>("rh/salaries", body);
 }

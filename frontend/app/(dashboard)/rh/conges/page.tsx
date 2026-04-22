@@ -19,9 +19,12 @@ import {
   getCalendrier,
   listConges,
   rejeterConge,
+  soumettreConge,
   validerConge,
 } from "@/services/conge.service";
+import { CongeForm } from "@/components/forms/CongeForm";
 import { useAuthStore } from "@/lib/store";
+import { getMySalarie } from "@/services/salarie.service";
 
 const typeColor: Record<string, string> = {
   ANNUEL: "bg-sky-200 text-sky-900",
@@ -54,13 +57,14 @@ function canAnnulerCongeValide(dateDebutIso: string) {
 export default function CongesPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
-  const isRh = user?.role === "RH";
   const isRhOrAdmin = user?.role === "RH" || user?.role === "ADMIN";
+  const isEmploye = user?.role === "EMPLOYE";
   const [view, setView] = useState<"liste" | "cal">("liste");
   const [page, setPage] = useState(0);
   const [statut, setStatut] = useState("");
   const [typeConge, setTypeConge] = useState("");
   const [cursor, setCursor] = useState(() => new Date());
+  const [confirmValidateId, setConfirmValidateId] = useState<string | null>(null);
   const [rejectId, setRejectId] = useState<string | null>(null);
   const [motif, setMotif] = useState("");
 
@@ -85,6 +89,12 @@ export default function CongesPage() {
     enabled: view === "cal",
   });
 
+  const { data: mySalarie } = useQuery({
+    queryKey: ["rh", "me", "salarie"],
+    queryFn: () => getMySalarie(),
+    enabled: isEmploye && view === "liste",
+  });
+
   const mutVal = useMutation({
     mutationFn: (id: string) => validerConge(id),
     onSuccess: () => {
@@ -103,6 +113,13 @@ export default function CongesPage() {
 
   const mutAnnul = useMutation({
     mutationFn: (id: string) => annulerCongeValide(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rh", "conges"] });
+    },
+  });
+
+  const mutSoumettre = useMutation({
+    mutationFn: (body: Parameters<typeof soumettreConge>[0]) => soumettreConge(body),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["rh", "conges"] });
     },
@@ -135,13 +152,13 @@ export default function CongesPage() {
       },
       {
         id: "actions",
-        header: "",
+        header: () => <div className="text-right">Actions</div>,
         cell: ({ row }) => {
           const r = row.original;
-          if (isRh && r.statut === "EN_ATTENTE") {
+          if (isRhOrAdmin && r.statut === "EN_ATTENTE") {
             return (
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant="outline" onClick={() => mutVal.mutate(r.id)}>
+              <div className="flex justify-end gap-2">
+                <Button type="button" size="sm" variant="outline" onClick={() => setConfirmValidateId(r.id)}>
                   Valider
                 </Button>
                 <Button type="button" size="sm" variant="outline" onClick={() => setRejectId(r.id)}>
@@ -152,22 +169,24 @@ export default function CongesPage() {
           }
           if (isRhOrAdmin && r.statut === "VALIDE" && canAnnulerCongeValide(r.dateDebut)) {
             return (
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                disabled={mutAnnul.isPending}
-                onClick={() => mutAnnul.mutate(r.id)}
-              >
-                Annuler
-              </Button>
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={mutAnnul.isPending}
+                  onClick={() => mutAnnul.mutate(r.id)}
+                >
+                  Annuler
+                </Button>
+              </div>
             );
           }
-          return null;
+          return <div className="text-right text-slate-400">—</div>;
         },
       },
     ],
-    [isRh, isRhOrAdmin, mutVal, mutAnnul]
+    [isRhOrAdmin, mutAnnul]
   );
 
   const table = useReactTable({
@@ -199,6 +218,17 @@ export default function CongesPage() {
 
       {view === "liste" && (
         <>
+          {isEmploye && mySalarie?.id ? (
+            <div className="rounded-lg border border-slate-200 bg-white p-4">
+              <h2 className="mb-2 font-semibold text-slate-900">Nouvelle demande</h2>
+              <CongeForm
+                salarieId={mySalarie.id}
+                onSubmit={async (b) => {
+                  await mutSoumettre.mutateAsync(b);
+                }}
+              />
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-3">
             <div>
               <Label className="text-xs text-slate-500">Statut</Label>
@@ -324,7 +354,8 @@ export default function CongesPage() {
       {rejectId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
-            <h3 className="mb-2 font-semibold">Motif de rejet</h3>
+            <h3 className="mb-1 font-semibold">Rejeter la demande</h3>
+            <p className="mb-2 text-xs text-slate-600">Confirmez le rejet en indiquant un motif.</p>
             <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder="Obligatoire" />
             <div className="mt-3 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
@@ -335,7 +366,28 @@ export default function CongesPage() {
                 disabled={!motif.trim() || mutRej.isPending}
                 onClick={() => mutRej.mutate({ id: rejectId, motifRejet: motif.trim() })}
               >
-                Rejeter
+                Confirmer le rejet
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmValidateId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+            <h3 className="mb-1 font-semibold">Valider la demande</h3>
+            <p className="mb-3 text-xs text-slate-600">Cette action passera la demande au statut VALIDE.</p>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setConfirmValidateId(null)}>
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                disabled={mutVal.isPending}
+                onClick={() => mutVal.mutate(confirmValidateId, { onSuccess: () => setConfirmValidateId(null) })}
+              >
+                Confirmer la validation
               </Button>
             </div>
           </div>

@@ -23,7 +23,7 @@ import {
   uploadContrat,
   validerDossier,
 } from "@/services/salarie.service";
-import { listConges, soumettreConge } from "@/services/conge.service";
+import { listConges, rejeterConge, soumettreConge, validerConge } from "@/services/conge.service";
 import { getPaieAnnuelle, marquerPaye } from "@/services/paie.service";
 
 function statutVariant(s: string): "success" | "warning" | "muted" | "default" {
@@ -51,6 +51,7 @@ export default function SalarieDetailPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isRh = user?.role === "RH";
+  const isRhOrAdmin = user?.role === "RH" || user?.role === "ADMIN";
   const isRhOrFin = user?.role === "RH" || user?.role === "FINANCIER";
   const [tab, setTab] = useState<"infos" | "conges" | "paie" | "docs">("infos");
   const year = new Date().getFullYear();
@@ -100,6 +101,21 @@ export default function SalarieDetailPage() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rh", "conges", id] }),
   });
 
+  const mutCongeValider = useMutation({
+    mutationFn: (congeId: string) => validerConge(congeId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["rh", "conges", id] }),
+  });
+
+  const mutCongeRejeter = useMutation({
+    mutationFn: ({ congeId, motifRejet }: { congeId: string; motifRejet: string }) =>
+      rejeterConge(congeId, { motifRejet }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["rh", "conges", id] });
+      setRejectId(null);
+      setMotif("");
+    },
+  });
+
   const mutUpload = useMutation({
     mutationFn: (f: File) => uploadContrat(id, f),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["rh", "docs", id] }),
@@ -125,6 +141,10 @@ export default function SalarieDetailPage() {
     modePaiement: "VIREMENT",
     notes: "",
   });
+
+  const [rejectId, setRejectId] = useState<string | null>(null);
+  const [motif, setMotif] = useState("");
+  const [confirmValidateCongeId, setConfirmValidateCongeId] = useState<string | null>(null);
 
   if (isLoading || !salarie) {
     return <p className="p-4 text-slate-600">Chargement…</p>;
@@ -292,6 +312,7 @@ export default function SalarieDetailPage() {
                     <th>Type</th>
                     <th>Jours</th>
                     <th>Statut</th>
+                    <th className="text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -304,6 +325,26 @@ export default function SalarieDetailPage() {
                       <td>{c.nbJours}</td>
                       <td>
                         <Badge variant="default">{c.statut}</Badge>
+                      </td>
+                      <td className="text-right">
+                        {isRhOrAdmin && c.statut === "EN_ATTENTE" ? (
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="outline"
+                              disabled={mutCongeValider.isPending}
+                              onClick={() => setConfirmValidateCongeId(c.id)}
+                            >
+                              Valider
+                            </Button>
+                            <Button type="button" size="sm" variant="outline" onClick={() => setRejectId(c.id)}>
+                              Rejeter
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -421,6 +462,51 @@ export default function SalarieDetailPage() {
                 }
               >
                 Confirmer
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {rejectId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <Card className="w-full max-w-md p-4">
+            <h3 className="mb-1 font-semibold">Rejeter la demande</h3>
+            <p className="mb-2 text-xs text-slate-600">Confirmez le rejet en indiquant un motif.</p>
+            <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder="Obligatoire" />
+            <div className="mt-3 flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                disabled={!motif.trim() || mutCongeRejeter.isPending}
+                onClick={() => mutCongeRejeter.mutate({ congeId: rejectId, motifRejet: motif.trim() })}
+              >
+                Confirmer le rejet
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {confirmValidateCongeId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <Card className="w-full max-w-md p-4">
+            <h3 className="mb-1 font-semibold">Valider la demande</h3>
+            <p className="mb-3 text-xs text-slate-600">Cette action passera la demande au statut VALIDE.</p>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setConfirmValidateCongeId(null)}>
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                disabled={mutCongeValider.isPending}
+                onClick={() =>
+                  mutCongeValider.mutate(confirmValidateCongeId, { onSuccess: () => setConfirmValidateCongeId(null) })
+                }
+              >
+                Confirmer la validation
               </Button>
             </div>
           </Card>
