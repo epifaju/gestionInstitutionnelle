@@ -1,0 +1,195 @@
+{
+  "Common": {
+    "loading": "Chargement…",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "searchPlaceholder": "Rechercher…",
+    "noData": "Aucune donnée à afficher.",
+    "emptyTable": "Aucun élément pour le moment.",
+    "successSaved": "Enregistrement réussi.",
+    "successCreated": "Création réussie.",
+    "successUpdated": "Modification enregistrée.",
+    "successDeleted": "Suppression effectuée.",
+    "errorGeneric": "Une erreur est survenue.",
+    "backHome": "Retour à l’accueil",
+    "retry": "Réessayer",
+    "localeFr": "Français",
+    "localeEn": "English",
+    "menu": "Menu",
+    "logout": "Déconnexion",
+    "exit": "Sortir"
+  },
+  "Login": {
+    "title": "Connexion",
+    "subtitle": "Gestion institutionnelle",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "submit": "Se connecter",
+    "errorCredentials": "E-mail ou mot de passe incorrect",
+    "cardDescription": "Accès sécurisé à votre espace institutionnel.",
+    "forgotPassword": "Mot de passe oublié ?"
+  },
+  "ForgotPassword": {
+    "title": "Mot de passe oublié",
+    "subtitle": "Réinitialisation sécurisée",
+    "description": "Indiquez votre adresse e-mail. Si un compte existe, vous recevrez les instructions.",
+    "email": "Adresse e-mail",
+    "submit": "Envoyer",
+    "doneHint": "Si un compte correspond, un message vient d’être envoyé.",
+    "backLogin": "Retour à la connexion"
+  },
+  "ResetPassword": {
+    "title": "Nouveau mot de passe",
+    "subtitle": "Définissez un mot de passe robuste",
+    "description": "Collez le jeton reçu par e-mail (ou via le lien) et choisissez un nouveau mot de passe.",
+    "token": "Jeton",
+    "password": "Nouveau mot de passe",
+    "confirm": "Confirmation",
+    "submit": "Enregistrer",
+    "doneHint": "Vous pouvez vous connecter avec votre nouveau mot de passe.",
+    "backLogin": "Aller à la connexion"
+  },
+  "App": {
+    "name": "Gestion institutionnelle",
+    "tagline": "Ambassades & associations"
+  },
+  "Nav": {
+    "dashboard": "Tableau de bord",
+    "finance": "Finance",
+    "recettes": "Recettes",
+    "paiements": "Paiements",
+    "rh": "RH",
+    "conges": "Congés",
+    "paie": "Paie",
+    "budget": "Budget",
+    "inventaire": "Inventaire",
+    "rapports": "Rapports",
+    "settings": "Paramètres",
+    "adminUsers": "Utilisateurs",
+    "adminAudit": "Audit",
+    "sectionFinance": "Finance",
+    "sectionRh": "RH"
+  },
+  "Dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Vue consolidée",
+    "loadError": "Impossible de charger le tableau de bord.",
+    "kpiDepenses": "Dépenses",
+    "kpiRecettes": "Recettes",
+    "kpiSolde": "Solde",
+    "kpiEffectifs": "Effectifs actifs",
+    "chartTitle": "Dépenses vs recettes (6 mois)",
+    "alertsTitle": "Alertes budget",
+    "alertsEmpty": "Aucune catégorie au-dessus du seuil.",
+    "topSuppliers": "Top 5 fournisseurs (année en cours)",
+    "supplier": "Fournisseur",
+    "amount": "Montant",
+    "congesTitle": "Congés en cours",
+    "congesEmpty": "Aucun congé en cours.",
+    "deltaVsPrev": "vs mois précédent",
+    "footerParc": "Valeur du parc (hors service)",
+    "footerConges": "Congés signalés",
+    "employeeSubtitle": "Vue limitée : vos congés en cours (pas d’agrégats financiers ni RH).",
+    "employeeCongesOnly": "Congés en cours"
+  },
+  "Finance": {
+    "factures": {
+      "title": "Factures",
+      "subtitle": "Dépenses et fournisseurs",
+      "create": "Nouvelle facture",
+      "exportCsv": "Export CSV",
+      "filters": "Filtres",
+      "statut": "Statut",
+      "categorie": "Catégorie",
+      "debut": "Du",
+      "fin": "Au",
+      "fournisseur": "Fournisseur"
+    },
+    "recettes": {
+      "title": "Recettes",
+      "subtitle": "Encaissements"
+    },
+    "paiements": {
+      "title": "Paiements",
+      "subtitle": "Historique des règlements"
+    },
+    "tauxChange": {
+      "title": "Taux de change",
+      "subtitle": "Saisie manuelle par date (EUR, XOF, USD).",
+      "dateTitle": "Date du taux",
+      "dateLabel": "Date",
+      "ratesTitle": "Taux vers EUR",
+      "rateHint": "1 {devise} = ? EUR",
+      "footer": "Le taux est appliqué à la date de la facture/recette (conformément au PRD)."
+    },
+    "categories": {
+      "title": "Catégories",
+      "subtitle": "Catégories Finance (dépenses & recettes).",
+      "createTitle": "Nouvelle catégorie",
+      "libelle": "Libellé",
+      "code": "Code",
+      "type": "Type",
+      "couleur": "Couleur",
+      "createButton": "Créer",
+      "created": "Catégorie créée.",
+      "thLibelle": "Libellé",
+      "thCode": "Code",
+      "thType": "Type",
+      "thCouleur": "Couleur",
+      "thActif": "Actif",
+      "empty": "Aucune catégorie. Créez-en une ci-dessus.",
+      "yes": "Oui",
+      "no": "Non"
+    }
+  },
+  "RH": {
+    "salaries": {
+      "title": "Salariés",
+      "subtitle": "Dossiers et affectations"
+    },
+    "conges": {
+      "title": "Congés",
+      "subtitle": "Demandes et validation"
+    },
+    "paie": {
+      "title": "Paie (organisation)",
+      "subtitle": "Lignes de paie par année"
+    }
+  },
+  "Settings": {
+    "title": "Paramètres",
+    "subtitle": "Compte et préférences",
+    "email": "E-mail",
+    "organisation": "Organisation",
+    "localeHint": "La langue se change depuis le menu latéral."
+  },
+  "Budget": {
+    "title": "Budget annuel",
+    "subtitle": "Prévision et exécution"
+  },
+  "Inventaire": {
+    "title": "Inventaire",
+    "subtitle": "Biens matériels"
+  },
+  "Rapports": {
+    "title": "Rapports",
+    "subtitle": "Exports PDF et Excel"
+  },
+  "Errors": {
+    "title": "Erreur",
+    "pageNotFound": "Page introuvable",
+    "pageNotFoundDescription": "La page demandée n’existe pas ou a été déplacée.",
+    "globalDescription": "Une erreur inattendue s’est produite."
+  },
+  "Validation": {
+    "required": "Ce champ est obligatoire",
+    "email": "E-mail invalide",
+    "minLength": "Trop court",
+    "positive": "Doit être positif",
+    "passwordMismatch": "Les mots de passe ne correspondent pas"
+  }
+}

@@ -1,0 +1,195 @@
+{
+  "Common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "close": "Close",
+    "search": "Search",
+    "searchPlaceholder": "Search…",
+    "noData": "No data to display.",
+    "emptyTable": "No items yet.",
+    "successSaved": "Saved successfully.",
+    "successCreated": "Created successfully.",
+    "successUpdated": "Changes saved.",
+    "successDeleted": "Deleted successfully.",
+    "errorGeneric": "Something went wrong.",
+    "backHome": "Back to home",
+    "retry": "Retry",
+    "localeFr": "Français",
+    "localeEn": "English",
+    "menu": "Menu",
+    "logout": "Log out",
+    "exit": "Exit"
+  },
+  "Login": {
+    "title": "Sign in",
+    "subtitle": "Institutional management",
+    "email": "Email address",
+    "password": "Password",
+    "submit": "Sign in",
+    "errorCredentials": "Incorrect email or password",
+    "cardDescription": "Secure access to your institutional workspace.",
+    "forgotPassword": "Forgot password?"
+  },
+  "ForgotPassword": {
+    "title": "Forgot password",
+    "subtitle": "Secure reset",
+    "description": "Enter your email. If an account exists, you will receive instructions.",
+    "email": "Email address",
+    "submit": "Send",
+    "doneHint": "If an account matches, a message has been sent.",
+    "backLogin": "Back to sign in"
+  },
+  "ResetPassword": {
+    "title": "New password",
+    "subtitle": "Choose a strong password",
+    "description": "Paste the token from your email (or use the link) and set a new password.",
+    "token": "Token",
+    "password": "New password",
+    "confirm": "Confirm",
+    "submit": "Save",
+    "doneHint": "You can sign in with your new password.",
+    "backLogin": "Go to sign in"
+  },
+  "App": {
+    "name": "Institutional management",
+    "tagline": "Embassies & associations"
+  },
+  "Nav": {
+    "dashboard": "Dashboard",
+    "finance": "Finance",
+    "recettes": "Income",
+    "paiements": "Payments",
+    "rh": "HR",
+    "conges": "Leave",
+    "paie": "Payroll",
+    "budget": "Budget",
+    "inventaire": "Inventory",
+    "rapports": "Reports",
+    "settings": "Settings",
+    "adminUsers": "Users",
+    "adminAudit": "Audit",
+    "sectionFinance": "Finance",
+    "sectionRh": "HR"
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Consolidated view",
+    "loadError": "Could not load the dashboard.",
+    "kpiDepenses": "Expenses",
+    "kpiRecettes": "Income",
+    "kpiSolde": "Balance",
+    "kpiEffectifs": "Active headcount",
+    "chartTitle": "Expenses vs income (6 months)",
+    "alertsTitle": "Budget alerts",
+    "alertsEmpty": "No category above the threshold.",
+    "topSuppliers": "Top 5 suppliers (current year)",
+    "supplier": "Supplier",
+    "amount": "Amount",
+    "congesTitle": "Leave in progress",
+    "congesEmpty": "No leave in progress.",
+    "deltaVsPrev": "vs previous month",
+    "footerParc": "Fleet value (excluding service)",
+    "footerConges": "Reported leave",
+    "employeeSubtitle": "Limited view: your current leave only (no finance or HR aggregates).",
+    "employeeCongesOnly": "Current leave"
+  },
+  "Finance": {
+    "factures": {
+      "title": "Invoices",
+      "subtitle": "Expenses and suppliers",
+      "create": "New invoice",
+      "exportCsv": "Export CSV",
+      "filters": "Filters",
+      "statut": "Status",
+      "categorie": "Category",
+      "debut": "From",
+      "fin": "To",
+      "fournisseur": "Supplier"
+    },
+    "recettes": {
+      "title": "Income",
+      "subtitle": "Receipts"
+    },
+    "paiements": {
+      "title": "Payments",
+      "subtitle": "Payment history"
+    },
+    "tauxChange": {
+      "title": "Exchange rates",
+      "subtitle": "Manual entry by date (EUR, XOF, USD).",
+      "dateTitle": "Rate date",
+      "dateLabel": "Date",
+      "ratesTitle": "Rates to EUR",
+      "rateHint": "1 {devise} = ? EUR",
+      "footer": "Rates are applied using the invoice/receipt date (as specified in the PRD)."
+    },
+    "categories": {
+      "title": "Categories",
+      "subtitle": "Finance categories (expenses & income).",
+      "createTitle": "New category",
+      "libelle": "Label",
+      "code": "Code",
+      "type": "Type",
+      "couleur": "Color",
+      "createButton": "Create",
+      "created": "Category created.",
+      "thLibelle": "Label",
+      "thCode": "Code",
+      "thType": "Type",
+      "thCouleur": "Color",
+      "thActif": "Active",
+      "empty": "No categories yet. Create one above.",
+      "yes": "Yes",
+      "no": "No"
+    }
+  },
+  "RH": {
+    "salaries": {
+      "title": "Employees",
+      "subtitle": "Records and assignments"
+    },
+    "conges": {
+      "title": "Leave",
+      "subtitle": "Requests and approval"
+    },
+    "paie": {
+      "title": "Payroll (organisation)",
+      "subtitle": "Payroll lines by year"
+    }
+  },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Account and preferences",
+    "email": "Email",
+    "organisation": "Organisation",
+    "localeHint": "Change language from the side menu."
+  },
+  "Budget": {
+    "title": "Annual budget",
+    "subtitle": "Forecast and execution"
+  },
+  "Inventaire": {
+    "title": "Inventory",
+    "subtitle": "Fixed assets"
+  },
+  "Rapports": {
+    "title": "Reports",
+    "subtitle": "PDF and Excel exports"
+  },
+  "Errors": {
+    "title": "Error",
+    "pageNotFound": "Page not found",
+    "pageNotFoundDescription": "This page does not exist or has been moved.",
+    "globalDescription": "An unexpected error occurred."
+  },
+  "Validation": {
+    "required": "This field is required",
+    "email": "Invalid email",
+    "minLength": "Too short",
+    "positive": "Must be positive",
+    "passwordMismatch": "Passwords do not match"
+  }
+}
