@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,9 @@ export function FactureModal({
   /** Si défini, formulaire prérempli (édition). */
   initialFacture?: FactureResponse | null;
 }) {
+  const t = useTranslations("Finance.factures.modal");
+  const tc = useTranslations("Common");
+
   const [file, setFile] = useState<File | null>(null);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
@@ -101,9 +105,9 @@ export function FactureModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
         <div className="mb-3 flex justify-between">
-          <h2 className="text-lg font-semibold">{isEdit ? "Modifier la facture" : "Nouvelle facture"}</h2>
+          <h2 className="text-lg font-semibold">{isEdit ? t("titleEdit") : t("titleNew")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            Fermer
+            {tc("close")}
           </Button>
         </div>
         <form
@@ -124,37 +128,37 @@ export function FactureModal({
           })}
         >
           <div>
-            <Label>Fournisseur</Label>
+            <Label>{t("supplier")}</Label>
             <Input {...form.register("fournisseur")} />
           </div>
           <div>
-            <Label>Date facture</Label>
+            <Label>{t("dateInvoice")}</Label>
             <Input type="date" {...form.register("dateFacture")} />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Montant HT</Label>
+              <Label>{t("amountHt")}</Label>
               <Input type="number" step="0.01" {...form.register("montantHt", { valueAsNumber: true })} />
             </div>
             <div>
-              <Label>TVA %</Label>
+              <Label>{t("vat")}</Label>
               <Input type="number" step="0.01" {...form.register("tva", { valueAsNumber: true })} />
             </div>
           </div>
           <p className="text-sm text-slate-600">
-            TTC calculé : <span className="font-semibold text-slate-900">{ttc.toFixed(2)}</span>
+            {t("ttcCalculated")} : <span className="font-semibold text-slate-900">{ttc.toFixed(2)}</span>
           </p>
           <div>
-            <Label>Devise</Label>
+            <Label>{t("currency")}</Label>
             <Input maxLength={3} {...form.register("devise")} />
           </div>
           <div>
-            <Label>Catégorie</Label>
+            <Label>{t("category")}</Label>
             <select
               className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
               {...form.register("categorieId")}
             >
-              <option value="">—</option>
+              <option value="">{tc("emDash")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.libelle}
@@ -163,25 +167,25 @@ export function FactureModal({
             </select>
             {categories.length === 0 ? (
               <p className="mt-1 text-xs text-slate-600">
-                Aucune catégorie. Créez-en dans <span className="font-medium">Finance → Catégories</span>.
+                {t.rich("noCategoriesHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
               </p>
             ) : null}
           </div>
           <div>
-            <Label>Statut</Label>
+            <Label>{t("status")}</Label>
             <select className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm" {...form.register("statut")}>
-              <option value="BROUILLON">Brouillon</option>
-              <option value="A_PAYER">À payer</option>
-              <option value="PAYE">Payé</option>
-              <option value="ANNULE">Annulé</option>
+              <option value="BROUILLON">{t("statusDraft")}</option>
+              <option value="A_PAYER">{t("statusToPay")}</option>
+              <option value="PAYE">{t("statusPaid")}</option>
+              <option value="ANNULE">{t("statusCancelled")}</option>
             </select>
           </div>
           <div>
-            <Label>Notes</Label>
+            <Label>{t("notes")}</Label>
             <Input {...form.register("notes")} />
           </div>
           <div>
-            <Label>{isEdit ? "Remplacer le justificatif (PDF ou image)" : "Justificatif (PDF ou image)"}</Label>
+            <Label>{isEdit ? t("receiptReplace") : t("receipt")}</Label>
             <Input
               type="file"
               accept="application/pdf,image/*"
@@ -189,11 +193,11 @@ export function FactureModal({
             />
             {file && <p className="text-xs text-slate-600">{file.name}</p>}
             {isEdit && !file ? (
-              <p className="text-xs text-slate-500">Laissez vide pour conserver le justificatif actuel.</p>
+              <p className="text-xs text-slate-500">{t("receiptKeepHint")}</p>
             ) : null}
           </div>
           <Button type="submit" disabled={form.formState.isSubmitting}>
-            Enregistrer
+            {tc("save")}
           </Button>
         </form>
       </div>

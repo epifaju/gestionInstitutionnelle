@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,9 @@ function UserModal({
   onClose: () => void;
   editing: AdminUserResponse | null;
 }) {
+  const t = useTranslations("Admin.users");
+  const tc = useTranslations("Common");
+  const tv = useTranslations("Validation");
   const qc = useQueryClient();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -64,11 +68,14 @@ function UserModal({
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
-      toast.success("Utilisateur créé");
+      toast.success(t("toastCreated"));
       onClose();
     },
     onError: (e: unknown) => {
-      const msg = e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : "Erreur";
+      const msg =
+        e && typeof e === "object" && "message" in e
+          ? String((e as { message: unknown }).message)
+          : tc("errorGeneric");
       toast.error(msg);
     },
   });
@@ -87,11 +94,14 @@ function UserModal({
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["admin", "users"] });
-      toast.success("Utilisateur mis à jour");
+      toast.success(t("toastUpdated"));
       onClose();
     },
     onError: (e: unknown) => {
-      const msg = e && typeof e === "object" && "message" in e ? String((e as { message: unknown }).message) : "Erreur";
+      const msg =
+        e && typeof e === "object" && "message" in e
+          ? String((e as { message: unknown }).message)
+          : tc("errorGeneric");
       toast.error(msg);
     },
   });
@@ -102,14 +112,14 @@ function UserModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{editing ? "Modifier l’utilisateur" : "Nouvel utilisateur"}</h2>
+          <h2 className="text-lg font-semibold">{editing ? t("modalTitleEdit") : t("modalTitleNew")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
-            Fermer
+            {tc("close")}
           </Button>
         </div>
         <div className="grid gap-3">
           <div>
-            <Label htmlFor="em">Email</Label>
+            <Label htmlFor="em">{t("email")}</Label>
             <Input
               id="em"
               type="email"
@@ -121,7 +131,7 @@ function UserModal({
           </div>
           {!editing && (
             <div>
-              <Label htmlFor="pw">Mot de passe (min. 8)</Label>
+              <Label htmlFor="pw">{t("passwordNew")}</Label>
               <Input
                 id="pw"
                 type="password"
@@ -132,15 +142,15 @@ function UserModal({
             </div>
           )}
           <div>
-            <Label htmlFor="nom">Nom</Label>
+            <Label htmlFor="nom">{t("nom")}</Label>
             <Input id="nom" value={nom} onChange={(e) => setNom(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="pre">Prénom</Label>
+            <Label htmlFor="pre">{t("prenom")}</Label>
             <Input id="pre" value={prenom} onChange={(e) => setPrenom(e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="rl">Rôle</Label>
+            <Label htmlFor="rl">{t("role")}</Label>
             <select
               id="rl"
               className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm"
@@ -158,10 +168,10 @@ function UserModal({
             <>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={actif} onChange={(e) => setActif(e.target.checked)} />
-                Compte actif
+                {t("accountActive")}
               </label>
               <div>
-                <Label htmlFor="npw">Nouveau mot de passe (optionnel, min. 8)</Label>
+                <Label htmlFor="npw">{t("passwordEditOptional")}</Label>
                 <Input
                   id="npw"
                   type="password"
@@ -174,7 +184,7 @@ function UserModal({
           )}
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Annuler
+              {tc("cancel")}
             </Button>
             {editing ? (
               <Button
@@ -182,15 +192,25 @@ function UserModal({
                 onClick={() => mutUpdate.mutate()}
                 disabled={mutUpdate.isPending}
               >
-                Enregistrer
+                {tc("save")}
               </Button>
             ) : (
               <Button
                 type="button"
-                onClick={() => mutCreate.mutate()}
-                disabled={mutCreate.isPending || !email || password.length < 8}
+                onClick={() => {
+                  if (!email.trim()) {
+                    toast.error(`${t("email")} — ${tv("required")}`);
+                    return;
+                  }
+                  if (password.length < 8) {
+                    toast.error(`${t("passwordNew")} — ${tv("minLength")}`);
+                    return;
+                  }
+                  mutCreate.mutate();
+                }}
+                disabled={mutCreate.isPending}
               >
-                Créer
+                {tc("create")}
               </Button>
             )}
           </div>
@@ -201,6 +221,8 @@ function UserModal({
 }
 
 export default function AdminUsersPage() {
+  const t = useTranslations("Admin.users");
+  const tc = useTranslations("Common");
   const user = useAuthStore((s) => s.user);
   const [page, setPage] = useState(0);
   const [modal, setModal] = useState(false);
@@ -215,7 +237,7 @@ export default function AdminUsersPage() {
   if (user?.role !== "ADMIN") {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        Accès réservé aux administrateurs.
+        {t("restricted")}
       </div>
     );
   }
@@ -226,8 +248,8 @@ export default function AdminUsersPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Utilisateurs</h1>
-          <p className="text-sm text-slate-600">Comptes de l’organisation (rôle ADMIN requis).</p>
+          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
+          <p className="text-sm text-slate-600">{t("subtitle")}</p>
         </div>
         <Button
           type="button"
@@ -236,7 +258,7 @@ export default function AdminUsersPage() {
             setModal(true);
           }}
         >
-          + Nouvel utilisateur
+          {t("create")}
         </Button>
       </div>
 
@@ -244,21 +266,21 @@ export default function AdminUsersPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Nom</TableHead>
-              <TableHead>Rôle</TableHead>
-              <TableHead>Statut</TableHead>
+              <TableHead>{t("thEmail")}</TableHead>
+              <TableHead>{t("thNom")}</TableHead>
+              <TableHead>{t("thRole")}</TableHead>
+              <TableHead>{t("thStatut")}</TableHead>
               <TableHead />
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5}>Chargement…</TableCell>
+                <TableCell colSpan={5}>{tc("loading")}</TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5}>Aucun utilisateur</TableCell>
+                <TableCell colSpan={5}>{t("empty")}</TableCell>
               </TableRow>
             ) : (
               rows.map((u) => (
@@ -269,7 +291,7 @@ export default function AdminUsersPage() {
                   </TableCell>
                   <TableCell>{u.role}</TableCell>
                   <TableCell>
-                    <Badge variant={u.actif ? "success" : "muted"}>{u.actif ? "Actif" : "Inactif"}</Badge>
+                    <Badge variant={u.actif ? "success" : "muted"}>{u.actif ? t("active") : t("inactive")}</Badge>
                   </TableCell>
                   <TableCell>
                     <Button
@@ -281,7 +303,7 @@ export default function AdminUsersPage() {
                         setModal(true);
                       }}
                     >
-                      Modifier
+                      {tc("modify")}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -294,14 +316,14 @@ export default function AdminUsersPage() {
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-slate-600">
           <span>
-            Page {data.page + 1} / {data.totalPages}
+            {tc("page", { current: data.page + 1, total: data.totalPages })}
           </span>
           <div className="flex gap-2">
             <Button type="button" variant="outline" size="sm" disabled={data.page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-              Précédent
+              {tc("previous")}
             </Button>
             <Button type="button" variant="outline" size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-              Suivant
+              {tc("next")}
             </Button>
           </div>
         </div>

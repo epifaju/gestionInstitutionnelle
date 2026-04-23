@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +26,9 @@ export function RecetteModal({
   initial?: Partial<RecetteRequest> | null;
   allowFile?: boolean;
 }) {
+  const t = useTranslations("Finance.recettes.modal");
+  const tc = useTranslations("Common");
+
   const [file, setFile] = useState<File | null>(null);
   const [initKey, setInitKey] = useState<string>("");
   const [form, setForm] = useState<RecetteRequest>({
@@ -37,8 +41,8 @@ export function RecetteModal({
     categorieId: null,
   });
 
-  const resolvedTitle = title ?? "Nouvelle recette";
-  const resolvedSubmit = submitLabel ?? "Créer";
+  const resolvedTitle = title ?? t("titleNew");
+  const resolvedSubmit = submitLabel ?? tc("confirm");
   const canUpload = allowFile ?? true;
 
   const computedInitKey = useMemo(() => {
@@ -87,7 +91,7 @@ export function RecetteModal({
         <h2 className="mb-3 font-semibold">{resolvedTitle}</h2>
         <div className="space-y-2">
           <div>
-            <Label>Date</Label>
+            <Label>{t("date")}</Label>
             <Input
               type="date"
               value={form.dateRecette}
@@ -95,22 +99,22 @@ export function RecetteModal({
             />
           </div>
           <div>
-            <Label>Type</Label>
+            <Label>{t("type")}</Label>
             <select
               className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
               value={form.typeRecette}
               onChange={(e) => setForm((f) => ({ ...f, typeRecette: e.target.value }))}
             >
-              <option value="FRAIS_SERVICE">FRAIS_SERVICE</option>
-              <option value="ADHESION">ADHESION</option>
-              <option value="DON">DON</option>
-              <option value="SUBVENTION">SUBVENTION</option>
-              <option value="PRESTATION">PRESTATION</option>
+              <option value="FRAIS_SERVICE">{t("type_FRAIS_SERVICE")}</option>
+              <option value="ADHESION">{t("type_ADHESION")}</option>
+              <option value="DON">{t("type_DON")}</option>
+              <option value="SUBVENTION">{t("type_SUBVENTION")}</option>
+              <option value="PRESTATION">{t("type_PRESTATION")}</option>
             </select>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Montant</Label>
+              <Label>{t("amount")}</Label>
               <Input
                 type="number"
                 value={form.montant}
@@ -118,29 +122,29 @@ export function RecetteModal({
               />
             </div>
             <div>
-              <Label>Devise</Label>
+              <Label>{t("currency")}</Label>
               <Input value={form.devise} maxLength={3} onChange={(e) => setForm((f) => ({ ...f, devise: e.target.value }))} />
             </div>
           </div>
           <div>
-            <Label>Description</Label>
+            <Label>{t("description")}</Label>
             <Input value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
           </div>
           <div>
-            <Label>Mode encaissement</Label>
+            <Label>{t("paymentMode")}</Label>
             <Input
               value={form.modeEncaissement ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, modeEncaissement: e.target.value }))}
             />
           </div>
           <div>
-            <Label>Catégorie</Label>
+            <Label>{t("category")}</Label>
             <select
               className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
               value={form.categorieId ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, categorieId: e.target.value ? e.target.value : null }))}
             >
-              <option value="">—</option>
+              <option value="">{tc("emDash")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.libelle}
@@ -149,12 +153,12 @@ export function RecetteModal({
             </select>
             {categories.length === 0 ? (
               <p className="mt-1 text-xs text-slate-600">
-                Aucune catégorie. Créez-en dans <span className="font-medium">Finance → Catégories</span>.
+                {t.rich("noCategoriesHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
               </p>
             ) : null}
           </div>
           <div>
-            <Label>Justificatif</Label>
+            <Label>{t("receipt")}</Label>
             {canUpload ? (
               <>
                 <Input
@@ -165,13 +169,13 @@ export function RecetteModal({
                 {file && <p className="text-xs text-slate-600">{file.name}</p>}
               </>
             ) : (
-              <p className="text-xs text-slate-600">Le justificatif ne peut pas être modifié ici.</p>
+              <p className="text-xs text-slate-600">{t("receiptDisabled")}</p>
             )}
           </div>
         </div>
         <div className="mt-4 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onClose}>
-            Annuler
+            {tc("cancel")}
           </Button>
           <Button
             type="button"

@@ -2,11 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/lib/store";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import {
   downloadBilanAnnuelExcel,
   downloadBilanMensuelPdf,
@@ -20,11 +22,9 @@ function n(s: string | number) {
   return Number.isFinite(x) ? x : 0;
 }
 
-function fmtEur(v: number) {
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(v);
-}
-
 export default function RapportsPage() {
+  const t = useTranslations("Rapports");
+  const localeTag = intlLocaleTag(useLocale());
   const user = useAuthStore((s) => s.user);
   const canFinance = user?.role === "FINANCIER" || user?.role === "ADMIN";
 
@@ -39,6 +39,10 @@ export default function RapportsPage() {
     queryFn: () => getBilanMensuel(annee, mois),
     enabled: canFinance,
   });
+
+  function fmtMoney(v: number) {
+    return new Intl.NumberFormat(localeTag, { style: "currency", currency: "EUR" }).format(v);
+  }
 
   async function handlePdf() {
     const blob = await downloadBilanMensuelPdf(annee, mois);
@@ -58,18 +62,18 @@ export default function RapportsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Rapports</h1>
-        <p className="mt-1 text-sm text-slate-600">Exports et aperçu du bilan mensuel.</p>
+        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
+        <p className="mt-1 text-sm text-slate-600">{t("subtitleLong")}</p>
       </div>
 
       {canFinance && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Exports</CardTitle>
+            <CardTitle className="text-base">{t("exportsTitle")}</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-4">
             <div className="space-y-1">
-              <Label>Bilan mensuel (PDF)</Label>
+              <Label>{t("monthlyPdfLabel")}</Label>
               <div className="flex flex-wrap items-end gap-2">
                 <select
                   className="rounded-md border border-slate-200 px-2 py-2 text-sm"
@@ -94,13 +98,13 @@ export default function RapportsPage() {
                   ))}
                 </select>
                 <Button type="button" variant="secondary" onClick={handlePdf}>
-                  Télécharger PDF
+                  {t("downloadPdf")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>Bilan annuel (Excel)</Label>
+              <Label>{t("annualExcelLabel")}</Label>
               <div className="flex flex-wrap items-end gap-2">
                 <select
                   className="rounded-md border border-slate-200 px-2 py-2 text-sm"
@@ -114,25 +118,25 @@ export default function RapportsPage() {
                   ))}
                 </select>
                 <Button type="button" variant="secondary" onClick={handleExcel}>
-                  Télécharger Excel
+                  {t("downloadExcel")}
                 </Button>
               </div>
             </div>
 
             <div className="space-y-1">
-              <Label>Export CSV</Label>
+              <Label>{t("csvExportLabel")}</Label>
               <div className="flex flex-wrap items-end gap-2">
                 <select
                   className="rounded-md border border-slate-200 px-2 py-2 text-sm"
                   value={csvType}
                   onChange={(e) => setCsvType(e.target.value as typeof csvType)}
                 >
-                  <option value="factures">Factures</option>
-                  <option value="recettes">Recettes</option>
-                  <option value="salaires">Salaires</option>
+                  <option value="factures">{t("csvTypeFactures")}</option>
+                  <option value="recettes">{t("csvTypeRecettes")}</option>
+                  <option value="salaires">{t("csvTypeSalaires")}</option>
                 </select>
                 <Button type="button" variant="outline" onClick={handleCsv}>
-                  Télécharger CSV
+                  {t("downloadCsv")}
                 </Button>
               </div>
             </div>
@@ -143,7 +147,7 @@ export default function RapportsPage() {
       {canFinance && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Aperçu bilan mensuel</CardTitle>
+            <CardTitle className="text-base">{t("previewTitle")}</CardTitle>
             <p className="text-sm text-slate-500">
               {String(mois).padStart(2, "0")}/{annee}
             </p>
@@ -154,28 +158,28 @@ export default function RapportsPage() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Dépenses</p>
-                  <p className="text-xl font-semibold text-rose-600">{fmtEur(n(bilan.totalDepenses))}</p>
+                  <p className="text-xs uppercase text-slate-500">{t("kpiDepenses")}</p>
+                  <p className="text-xl font-semibold text-rose-600">{fmtMoney(n(bilan.totalDepenses))}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Recettes</p>
-                  <p className="text-xl font-semibold text-emerald-600">{fmtEur(n(bilan.totalRecettes))}</p>
+                  <p className="text-xs uppercase text-slate-500">{t("kpiRecettes")}</p>
+                  <p className="text-xl font-semibold text-emerald-600">{fmtMoney(n(bilan.totalRecettes))}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Solde</p>
-                  <p className="text-xl font-semibold text-sky-700">{fmtEur(n(bilan.solde))}</p>
+                  <p className="text-xs uppercase text-slate-500">{t("kpiSolde")}</p>
+                  <p className="text-xl font-semibold text-sky-700">{fmtMoney(n(bilan.solde))}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Factures</p>
+                  <p className="text-xs uppercase text-slate-500">{t("kpiFactures")}</p>
                   <p className="text-lg font-medium">{bilan.nbFactures}</p>
-                  <p className="text-xs text-slate-500">En attente : {bilan.nbFacturesEnAttente}</p>
+                  <p className="text-xs text-slate-500">{t("kpiFacturesEnAttente", { count: bilan.nbFacturesEnAttente })}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Effectifs actifs</p>
+                  <p className="text-xs uppercase text-slate-500">{t("kpiEffectifsActifs")}</p>
                   <p className="text-lg font-medium">{bilan.effectifsActifs}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">Congés (période)</p>
+                  <p className="text-xs uppercase text-slate-500">{t("kpiCongesPeriode")}</p>
                   <p className="text-lg font-medium">{bilan.nbCongesDuMois}</p>
                 </div>
               </div>
@@ -186,7 +190,7 @@ export default function RapportsPage() {
 
       {!canFinance && (
         <p className="text-sm text-slate-600">
-          Les exports comptables sont réservés aux rôles Financier et Administrateur.
+          {t("restrictedHint")}
         </p>
       )}
     </div>

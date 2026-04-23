@@ -9,6 +9,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,8 @@ function statutVariant(s: string): "success" | "warning" | "muted" | "default" {
 }
 
 export default function SalariesPage() {
+  const ts = useTranslations("RH.salaries");
+  const tc = useTranslations("Common");
   const qc = useQueryClient();
   const [page, setPage] = useState(0);
   const [statut, setStatut] = useState<string>("");
@@ -55,21 +58,21 @@ export default function SalariesPage() {
 
   const columns = useMemo<ColumnDef<SalarieResponse>[]>(
     () => [
-      { accessorKey: "matricule", header: "Matricule" },
+      { accessorKey: "matricule", header: ts("thMatricule") },
       {
         id: "nom",
-        header: "Nom Prénom",
+        header: ts("thNomPrenom"),
         cell: ({ row }) => (
           <span>
             {row.original.nom} {row.original.prenom}
           </span>
         ),
       },
-      { accessorKey: "service", header: "Service" },
-      { accessorKey: "poste", header: "Poste" },
+      { accessorKey: "service", header: ts("thService") },
+      { accessorKey: "poste", header: ts("thPoste") },
       {
         accessorKey: "statut",
-        header: "Statut",
+        header: ts("thStatutList"),
         cell: ({ row }) => (
           <Badge variant={statutVariant(row.original.statut)}>{row.original.statut}</Badge>
         ),
@@ -79,12 +82,12 @@ export default function SalariesPage() {
         header: "",
         cell: ({ row }) => (
           <Link className="text-sm font-medium text-indigo-600 hover:underline" href={`/rh/salaries/${row.original.id}`}>
-            Ouvrir
+            {tc("open")}
           </Link>
         ),
       },
     ],
-    []
+    [tc, ts]
   );
 
   const table = useReactTable({
@@ -97,21 +100,26 @@ export default function SalariesPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Salariés</h1>
-          <p className="text-sm text-slate-600">Gestion des dossiers RH.</p>
+          <h1 className="text-2xl font-semibold text-slate-900">{ts("title")}</h1>
+          <p className="text-sm text-slate-600">{ts("subtitle")}</p>
         </div>
         <Button type="button" onClick={() => setModal(true)}>
-          + Nouveau salarié
+          {ts("create")}
         </Button>
       </div>
 
       <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-3">
         <div>
-          <label className="text-xs text-slate-500">Service</label>
-          <Input className="h-9 w-40" value={service} onChange={(e) => setService(e.target.value)} placeholder="Filtrer" />
+          <label className="text-xs text-slate-500">{ts("filterService")}</label>
+          <Input
+            className="h-9 w-40"
+            value={service}
+            onChange={(e) => setService(e.target.value)}
+            placeholder={ts("filterPlaceholder")}
+          />
         </div>
         <div>
-          <label className="text-xs text-slate-500">Statut</label>
+          <label className="text-xs text-slate-500">{ts("filterStatut")}</label>
           <select
             className="flex h-9 w-44 rounded-md border border-slate-200 bg-white px-2 text-sm"
             value={statut}
@@ -120,7 +128,7 @@ export default function SalariesPage() {
               setPage(0);
             }}
           >
-            <option value="">Tous</option>
+            <option value="">{tc("all")}</option>
             <option value="ACTIF">ACTIF</option>
             <option value="EN_CONGE">EN_CONGE</option>
             <option value="SORTI">SORTI</option>
@@ -128,7 +136,7 @@ export default function SalariesPage() {
           </select>
         </div>
         <div className="min-w-[200px] flex-1">
-          <label className="text-xs text-slate-500">Recherche</label>
+          <label className="text-xs text-slate-500">{ts("filterSearch")}</label>
           <Input
             className="h-9"
             value={search}
@@ -136,7 +144,7 @@ export default function SalariesPage() {
               setSearch(e.target.value);
               setPage(0);
             }}
-            placeholder="Nom, prénom, matricule…"
+            placeholder={ts("searchPlaceholder")}
           />
         </div>
       </div>
@@ -155,11 +163,11 @@ export default function SalariesPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={columns.length}>Chargement…</TableCell>
+                <TableCell colSpan={columns.length}>{tc("loading")}</TableCell>
               </TableRow>
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length}>Aucun résultat</TableCell>
+                <TableCell colSpan={columns.length}>{tc("emptyTable")}</TableCell>
               </TableRow>
             ) : (
               table.getRowModel().rows.map((row) => (
@@ -177,7 +185,7 @@ export default function SalariesPage() {
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-slate-600">
           <span>
-            Page {data.page + 1} / {data.totalPages}
+            {tc("page", { current: data.page + 1, total: data.totalPages })}
           </span>
           <div className="flex gap-2">
             <Button
@@ -187,7 +195,7 @@ export default function SalariesPage() {
               disabled={data.page <= 0}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
             >
-              Précédent
+              {tc("previous")}
             </Button>
             <Button
               type="button"
@@ -196,7 +204,7 @@ export default function SalariesPage() {
               disabled={data.last}
               onClick={() => setPage((p) => p + 1)}
             >
-              Suivant
+              {tc("next")}
             </Button>
           </div>
         </div>

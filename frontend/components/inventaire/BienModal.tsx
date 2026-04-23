@@ -2,6 +2,7 @@
 
 import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +21,8 @@ type Props = {
 };
 
 export function BienModal({ open, onClose, onSubmit, pending, initial, salaries }: Props) {
+  const t = useTranslations("Inventaire.modal");
+  const tc = useTranslations("Common");
   const [libelle, setLibelle] = useState("");
   const [categorie, setCategorie] = useState("");
   const [codeCategorie, setCodeCategorie] = useState("");
@@ -80,29 +83,29 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
-        <h2 className="text-lg font-semibold">{initial ? "Modifier le bien" : "Nouveau bien"}</h2>
+        <h2 className="text-lg font-semibold">{initial ? t("titleEdit") : t("titleNew")}</h2>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
-            <Label>Libellé</Label>
+            <Label>{t("labelLibelle")}</Label>
             <Input value={libelle} onChange={(e) => setLibelle(e.target.value)} required />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Catégorie</Label>
+              <Label>{t("labelCategorie")}</Label>
               <Input value={categorie} onChange={(e) => setCategorie(e.target.value)} required />
             </div>
             <div>
-              <Label>Code catégorie</Label>
+              <Label>{t("labelCodeCategorie")}</Label>
               <Input value={codeCategorie} onChange={(e) => setCodeCategorie(e.target.value)} required />
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Date acquisition</Label>
+              <Label>{t("labelDateAcquisition")}</Label>
               <Input type="date" value={dateAcquisition} onChange={(e) => setDateAcquisition(e.target.value)} />
             </div>
             <div>
-              <Label>Valeur achat</Label>
+              <Label>{t("labelValeurAchat")}</Label>
               <Input
                 inputMode="decimal"
                 value={valeurAchat}
@@ -113,11 +116,11 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
           </div>
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <Label>Devise</Label>
+              <Label>{t("labelDevise")}</Label>
               <Input value={devise} onChange={(e) => setDevise(e.target.value)} />
             </div>
             <div>
-              <Label>État</Label>
+              <Label>{t("labelEtat")}</Label>
               <select
                 className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
                 value={etat}
@@ -125,24 +128,24 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
               >
                 {ETATS.map((x) => (
                   <option key={x} value={x}>
-                    {x}
+                    {t(`etat_${x}`)}
                   </option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <Label>Localisation</Label>
+            <Label>{t("labelLocalisation")}</Label>
             <Input value={localisation} onChange={(e) => setLocalisation(e.target.value)} />
           </div>
           <div>
-            <Label>Responsable</Label>
+            <Label>{t("labelResponsable")}</Label>
             <select
               className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
               value={responsableId}
               onChange={(e) => setResponsableId(e.target.value)}
             >
-              <option value="">—</option>
+              <option value="">{tc("emDash")}</option>
               {salaries.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.prenom} {s.nom}
@@ -151,7 +154,7 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
             </select>
           </div>
           <div>
-            <Label>Description</Label>
+            <Label>{t("labelDescription")}</Label>
             <textarea
               className="flex min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
               value={description}
@@ -160,10 +163,10 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={onClose}>
-              Annuler
+              {tc("cancel")}
             </Button>
             <Button type="submit" disabled={pending}>
-              Enregistrer
+              {tc("save")}
             </Button>
           </div>
         </form>

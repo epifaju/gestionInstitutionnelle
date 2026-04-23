@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Bar,
   BarChart,
@@ -21,16 +22,13 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import { creerBudget, getBudget, modifierLigneBudget, validerBudget } from "@/services/budget.service";
 import { listCategories } from "@/services/finance.service";
 
 function n(s: string | number) {
   const x = typeof s === "number" ? s : parseFloat(String(s));
   return Number.isFinite(x) ? x : 0;
-}
-
-function fmtEur(v: number) {
-  return new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" }).format(v);
 }
 
 function statutBadge(s: string): "success" | "muted" | "warning" {
@@ -40,6 +38,9 @@ function statutBadge(s: string): "success" | "muted" | "warning" {
 }
 
 export default function BudgetPage() {
+  const t = useTranslations("Budget");
+  const tc = useTranslations("Common");
+  const localeTag = intlLocaleTag(useLocale());
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const isAdmin = user?.role === "ADMIN";
@@ -77,8 +78,8 @@ export default function BudgetPage() {
   const chartData = useMemo(() => {
     return lignesTab.map((l) => ({
       cat: l.categorieLibelle,
-      Prévu: n(l.montantPrevu),
-      Réalisé: n(l.montantRealise),
+      planned: n(l.montantPrevu),
+      actual: n(l.montantRealise),
     }));
   }, [lignesTab]);
 
@@ -110,7 +111,7 @@ export default function BudgetPage() {
           lignes.push({ categorieId: c.id, type: "RECETTE", montantPrevu: m });
         }
       }
-      if (lignes.length === 0) throw new Error("Aucune ligne");
+      if (lignes.length === 0) throw new Error(t("createNoLines"));
       return creerBudget({ annee, lignes, notes: notes || null });
     },
     onSuccess: () => {
@@ -154,11 +155,11 @@ export default function BudgetPage() {
     if (axios.isAxiosError(err)) {
       const data = err.response?.data as { code?: string; message?: string } | undefined;
       if (data?.code === "BUDGET_BROUILLON_EXISTE") {
-        return "Un budget brouillon existe déjà pour cette année. Validez-le ou supprimez-le avant de réviser.";
+        return t("errorDraftExists");
       }
     }
-    return "Vérifiez les montants ou l’unicité du budget.";
-  }, [mutCreer.error, mutCreer.isError]);
+    return t("errorGeneric");
+  }, [mutCreer.error, mutCreer.isError, t]);
 
   function ouvrirRevision() {
     if (!budget) return;
@@ -183,16 +184,20 @@ export default function BudgetPage() {
     setCreateOpen(true);
   }
 
+  function fmtMoney(v: number) {
+    return new Intl.NumberFormat(localeTag, { style: "currency", currency: "EUR" }).format(v);
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Budget</h1>
-          <p className="mt-1 text-sm text-slate-600">Suivi prévisionnel et réalisé par catégorie.</p>
+          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
+          <p className="mt-1 text-sm text-slate-600">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Label className="sr-only" htmlFor="annee">
-            Année
+            {tc("year")}
           </Label>
           <select
             id="annee"
@@ -219,10 +224,10 @@ export default function BudgetPage() {
       {!isLoading && !budget && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-slate-600">Aucun budget pour cette année.</p>
+            <p className="text-slate-600">{t("empty")}</p>
             {canEdit && (
               <Button className="mt-4" onClick={ouvrirCreation}>
-                + Créer un budget
+                {t("create")}
               </Button>
             )}
           </CardContent>
@@ -235,12 +240,12 @@ export default function BudgetPage() {
             <Badge variant={statutBadge(budget.statut)}>{budget.statut}</Badge>
             {isAdmin && budget.statut === "BROUILLON" && (
               <Button size="sm" onClick={() => mutValider.mutate()} disabled={mutValider.isPending}>
-                Valider
+                {tc("validate")}
               </Button>
             )}
             {canEdit && budget.statut === "VALIDE" && (
               <Button size="sm" variant="outline" onClick={ouvrirRevision}>
-                Réviser le budget
+                {t("revise")}
               </Button>
             )}
           </div>
@@ -255,7 +260,7 @@ export default function BudgetPage() {
               }`}
               onClick={() => setTab("DEPENSE")}
             >
-              Dépenses
+              {t("tabDepenses")}
             </button>
             <button
               type="button"
@@ -266,24 +271,24 @@ export default function BudgetPage() {
               }`}
               onClick={() => setTab("RECETTE")}
             >
-              Recettes
+              {t("tabRecettes")}
             </button>
           </div>
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Détail par ligne</CardTitle>
+              <CardTitle className="text-base">{t("detailTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Catégorie</TableHead>
-                    <TableHead className="text-right">Prévu</TableHead>
-                    <TableHead className="text-right">Réalisé</TableHead>
-                    <TableHead className="text-right">Écart</TableHead>
-                    <TableHead className="text-right">% Exécution</TableHead>
-                    <TableHead className="w-40">Progression</TableHead>
+                    <TableHead>{t("thCategorie")}</TableHead>
+                    <TableHead className="text-right">{t("thPrevu")}</TableHead>
+                    <TableHead className="text-right">{t("thRealise")}</TableHead>
+                    <TableHead className="text-right">{t("thEcart")}</TableHead>
+                    <TableHead className="text-right">{t("thExecutionPct")}</TableHead>
+                    <TableHead className="w-40">{t("thProgression")}</TableHead>
                     {budget.statut === "BROUILLON" && canEdit && <TableHead />}
                   </TableRow>
                 </TableHeader>
@@ -291,9 +296,9 @@ export default function BudgetPage() {
                   {lignesTab.map((l) => (
                     <TableRow key={l.id}>
                       <TableCell className="font-medium">{l.categorieLibelle}</TableCell>
-                      <TableCell className="text-right tabular-nums">{fmtEur(n(l.montantPrevu))}</TableCell>
-                      <TableCell className="text-right tabular-nums">{fmtEur(n(l.montantRealise))}</TableCell>
-                      <TableCell className="text-right tabular-nums">{fmtEur(n(l.ecart))}</TableCell>
+                      <TableCell className="text-right tabular-nums">{fmtMoney(n(l.montantPrevu))}</TableCell>
+                      <TableCell className="text-right tabular-nums">{fmtMoney(n(l.montantRealise))}</TableCell>
+                      <TableCell className="text-right tabular-nums">{fmtMoney(n(l.ecart))}</TableCell>
                       <TableCell className="text-right tabular-nums">{n(l.tauxExecutionPct).toFixed(1)} %</TableCell>
                       <TableCell>
                         <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
@@ -317,7 +322,7 @@ export default function BudgetPage() {
                           >
                             <Input name="montant" defaultValue={l.montantPrevu} className="h-8 w-24 text-right" />
                             <Button type="submit" size="sm" variant="secondary" className="h-8">
-                              OK
+                              {t("saveLine")}
                             </Button>
                           </form>
                         </TableCell>
@@ -331,7 +336,9 @@ export default function BudgetPage() {
 
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Prévu vs réalisé ({tab === "DEPENSE" ? "dépenses" : "recettes"})</CardTitle>
+              <CardTitle className="text-base">
+                {t("chartTitle", { scope: tab === "DEPENSE" ? t("scopeDepenses") : t("scopeRecettes") })}
+              </CardTitle>
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -339,10 +346,10 @@ export default function BudgetPage() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="cat" tick={{ fontSize: 10 }} interval={0} angle={-25} textAnchor="end" height={80} />
                   <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v) => fmtEur(typeof v === "number" ? v : Number(v))} />
+                  <Tooltip formatter={(v) => fmtMoney(typeof v === "number" ? v : Number(v))} />
                   <Legend />
-                  <Bar dataKey="Prévu" fill={tab === "DEPENSE" ? "#fda4af" : "#6ee7b7"} />
-                  <Bar dataKey="Réalisé" fill={tab === "DEPENSE" ? "#f43f5e" : "#10b981"} />
+                  <Bar dataKey="planned" name={t("legendPrevu")} fill={tab === "DEPENSE" ? "#fda4af" : "#6ee7b7"} />
+                  <Bar dataKey="actual" name={t("legendRealise")} fill={tab === "DEPENSE" ? "#f43f5e" : "#10b981"} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -354,22 +361,22 @@ export default function BudgetPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
             <h2 className="text-lg font-semibold">
-              {createMode === "revise" ? `Révision du budget ${annee}` : `Nouveau budget ${annee}`}
+              {createMode === "revise" ? t("modalTitleRevise", { year: annee }) : t("modalTitleCreate", { year: annee })}
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              {createMode === "revise"
-                ? "Modifiez les montants prévus par catégorie (EUR), puis créez un nouveau brouillon."
-                : "Saisissez un montant prévu par catégorie (EUR)."}
+              {createMode === "revise" ? t("modalHintRevise") : t("modalHintCreate")}
             </p>
             <div className="mt-4 space-y-4">
               <div>
-                <Label>Notes</Label>
-                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Optionnel" />
+                <Label>{t("notesLabel")}</Label>
+                <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("optional")} />
               </div>
               <div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-medium text-rose-700">Dépenses</p>
-                  <p className="text-xs text-slate-500">Total prévu: {fmtEur(totalDepPrevu)}</p>
+                  <p className="text-sm font-medium text-rose-700">{t("tabDepenses")}</p>
+                  <p className="text-xs text-slate-500">
+                    {t("totalPrevu", { total: fmtMoney(totalDepPrevu) })}
+                  </p>
                 </div>
                 <div className="mt-2 space-y-2">
                   {depCats.map((c) => (
@@ -393,8 +400,10 @@ export default function BudgetPage() {
               </div>
               <div>
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-medium text-emerald-700">Recettes</p>
-                  <p className="text-xs text-slate-500">Total prévu: {fmtEur(totalRecPrevu)}</p>
+                  <p className="text-sm font-medium text-emerald-700">{t("tabRecettes")}</p>
+                  <p className="text-xs text-slate-500">
+                    {t("totalPrevu", { total: fmtMoney(totalRecPrevu) })}
+                  </p>
                 </div>
                 <div className="mt-2 space-y-2">
                   {recCats.map((c) => (
@@ -419,13 +428,13 @@ export default function BudgetPage() {
             </div>
             <div className="mt-6 flex justify-end gap-2">
               <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                Annuler
+                {tc("cancel")}
               </Button>
               <Button
                 onClick={() => mutCreer.mutate()}
                 disabled={mutCreer.isPending}
               >
-                Créer
+                {tc("create")}
               </Button>
             </div>
             {mutCreer.isError && (

@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store";
@@ -19,6 +20,8 @@ function JsonCell({ value }: { value: unknown }) {
 }
 
 export default function AdminAuditPage() {
+  const t = useTranslations("Admin.audit");
+  const tc = useTranslations("Common");
   const user = useAuthStore((s) => s.user);
   const [page, setPage] = useState(0);
 
@@ -31,7 +34,7 @@ export default function AdminAuditPage() {
   if (user?.role !== "ADMIN") {
     return (
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        Accès réservé aux administrateurs.
+        {t("restricted")}
       </div>
     );
   }
@@ -41,34 +44,32 @@ export default function AdminAuditPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Journal d’audit</h1>
-        <p className="text-sm text-slate-600">
-          Piste des actions sensibles (créations / mises à jour métier) pour la conformité et le contrôle interne.
-        </p>
+        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
+        <p className="text-sm text-slate-600">{t("subtitle")}</p>
       </div>
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="whitespace-nowrap">Date (UTC)</TableHead>
-              <TableHead>Action</TableHead>
-              <TableHead>Entité</TableHead>
-              <TableHead>Utilisateur</TableHead>
-              <TableHead className="whitespace-nowrap">IP</TableHead>
-              <TableHead>User-Agent</TableHead>
-              <TableHead>Avant</TableHead>
-              <TableHead>Après</TableHead>
+              <TableHead className="whitespace-nowrap">{t("thDateUtc")}</TableHead>
+              <TableHead>{t("thAction")}</TableHead>
+              <TableHead>{t("thEntite")}</TableHead>
+              <TableHead>{t("thUtilisateur")}</TableHead>
+              <TableHead className="whitespace-nowrap">{t("thIp")}</TableHead>
+              <TableHead>{t("thUserAgent")}</TableHead>
+              <TableHead>{t("thAvant")}</TableHead>
+              <TableHead>{t("thApres")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={8}>Chargement…</TableCell>
+                <TableCell colSpan={8}>{tc("loading")}</TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8}>Aucune entrée</TableCell>
+                <TableCell colSpan={8}>{t("empty")}</TableCell>
               </TableRow>
             ) : (
               rows.map((log) => (
@@ -81,10 +82,10 @@ export default function AdminAuditPage() {
                       <span className="block text-xs text-slate-500">{log.entiteId}</span>
                     ) : null}
                   </TableCell>
-                  <TableCell className="align-top text-xs">{log.utilisateurEmail ?? log.utilisateurId ?? "—"}</TableCell>
-                  <TableCell className="align-top text-xs text-slate-600">{log.ipAddress ?? "—"}</TableCell>
+                  <TableCell className="align-top text-xs">{log.utilisateurEmail ?? log.utilisateurId ?? tc("emDash")}</TableCell>
+                  <TableCell className="align-top text-xs text-slate-600">{log.ipAddress ?? tc("emDash")}</TableCell>
                   <TableCell className="align-top max-w-[12rem] truncate text-xs text-slate-600" title={log.userAgent ?? undefined}>
-                    {log.userAgent ?? "—"}
+                    {log.userAgent ?? tc("emDash")}
                   </TableCell>
                   <TableCell className="align-top">
                     <JsonCell value={log.avant} />
@@ -102,14 +103,14 @@ export default function AdminAuditPage() {
       {data && data.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm text-slate-600">
           <span>
-            Page {data.page + 1} / {data.totalPages}
+            {tc("page", { current: data.page + 1, total: data.totalPages })}
           </span>
           <div className="flex gap-2">
             <Button type="button" variant="outline" size="sm" disabled={data.page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
-              Précédent
+              {tc("previous")}
             </Button>
             <Button type="button" variant="outline" size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-              Suivant
+              {tc("next")}
             </Button>
           </div>
         </div>

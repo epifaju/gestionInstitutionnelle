@@ -2,6 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type Resolver } from "react-hook-form";
+import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,27 +12,39 @@ import type { SalarieRequest } from "@/lib/types/rh";
 
 const emptyStr = (v: unknown) => (v == null ? "" : String(v));
 
-/** RHF peut envoyer `undefined` sur champs jamais touchés — normaliser avant `z.string()`. */
-const schema = z.object({
-  nom: z.preprocess(emptyStr, z.string().min(1, "Requis")),
-  prenom: z.preprocess(emptyStr, z.string().min(1, "Requis")),
-  email: z.preprocess((v) => emptyStr(v).trim(), z.string().refine((s) => s === "" || z.string().email().safeParse(s).success, "Email invalide")),
-  telephone: z.preprocess(emptyStr, z.string()),
-  poste: z.preprocess(emptyStr, z.string().min(1, "Requis")),
-  service: z.preprocess(emptyStr, z.string().min(1, "Requis")),
-  dateEmbauche: z.preprocess(emptyStr, z.string().min(1, "Requis")),
-  typeContrat: z.preprocess(emptyStr, z.string().min(1, "Requis")),
-  nationalite: z.preprocess(emptyStr, z.string()),
-  adresse: z.preprocess(emptyStr, z.string()),
-  montantBrut: z.coerce.number().positive({ message: "Montant invalide" }),
-  montantNet: z.coerce.number().positive({ message: "Montant invalide" }),
-  devise: z.preprocess((v) => {
-    const s = emptyStr(v).trim().toUpperCase();
-    return s === "" ? "EUR" : s;
-  }, z.string().length(3, "3 lettres (ex. EUR)")),
-});
+type Translator = (
+  key: string,
+  values?: Record<string, string | number | Date>
+) => string;
 
-export type SalarieFormValues = z.infer<typeof schema>;
+/** RHF peut envoyer `undefined` sur champs jamais touchés — normaliser avant `z.string()`. */
+const makeSchema = (tv: Translator) =>
+  z.object({
+    nom: z.preprocess(emptyStr, z.string().min(1, tv("required"))),
+    prenom: z.preprocess(emptyStr, z.string().min(1, tv("required"))),
+    email: z.preprocess(
+      (v) => emptyStr(v).trim(),
+      z.string().refine((s) => s === "" || z.string().email().safeParse(s).success, tv("email"))
+    ),
+    telephone: z.preprocess(emptyStr, z.string()),
+    poste: z.preprocess(emptyStr, z.string().min(1, tv("required"))),
+    service: z.preprocess(emptyStr, z.string().min(1, tv("required"))),
+    dateEmbauche: z.preprocess(emptyStr, z.string().min(1, tv("required"))),
+    typeContrat: z.preprocess(emptyStr, z.string().min(1, tv("required"))),
+    nationalite: z.preprocess(emptyStr, z.string()),
+    adresse: z.preprocess(emptyStr, z.string()),
+    montantBrut: z.coerce.number().positive({ message: tv("positive") }),
+    montantNet: z.coerce.number().positive({ message: tv("positive") }),
+    devise: z.preprocess(
+      (v) => {
+        const s = emptyStr(v).trim().toUpperCase();
+        return s === "" ? "EUR" : s;
+      },
+      z.string().length(3, tv("currency3Letters", { example: "EUR" }))
+    ),
+  });
+
+export type SalarieFormValues = z.infer<ReturnType<typeof makeSchema>>;
 
 function toRequest(v: SalarieFormValues): SalarieRequest {
   const em = v.email?.trim();
@@ -54,7 +68,7 @@ function toRequest(v: SalarieFormValues): SalarieRequest {
 export function SalarieForm({
   defaultValues,
   onSubmit,
-  submitLabel = "Enregistrer",
+  submitLabel,
   salaireEditable = true,
 }: {
   defaultValues?: Partial<SalarieFormValues>;
@@ -63,9 +77,17 @@ export function SalarieForm({
   /** En édition, le salaire doit passer par "Nouvelle grille" (PRD). */
   salaireEditable?: boolean;
 }) {
+  const tf = useTranslations("RH.salaries.form");
+  const tv = useTranslations("Validation");
+  const tc = useTranslations("Common");
+
+  const schema = useMemo(() => makeSchema(tv), [tv]);
+
   const mergedDefaults = defaultValues
     ? Object.fromEntries(Object.entries(defaultValues).filter(([, v]) => v !== undefined))
     : {};
+
+  const resolvedSubmit = submitLabel ?? tc("save");
 
   const form = useForm<SalarieFormValues>({
     resolver: zodResolver(schema) as Resolver<SalarieFormValues>,
@@ -95,68 +117,68 @@ export function SalarieForm({
       })}
     >
       <div>
-        <Label htmlFor="nom">Nom</Label>
+        <Label htmlFor="nom">{tf("nom")}</Label>
         <Input id="nom" {...form.register("nom")} />
         {form.formState.errors.nom && (
           <p className="text-xs text-red-600">{form.formState.errors.nom.message}</p>
         )}
       </div>
       <div>
-        <Label htmlFor="prenom">Prénom</Label>
+        <Label htmlFor="prenom">{tf("prenom")}</Label>
         <Input id="prenom" {...form.register("prenom")} />
       </div>
       <div>
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{tf("email")}</Label>
         <Input id="email" type="email" {...form.register("email")} />
       </div>
       <div>
-        <Label htmlFor="telephone">Téléphone</Label>
+        <Label htmlFor="telephone">{tf("telephone")}</Label>
         <Input id="telephone" {...form.register("telephone")} />
       </div>
       <div>
-        <Label htmlFor="poste">Poste</Label>
+        <Label htmlFor="poste">{tf("poste")}</Label>
         <Input id="poste" {...form.register("poste")} />
       </div>
       <div>
-        <Label htmlFor="service">Service</Label>
+        <Label htmlFor="service">{tf("service")}</Label>
         <Input id="service" {...form.register("service")} />
       </div>
       <div>
-        <Label htmlFor="dateEmbauche">Date embauche</Label>
+        <Label htmlFor="dateEmbauche">{tf("dateEmbauche")}</Label>
         <Input id="dateEmbauche" type="date" {...form.register("dateEmbauche")} />
       </div>
       <div>
-        <Label htmlFor="typeContrat">Type contrat</Label>
+        <Label htmlFor="typeContrat">{tf("typeContrat")}</Label>
         <Input id="typeContrat" {...form.register("typeContrat")} />
       </div>
       <div>
-        <Label htmlFor="nationalite">Nationalité</Label>
+        <Label htmlFor="nationalite">{tf("nationalite")}</Label>
         <Input id="nationalite" {...form.register("nationalite")} />
       </div>
       <div className="md:col-span-2">
-        <Label htmlFor="adresse">Adresse</Label>
+        <Label htmlFor="adresse">{tf("adresse")}</Label>
         <Input id="adresse" {...form.register("adresse")} />
       </div>
       <div>
-        <Label htmlFor="montantBrut">Montant brut</Label>
+        <Label htmlFor="montantBrut">{tf("montantBrut")}</Label>
         <Input id="montantBrut" type="number" step="0.01" disabled={!salaireEditable} {...form.register("montantBrut")} />
       </div>
       <div>
-        <Label htmlFor="montantNet">Montant net</Label>
+        <Label htmlFor="montantNet">{tf("montantNet")}</Label>
         <Input id="montantNet" type="number" step="0.01" disabled={!salaireEditable} {...form.register("montantNet")} />
       </div>
       <div>
-        <Label htmlFor="devise">Devise</Label>
+        <Label htmlFor="devise">{tf("devise")}</Label>
         <Input id="devise" maxLength={3} disabled={!salaireEditable} {...form.register("devise")} />
         {!salaireEditable ? (
           <p className="mt-1 text-xs text-slate-500">
-            Pour modifier le salaire, utilisez <span className="font-medium">Nouvelle grille</span> (historique salarial).
+            {tf.rich("salaryEditHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
           </p>
         ) : null}
       </div>
       <div className="md:col-span-2 flex justify-end gap-2 pt-2">
         <Button type="submit" disabled={form.formState.isSubmitting}>
-          {submitLabel}
+          {resolvedSubmit}
         </Button>
       </div>
     </form>

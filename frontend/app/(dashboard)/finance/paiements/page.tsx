@@ -35,21 +35,21 @@ export default function PaiementsPage() {
     () => [
       {
         accessorKey: "datePaiement",
-        header: "Date",
+        header: t("thDate"),
       },
       {
         id: "montant",
-        header: "Montant",
+        header: t("thMontant"),
         cell: ({ row }) => (
           <span>
             {fmt(row.original.montantTotal)} {row.original.devise}
           </span>
         ),
       },
-      { accessorKey: "moyenPaiement", header: "Moyen" },
-      { accessorKey: "compte", header: "Compte", cell: ({ row }) => row.original.compte ?? "—" },
+      { accessorKey: "moyenPaiement", header: t("thMoyen") },
+      { accessorKey: "compte", header: t("thCompte"), cell: ({ row }) => row.original.compte ?? "—" },
     ],
-    []
+    [t]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
@@ -97,10 +97,10 @@ export default function PaiementsPage() {
       {data && data.totalPages > 1 && (
         <div className="flex justify-between text-sm">
           <Button type="button" variant="outline" size="sm" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
-            Précédent
+            {tc("previous")}
           </Button>
           <Button type="button" variant="outline" size="sm" disabled={data.last} onClick={() => setPage((p) => p + 1)}>
-            Suivant
+            {tc("next")}
           </Button>
         </div>
       )}

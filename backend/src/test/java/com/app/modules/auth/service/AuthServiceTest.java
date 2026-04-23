@@ -23,6 +23,8 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -52,6 +54,13 @@ class AuthServiceTest {
     @InjectMocks private AuthService authService;
 
     private final UUID orgId = UUID.fromString("a0000000-0000-0000-0000-000000000001");
+    private final UUID userId = UUID.fromString("b0000000-0000-0000-0000-000000000001");
+
+    private void setSecurityContext(Utilisateur u) {
+        var ud = new com.app.modules.auth.security.CustomUserDetails(u);
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities()));
+    }
 
     @Test
     void login_identifiantsInvalides_refuse_siUserAbsent() {
@@ -171,6 +180,76 @@ class AuthServiceTest {
         verify(passwordResetTokenRepository).save(prt);
         verify(utilisateurRepository).save(u);
         assertThat(u.getPasswordHash()).isEqualTo("encoded");
+    }
+
+    @Test
+    void updateLangue_pt_pt_normaliseVersPtPT_etPersistePtPT() {
+        Utilisateur principal = new Utilisateur();
+        principal.setId(userId);
+        principal.setOrganisationId(orgId);
+        principal.setEmail("x@test.com");
+        principal.setRole(Role.ADMIN);
+        principal.setActif(true);
+        setSecurityContext(principal);
+
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("x@test.com");
+        u.setRole(Role.ADMIN);
+        u.setActif(true);
+        when(utilisateurRepository.findById(userId)).thenReturn(Optional.of(u));
+
+        var out = authService.updateLangue("pt_pt");
+
+        assertThat(u.getLangue()).isEqualTo("pt-PT");
+        assertThat(out.langue()).isEqualTo("pt-PT");
+        verify(utilisateurRepository).save(u);
+        // sync back into CustomUserDetails' underlying utilisateur
+        assertThat(principal.getLangue()).isEqualTo("pt-PT");
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void updateLangue_en_majuscule_enregistreEnMinuscule() {
+        Utilisateur principal = new Utilisateur();
+        principal.setId(userId);
+        principal.setOrganisationId(orgId);
+        principal.setEmail("x@test.com");
+        principal.setRole(Role.ADMIN);
+        principal.setActif(true);
+        setSecurityContext(principal);
+
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("x@test.com");
+        u.setRole(Role.ADMIN);
+        u.setActif(true);
+        when(utilisateurRepository.findById(userId)).thenReturn(Optional.of(u));
+
+        authService.updateLangue("EN");
+
+        assertThat(u.getLangue()).isEqualTo("en");
+        verify(utilisateurRepository).save(u);
+        assertThat(principal.getLangue()).isEqualTo("en");
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void updateLangue_invalide_refuse() {
+        Utilisateur principal = new Utilisateur();
+        principal.setId(userId);
+        principal.setOrganisationId(orgId);
+        principal.setEmail("x@test.com");
+        principal.setRole(Role.ADMIN);
+        principal.setActif(true);
+        setSecurityContext(principal);
+
+        assertThatThrownBy(() -> authService.updateLangue("pt-BR"))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "LANGUE_INVALIDE");
+        SecurityContextHolder.clearContext();
     }
 }
 
