@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppLocale } from "@/lib/locale-context";
 import type { AppLocale } from "@/lib/locale-context";
+import { setLocaleCookie } from "@/lib/locale-cookie";
 
 function syncTokenFromCookie() {
   if (typeof document === "undefined") return;
@@ -48,6 +49,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const logout = useAuthStore((s) => s.logout);
   const { locale, setLocale } = useAppLocale();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   useEffect(() => {
     syncTokenFromCookie();
@@ -85,10 +87,51 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     router.replace("/login");
   }
 
-  function toggleLocale() {
-    const next: AppLocale = locale === "fr" ? "en" : "fr";
+  function changeLocale(next: AppLocale) {
+    setLocaleCookie(next);
     setLocale(next);
   }
+
+  function localeLabel(l: AppLocale) {
+    if (l === "fr") return tc("localeFr");
+    if (l === "en") return tc("localeEn");
+    return tc("localePt");
+  }
+
+  const LanguagePicker = ({ compact }: { compact?: boolean }) => (
+    <div className={compact ? "" : "relative"}>
+      <Button
+        type="button"
+        variant="ghost"
+        size={compact ? "default" : "sm"}
+        className="mb-2 w-full justify-start gap-2"
+        onClick={() => setLanguageOpen((v) => !v)}
+      >
+        <Languages className="h-4 w-4" />
+        {localeLabel(locale)}
+      </Button>
+
+      {languageOpen ? (
+        <div className={compact ? "mb-2 flex flex-col gap-1" : "mb-2 flex flex-col gap-1"}>
+          {(["fr", "en", "pt-PT"] as AppLocale[]).map((l) => (
+            <Button
+              key={l}
+              type="button"
+              variant={locale === l ? "secondary" : "ghost"}
+              size={compact ? "default" : "sm"}
+              className="w-full justify-start"
+              onClick={() => {
+                changeLocale(l);
+                setLanguageOpen(false);
+              }}
+            >
+              {localeLabel(l)}
+            </Button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
 
   const role = user?.role;
   const isAdmin = role === "ADMIN";
@@ -202,10 +245,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           <NavLinks />
         </nav>
         <div className="mt-auto border-t border-slate-100 pt-4">
-          <Button type="button" variant="ghost" size="sm" className="mb-2 w-full justify-start gap-2" onClick={toggleLocale}>
-            <Languages className="h-4 w-4" />
-            {locale === "fr" ? tc("localeEn") : tc("localeFr")}
-          </Button>
+          <LanguagePicker />
           <p className="truncate text-xs text-slate-500">{user?.email}</p>
           <p className="truncate text-xs font-medium text-slate-800">{user?.organisationNom}</p>
           <Button variant="outline" className="mt-3 w-full justify-start gap-2" type="button" onClick={handleLogout}>
@@ -234,10 +274,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               <NavLinks onNavigate={() => setMobileOpen(false)} />
             </nav>
             <div className="mt-auto border-t border-slate-100 pt-4">
-              <Button type="button" variant="ghost" className="mb-2 w-full justify-start gap-2" onClick={toggleLocale}>
-                <Languages className="h-4 w-4" />
-                {locale === "fr" ? tc("localeEn") : tc("localeFr")}
-              </Button>
+              <LanguagePicker compact />
               <Button variant="outline" className="w-full justify-start gap-2" type="button" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
                 {tc("logout")}

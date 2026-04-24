@@ -228,7 +228,7 @@ export default function FinanceCategoriesPage() {
                     <TableCell className="text-right">
                       <div className="inline-flex items-center gap-2">
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(c)}>
-                          Modifier
+                          {tc("modify")}
                         </Button>
                         {c.actif ? (
                           <Button
@@ -238,7 +238,7 @@ export default function FinanceCategoriesPage() {
                             disabled={mutDelete.isPending}
                             onClick={() => openDelete(c)}
                           >
-                            Supprimer
+                            {tc("delete")}
                           </Button>
                         ) : (
                           <Button

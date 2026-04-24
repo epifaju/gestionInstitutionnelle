@@ -241,6 +241,17 @@
       "empty": "No categories yet. Create one above.",
       "yes": "Yes",
       "no": "No"
+    },
+    "paiementModal": {
+      "title": "Payment — {reference}",
+      "remaining": "Remaining: {amount} {currency}",
+      "date": "Date",
+      "method": "Method",
+      "account": "Account",
+      "amount": "Amount ({currency})",
+      "notes": "Notes",
+      "errorInvalidAmount": "Invalid amount",
+      "errorAmountExceedsRemaining": "Amount exceeds remaining"
     }
   },
   "RH": {

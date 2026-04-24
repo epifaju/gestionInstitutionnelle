@@ -231,6 +231,17 @@
       "empty": "Nenhuma categoria. Crie uma acima.",
       "yes": "Sim",
       "no": "Não"
+    },
+    "paiementModal": {
+      "title": "Pagamento — {reference}",
+      "remaining": "Restante: {amount} {currency}",
+      "date": "Data",
+      "method": "Método",
+      "account": "Conta",
+      "amount": "Montante ({currency})",
+      "notes": "Notas",
+      "errorInvalidAmount": "Montante inválido",
+      "errorAmountExceedsRemaining": "Montante superior ao restante"
     }
   },
   "RH": {
