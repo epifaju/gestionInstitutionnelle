@@ -51,6 +51,7 @@ public class FactureService {
     private final UtilisateurRepository utilisateurRepository;
     private final FactureSequenceService factureSequenceService;
     private final TauxChangeService tauxChangeService;
+    private final ExchangeRateService exchangeRateService;
     private final MinioStorageService minioStorageService;
     private final AuditLogService auditLogService;
 
@@ -118,7 +119,7 @@ public class FactureService {
         String reference = "FAC-" + annee + "-" + String.format("%04d", seq);
 
         BigDecimal ttc = calculerTtc(req.montantHt(), req.tva());
-        BigDecimal taux = tauxChangeService.tauxVersEur(orgId, req.devise(), req.dateFacture());
+        BigDecimal taux = exchangeRateService.getTauxALaDate(req.devise(), "EUR", req.dateFacture());
 
         Facture f = new Facture();
         f.setOrganisationId(orgId);

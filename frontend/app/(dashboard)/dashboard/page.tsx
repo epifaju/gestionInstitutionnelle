@@ -28,6 +28,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store";
 import { getDashboard } from "@/services/dashboard.service";
+import { tauxDuJour } from "@/services/devises.service";
 
 function num(s: string | number | undefined) {
   if (s === undefined || s === null) return 0;
@@ -109,6 +110,13 @@ export default function DashboardPage() {
   const td = useTranslations("Dashboard");
   const user = useAuthStore((s) => s.user);
   const { data, isLoading, error } = useQuery({ queryKey: ["rapports", "dashboard"], queryFn: getDashboard });
+  const isEmploye = user?.role === "EMPLOYE";
+  const { data: fx } = useQuery({
+    queryKey: ["devises", "taux-du-jour", "EUR"],
+    queryFn: () => tauxDuJour("EUR"),
+    staleTime: 1000 * 60 * 30,
+    enabled: !isEmploye,
+  });
 
   if (error) {
     return <p className="text-sm text-red-600">{td("loadError")}</p>;
@@ -128,7 +136,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (user?.role === "EMPLOYE") {
+  if (isEmploye) {
     return (
       <div className="space-y-8">
         <div>
@@ -273,6 +281,34 @@ export default function DashboardPage() {
                 </div>
               ))
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Coins className="h-4 w-4" />
+              Taux du jour
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Devise</TableHead>
+                  <TableHead className="text-right">Vers EUR</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {["USD", "GBP", "CHF", "XOF"].map((c) => (
+                  <TableRow key={c}>
+                    <TableCell className="font-medium">{c}</TableCell>
+                    <TableCell className="text-right tabular-nums">{fx ? Number(fx[c] ?? 0).toFixed(6) : "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <p className="mt-2 text-xs text-slate-500">Source: Frankfurter • Cache 4h</p>
           </CardContent>
         </Card>
 

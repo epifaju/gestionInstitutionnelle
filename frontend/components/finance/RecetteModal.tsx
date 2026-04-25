@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DeviseSelector } from "@/components/ui/DeviseSelector";
+import { convertirDevise } from "@/services/devises.service";
 import type { CategorieResponse, RecetteRequest } from "@/lib/types/finance";
 
 export function RecetteModal({
@@ -30,6 +32,8 @@ export function RecetteModal({
   const tc = useTranslations("Common");
 
   const [file, setFile] = useState<File | null>(null);
+  const [convEur, setConvEur] = useState<number | null>(null);
+  const [taux, setTaux] = useState<number | null>(null);
   const [initKey, setInitKey] = useState<string>("");
   const [form, setForm] = useState<RecetteRequest>({
     dateRecette: new Date().toISOString().slice(0, 10),
@@ -56,6 +60,8 @@ export function RecetteModal({
     if (computedInitKey === initKey) return;
     setInitKey(computedInitKey);
     setFile(null);
+    setConvEur(null);
+    setTaux(null);
     if (!initial) {
       setForm({
         dateRecette: new Date().toISOString().slice(0, 10),
@@ -82,6 +88,32 @@ export function RecetteModal({
       categorieId: (initial.categorieId as string | null) ?? f.categorieId,
     }));
   }, [open, initial, computedInitKey, initKey]);
+
+  useEffect(() => {
+    if (!open) return;
+    const d = String(form.devise ?? "EUR").toUpperCase();
+    if (d === "EUR") {
+      setConvEur(null);
+      setTaux(null);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await convertirDevise({
+          montant: Number(form.montant) || 0,
+          de: d,
+          vers: "EUR",
+          date: form.dateRecette || undefined,
+        });
+        setConvEur(res.resultat);
+        setTaux(res.taux);
+      } catch {
+        setConvEur(null);
+        setTaux(null);
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [open, form.montant, form.devise, form.dateRecette]);
 
   if (!open) return null;
 
@@ -123,9 +155,19 @@ export function RecetteModal({
             </div>
             <div>
               <Label>{t("currency")}</Label>
-              <Input value={form.devise} maxLength={3} onChange={(e) => setForm((f) => ({ ...f, devise: e.target.value }))} />
+              <DeviseSelector value={form.devise} onChange={(v) => setForm((f) => ({ ...f, devise: v }))} />
             </div>
           </div>
+          {String(form.devise ?? "EUR").toUpperCase() !== "EUR" ? (
+            <p className="text-xs text-slate-600">
+              ≈ <span className="font-medium text-slate-900">{convEur != null ? convEur.toFixed(2) : "—"}</span> EUR{" "}
+              {taux != null ? (
+                <span className="text-slate-500">
+                  (taux: {taux.toFixed(6)} · {form.dateRecette || "jour"})
+                </span>
+              ) : null}
+            </p>
+          ) : null}
           <div>
             <Label>{t("description")}</Label>
             <Input value={form.description ?? ""} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />

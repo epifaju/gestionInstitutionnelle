@@ -5,7 +5,8 @@ COPY src ./src
 RUN mvn -q -DskipTests package
 
 FROM eclipse-temurin:21-jre-alpine
-RUN apk add --no-cache wget \
+RUN apk add --no-cache wget ca-certificates \
+    && update-ca-certificates \
     && addgroup -g 1001 app \
     && adduser -D -u 1001 -G app app \
     && mkdir -p /var/log/gestion \

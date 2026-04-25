@@ -123,6 +123,27 @@ public class CongeService {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public Page<CongeResponse> listMesConges(UUID orgId, UUID userId, Pageable pageable) {
+        UUID salarieId = salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)
+                .map(Salarie::getId)
+                .orElseThrow(() -> BusinessException.notFound("SALARIE_NON_LIE"));
+        return listConges(orgId, null, null, null, null, null, salarieId, pageable);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public DroitsCongesDto getMesDroitsConges(UUID orgId, UUID userId) {
+        UUID salarieId = salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)
+                .map(Salarie::getId)
+                .orElseThrow(() -> BusinessException.notFound("SALARIE_NON_LIE"));
+        int annee = LocalDate.now().getYear();
+        return droitsCongesRepository.findBySalarie_IdAndAnnee(salarieId, annee)
+                .map(d -> new DroitsCongesDto(d.getAnnee(), d.getJoursDroit(), d.getJoursPris(), d.getJoursRestants()))
+                .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public CongeResponse soumettre(CongeRequest req, boolean draft, UUID orgId, UUID auteurId) {
         UUID userId = currentUserId();

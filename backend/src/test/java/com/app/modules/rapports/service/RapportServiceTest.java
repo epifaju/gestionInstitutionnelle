@@ -91,8 +91,10 @@ class RapportServiceTest {
                         BigDecimal.ZERO,
                         BigDecimal.ZERO,
                         "EUR",
-                        0,
-                        0,
+                        0L,
+                        0L,
+                        BigDecimal.ZERO,
+                        List.of(),
                         List.of(),
                         List.of());
         when(statsService.getStatsMensuelles(orgId, 2026, 4)).thenReturn(stats);
@@ -114,8 +116,10 @@ class RapportServiceTest {
                         BigDecimal.ZERO,
                         BigDecimal.ZERO,
                         "EUR",
-                        0,
-                        0,
+                        0L,
+                        0L,
+                        BigDecimal.ZERO,
+                        List.of(),
                         List.of(),
                         List.of());
         when(statsService.getStatsMensuelles(eq(orgId), eq(2026), anyInt())).thenReturn(st);
@@ -143,8 +147,10 @@ class RapportServiceTest {
                         new BigDecimal("20"),
                         new BigDecimal("10"),
                         "EUR",
-                        0,
-                        0,
+                        0L,
+                        0L,
+                        BigDecimal.ZERO,
+                        List.of(),
                         List.of(),
                         List.of());
         when(statsService.getStatsMensuelles(eq(orgId), anyInt(), anyInt())).thenReturn(st);

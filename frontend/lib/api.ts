@@ -102,8 +102,8 @@ api.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        if (code === "TAUX_CHANGE_ABSENT") {
-          toast.error(data?.message ?? "Taux de change manquant — renseignez-le dans Finance → Taux de change (/finance/taux-change).");
+        if (code === "TAUX_CHANGE_ABSENT" || code === "TAUX_CHANGE_INDISPONIBLE") {
+          toast.error(data?.message ?? "Impossible de récupérer le taux de change. Réessayez dans quelques instants.");
           return Promise.reject(error);
         }
         let msg = data?.message ?? error.message;

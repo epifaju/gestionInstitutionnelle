@@ -39,7 +39,7 @@ public class RecetteService {
     private final RecetteRepository recetteRepository;
     private final CategorieDepenseRepository categorieDepenseRepository;
     private final UtilisateurRepository utilisateurRepository;
-    private final TauxChangeService tauxChangeService;
+    private final ExchangeRateService exchangeRateService;
     private final MinioStorageService minioStorageService;
     private final AuditLogService auditLogService;
 
@@ -69,7 +69,7 @@ public class RecetteService {
     @Transactional
     public RecetteResponse creer(RecetteRequest req, MultipartFile justificatif, UUID orgId, UUID userId) throws Exception {
         TypeRecette tr = TypeRecette.valueOf(req.typeRecette().trim().toUpperCase());
-        BigDecimal taux = tauxChangeService.tauxVersEur(orgId, req.devise(), req.dateRecette());
+        BigDecimal taux = exchangeRateService.getTauxALaDate(req.devise(), "EUR", req.dateRecette());
 
         Recette r = new Recette();
         r.setOrganisationId(orgId);
@@ -126,7 +126,7 @@ public class RecetteService {
         Map<String, Object> avant = snapshot(r);
 
         TypeRecette tr = TypeRecette.valueOf(req.typeRecette().trim().toUpperCase());
-        BigDecimal taux = tauxChangeService.tauxVersEur(orgId, req.devise(), req.dateRecette());
+        BigDecimal taux = exchangeRateService.getTauxALaDate(req.devise(), "EUR", req.dateRecette());
 
         r.setDateRecette(req.dateRecette());
         r.setMontant(req.montant());

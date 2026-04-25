@@ -104,6 +104,22 @@ public class SalarieService {
         return toResponse(s, orgId);
     }
 
+    /**
+     * Version stricte pour le portail employé: uniquement via le lien utilisateur_id.
+     * (Pas de fallback email)
+     */
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public SalarieResponse getMeStrict(UUID orgId, UUID userId) {
+        Salarie s = salarieRepository
+                .findByOrganisationIdAndUtilisateur_Id(orgId, userId)
+                .orElse(null);
+        if (s == null) {
+            throw BusinessException.notFound("SALARIE_NON_LIE");
+        }
+        return toResponse(s, orgId);
+    }
+
     @PreAuthorize("hasAnyRole('RH','ADMIN')")
     @Transactional
     public SalarieResponse creer(SalarieRequest req, UUID orgId) {

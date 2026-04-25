@@ -50,6 +50,10 @@ function hasRoleAccess(pathname: string, role: string): boolean {
     return isAdmin || ["FINANCIER", "RH", "LOGISTIQUE"].includes(role);
   }
 
+  if (pathname === "/employe" || pathname.startsWith("/employe/")) {
+    return role === "EMPLOYE" || role === "RH" || role === "ADMIN";
+  }
+
   if (pathname.startsWith("/dashboard/admin")) {
     return isAdmin;
   }
@@ -72,6 +76,7 @@ function isProtectedPath(pathname: string): boolean {
   if (pathname === "/budget" || pathname.startsWith("/budget/")) return true;
   if (pathname === "/inventaire" || pathname.startsWith("/inventaire/")) return true;
   if (pathname === "/rapports" || pathname.startsWith("/rapports/")) return true;
+  if (pathname === "/employe" || pathname.startsWith("/employe/")) return true;
   return false;
 }
 
@@ -116,5 +121,7 @@ export const config = {
     "/inventaire/:path*",
     "/rapports",
     "/rapports/:path*",
+    "/employe",
+    "/employe/:path*",
   ],
 };

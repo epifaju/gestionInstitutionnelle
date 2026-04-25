@@ -24,6 +24,10 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 12MB
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=4h
 
 server:
   port: 8080

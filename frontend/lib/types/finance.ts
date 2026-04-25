@@ -103,6 +103,8 @@ export type StatsResponse = {
   devise: string;
   nbFactures: number;
   nbFacturesEnAttente: number;
+  gainPerteChange: string | number;
+  repartitionDevises: { devise: string; montantOriginal: string | number; montantEur: string | number }[];
   depensesParCategorie: { categorie: string; montant: string | number }[];
   recettesParCategorie: { categorie: string; montant: string | number }[];
 };

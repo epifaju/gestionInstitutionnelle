@@ -1,0 +1,12 @@
+{
+  "name": "Mon Espace — Gestion Institutionnelle",
+  "short_name": "MonEspace",
+  "start_url": "/employe",
+  "display": "standalone",
+  "background_color": "#1B3A5C",
+  "theme_color": "#2E75B6",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
+

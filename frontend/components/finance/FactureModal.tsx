@@ -8,6 +8,8 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { DeviseSelector } from "@/components/ui/DeviseSelector";
+import { convertirDevise } from "@/services/devises.service";
 import type { CategorieResponse, FactureRequest, FactureResponse } from "@/lib/types/finance";
 
 const schema = z.object({
@@ -45,6 +47,8 @@ export function FactureModal({
   const tc = useTranslations("Common");
 
   const [file, setFile] = useState<File | null>(null);
+  const [convEur, setConvEur] = useState<number | null>(null);
+  const [taux, setTaux] = useState<number | null>(null);
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -59,6 +63,8 @@ export function FactureModal({
     },
   });
   const [ht, tva] = useWatch({ control: form.control, name: ["montantHt", "tva"] });
+  const devise = useWatch({ control: form.control, name: "devise" });
+  const dateFacture = useWatch({ control: form.control, name: "dateFacture" });
   const ttc = calcTtc(Number(ht) || 0, Number(tva) || 0);
   const isEdit = Boolean(initialFacture);
 
@@ -66,6 +72,8 @@ export function FactureModal({
     if (!open) {
       form.reset();
       setFile(null);
+      setConvEur(null);
+      setTaux(null);
     }
   }, [open, form]);
 
@@ -82,6 +90,8 @@ export function FactureModal({
       notes: "",
     });
     setFile(null);
+    setConvEur(null);
+    setTaux(null);
   }, [open, initialFacture, form]);
 
   useEffect(() => {
@@ -97,7 +107,35 @@ export function FactureModal({
       notes: "",
     });
     setFile(null);
+    setConvEur(null);
+    setTaux(null);
   }, [open, initialFacture, form]);
+
+  useEffect(() => {
+    if (!open) return;
+    const d = String(devise ?? "EUR").toUpperCase();
+    if (d === "EUR") {
+      setConvEur(null);
+      setTaux(null);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      try {
+        const res = await convertirDevise({
+          montant: ttc,
+          de: d,
+          vers: "EUR",
+          date: dateFacture || undefined,
+        });
+        setConvEur(res.resultat);
+        setTaux(res.taux);
+      } catch {
+        setConvEur(null);
+        setTaux(null);
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [open, devise, ttc, dateFacture]);
 
   if (!open) return null;
 
@@ -148,9 +186,19 @@ export function FactureModal({
           <p className="text-sm text-slate-600">
             {t("ttcCalculated")} : <span className="font-semibold text-slate-900">{ttc.toFixed(2)}</span>
           </p>
+          {String(devise ?? "EUR").toUpperCase() !== "EUR" ? (
+            <p className="text-xs text-slate-600">
+              ≈ <span className="font-medium text-slate-900">{convEur != null ? convEur.toFixed(2) : "—"}</span> EUR{" "}
+              {taux != null ? (
+                <span className="text-slate-500">
+                  (taux: {taux.toFixed(6)} · {dateFacture || "jour"})
+                </span>
+              ) : null}
+            </p>
+          ) : null}
           <div>
             <Label>{t("currency")}</Label>
-            <Input maxLength={3} {...form.register("devise")} />
+            <DeviseSelector value={String(devise ?? "EUR")} onChange={(v) => form.setValue("devise", v)} />
           </div>
           <div>
             <Label>{t("category")}</Label>

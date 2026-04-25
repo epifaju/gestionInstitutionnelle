@@ -1,6 +1,7 @@
 package com.app.modules.finance.service;
 
 import com.app.modules.finance.dto.CategorieMontantDto;
+import com.app.modules.finance.dto.DeviseRepartitionDto;
 import com.app.modules.finance.dto.StatsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,7 +9,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -16,6 +20,7 @@ import java.util.UUID;
 public class StatsService {
 
     private final JdbcTemplate jdbcTemplate;
+    private final ExchangeRateService exchangeRateService;
 
     @Transactional(readOnly = true)
     public StatsResponse getStatsMensuelles(UUID orgId, int annee, int mois) {
@@ -113,6 +118,63 @@ public class StatsService {
                         mois);
 
         BigDecimal solde = totalRecettes.subtract(totalDepenses);
+
+        // FX enrichment: gain/loss vs today's rate + currency repartition
+        LocalDate start = LocalDate.of(annee, mois, 1);
+        LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+        List<DeviseRepartitionDto> repartition =
+                jdbcTemplate.query(
+                        """
+                                SELECT devise,
+                                       COALESCE(SUM(montant_original), 0) AS montant_original,
+                                       COALESCE(SUM(montant_eur), 0) AS montant_eur
+                                FROM (
+                                    SELECT f.devise AS devise,
+                                           SUM(f.montant_ttc) AS montant_original,
+                                           SUM(f.montant_ttc * f.taux_change_eur) AS montant_eur
+                                    FROM factures f
+                                    WHERE f.organisation_id = ?
+                                      AND f.devise <> 'EUR'
+                                      AND f.date_facture BETWEEN ? AND ?
+                                      AND f.statut IN ('A_PAYER', 'PAYE')
+                                    GROUP BY f.devise
+                                    UNION ALL
+                                    SELECT r.devise AS devise,
+                                           SUM(r.montant) AS montant_original,
+                                           SUM(r.montant * r.taux_change_eur) AS montant_eur
+                                    FROM recettes r
+                                    WHERE r.organisation_id = ?
+                                      AND r.devise <> 'EUR'
+                                      AND r.date_recette BETWEEN ? AND ?
+                                    GROUP BY r.devise
+                                ) x
+                                GROUP BY devise
+                                ORDER BY devise
+                                """,
+                        (rs, rowNum) ->
+                                new DeviseRepartitionDto(
+                                        rs.getString("devise"),
+                                        rs.getBigDecimal("montant_original"),
+                                        rs.getBigDecimal("montant_eur")),
+                        orgId,
+                        start,
+                        end,
+                        orgId,
+                        start,
+                        end);
+
+        BigDecimal gainPerteChange = BigDecimal.ZERO;
+        for (DeviseRepartitionDto d : repartition) {
+            String devise = d.devise() == null ? "EUR" : d.devise().trim().toUpperCase(Locale.ROOT);
+            if ("EUR".equals(devise)) continue;
+            BigDecimal tauxActuel = exchangeRateService.getTauxDuJour(devise, "EUR");
+            BigDecimal eurAuTauxActuel =
+                    d.montantOriginal().multiply(tauxActuel).setScale(2, RoundingMode.HALF_UP);
+            // applied (stored) minus current
+            gainPerteChange = gainPerteChange.add(d.montantEur().subtract(eurAuTauxActuel));
+        }
+        gainPerteChange = gainPerteChange.setScale(2, RoundingMode.HALF_UP);
+
         return new StatsResponse(
                 annee,
                 mois,
@@ -122,6 +184,8 @@ public class StatsService {
                 "EUR",
                 nbFactures != null ? nbFactures : 0L,
                 nbFacturesEnAttente != null ? nbFacturesEnAttente : 0L,
+                gainPerteChange,
+                repartition,
                 depensesParCategorie,
                 recettesParCategorie);
     }

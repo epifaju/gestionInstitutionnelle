@@ -21,7 +21,8 @@ public class TauxChangeService {
 
     private final TauxChangeRepository tauxChangeRepository;
 
-    public static final List<String> DEVISES_SUPPORT = List.of("EUR", "XOF", "USD");
+    public static final List<String> DEVISES_SUPPORT =
+            List.of("EUR", "USD", "GBP", "CHF", "XOF", "MAD", "DZD", "TND", "JPY", "CNY");
 
     @Transactional(readOnly = true)
     public BigDecimal tauxVersEur(UUID orgId, String devise, LocalDate date) {

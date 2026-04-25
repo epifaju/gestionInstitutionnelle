@@ -12,6 +12,8 @@ public record StatsResponse(
         String devise,
         long nbFactures,
         long nbFacturesEnAttente,
+        BigDecimal gainPerteChange,
+        List<DeviseRepartitionDto> repartitionDevises,
         List<CategorieMontantDto> depensesParCategorie,
         List<CategorieMontantDto> recettesParCategorie
 ) {}

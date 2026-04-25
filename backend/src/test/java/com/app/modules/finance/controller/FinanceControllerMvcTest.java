@@ -109,8 +109,10 @@ class FinanceControllerMvcTest {
                 new BigDecimal("500.00"),
                 new BigDecimal("-700.00"),
                 "EUR",
-                10,
-                2,
+                10L,
+                2L,
+                BigDecimal.ZERO,
+                List.of(),
                 List.of(),
                 List.of());
         when(statsService.getStatsMensuelles(any(), eq(2026), eq(4))).thenReturn(resp);
