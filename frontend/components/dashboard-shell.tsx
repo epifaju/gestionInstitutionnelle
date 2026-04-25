@@ -41,6 +41,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const tRhSal = useTranslations("RH.salaries");
   const tRhCong = useTranslations("RH.conges");
   const tRhPaie = useTranslations("RH.paie");
+  const tRhPaieSettings = useTranslations("RH.paieSettings");
   const router = useRouter();
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
@@ -163,6 +164,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     { href: "/rh/conges", label: tRhCong("title") },
     ...(showMyPaie ? [{ href: "/rh/me/paie", label: t("myPaie") }] : []),
     ...(showPaie ? [{ href: "/rh/paie", label: tRhPaie("title") }] : []),
+    ...(isAdmin || isRh ? [{ href: "/rh/paie/parametres", label: tRhPaieSettings("title") }] : []),
   ];
 
   const restItems: NavItem[] = [

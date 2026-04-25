@@ -10,6 +10,7 @@ import com.app.modules.rh.dto.GrilleSalarialeRequest;
 import com.app.modules.rh.dto.HistoriqueSalaireResponse;
 import com.app.modules.rh.dto.MarquerPayeRequest;
 import com.app.modules.rh.dto.PaieResponse;
+import com.app.modules.rh.dto.PresignedUrlResponse;
 import com.app.modules.rh.dto.SalarieRequest;
 import com.app.modules.rh.dto.SalarieResponse;
 import com.app.modules.rh.service.CongeService;
@@ -262,6 +263,44 @@ public class RhController {
                         @PageableDefault(size = 12) Pageable pageable) {
                 Page<PaieResponse> page = paieService.listMyPaie(user.getOrganisationId(), user.getId(), annee, pageable);
                 return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(page, r -> r)));
+        }
+
+        @GetMapping("/me/paie/{annee}/{mois}/bulletin")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<InputStreamResource> downloadMyPayslip(
+                        @AuthenticationPrincipal CustomUserDetails user,
+                        @PathVariable int annee,
+                        @PathVariable int mois) throws Exception {
+                var dl = paieService.downloadMyBulletin(user.getOrganisationId(), user.getId(), user.getUsername(), annee, mois);
+                String contentType = dl.contentType() != null && !dl.contentType().isBlank()
+                        ? dl.contentType()
+                        : MediaType.APPLICATION_PDF_VALUE;
+                String safeName = ("bulletin-" + annee + "-" + (mois < 10 ? "0" + mois : mois) + ".pdf").replace("\"", "");
+                return ResponseEntity.ok()
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + safeName + "\"")
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .body(new InputStreamResource(dl.stream()));
+        }
+
+        @GetMapping("/me/paie/{annee}/{mois}/bulletin-url")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<ApiResponse<PresignedUrlResponse>> presignedMyPayslipUrl(
+                        @AuthenticationPrincipal CustomUserDetails user,
+                        @PathVariable int annee,
+                        @PathVariable int mois) throws Exception {
+                String url = paieService.presignedMyBulletinUrl(user.getOrganisationId(), user.getId(), user.getUsername(), annee, mois);
+                return ResponseEntity.ok(ApiResponse.ok(new PresignedUrlResponse(url)));
+        }
+
+        @GetMapping("/paie/{salarieId}/{annee}/{mois}/bulletin-url")
+        @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
+        public ResponseEntity<ApiResponse<PresignedUrlResponse>> presignedPayslipUrlForSalarie(
+                        @AuthenticationPrincipal CustomUserDetails user,
+                        @PathVariable UUID salarieId,
+                        @PathVariable int annee,
+                        @PathVariable int mois) throws Exception {
+                String url = paieService.presignedBulletinUrlForSalarie(user.getOrganisationId(), salarieId, annee, mois);
+                return ResponseEntity.ok(ApiResponse.ok(new PresignedUrlResponse(url)));
         }
 
         @GetMapping("/paie/{salarieId}/{annee}")

@@ -9,7 +9,6 @@ import io.minio.PutObjectArgs;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -25,12 +24,18 @@ import static org.mockito.Mockito.when;
 class MinioStorageServiceTest {
 
     @Mock private MinioClient minioClient;
+    @Mock private MinioClient publicMinioClient;
     @Mock private MinioProperties minioProperties;
 
-    @InjectMocks private MinioStorageService service;
+    private MinioStorageService service;
+
+    private MinioStorageService newService() {
+        return new MinioStorageService(minioClient, publicMinioClient, minioProperties);
+    }
 
     @Test
     void ensureBucket_creeLeBucketQuandIlNexistePas() throws Exception {
+        service = newService();
         when(minioProperties.getBucket()).thenReturn("documents");
         when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(false);
 
@@ -41,6 +46,7 @@ class MinioStorageServiceTest {
 
     @Test
     void ensureBucket_neCreeRienQuandBucketExiste() throws Exception {
+        service = newService();
         when(minioProperties.getBucket()).thenReturn("documents");
         when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
 
@@ -51,6 +57,7 @@ class MinioStorageServiceTest {
 
     @Test
     void upload_appellePutObjectAvecBucketEtObjectName() throws Exception {
+        service = newService();
         when(minioProperties.getBucket()).thenReturn("documents");
         when(minioClient.bucketExists(any(BucketExistsArgs.class))).thenReturn(true);
 
@@ -66,21 +73,18 @@ class MinioStorageServiceTest {
     }
 
     @Test
-    void presignedGetUrl_remplaceLeHostMaisConserveLeQueryString() throws Exception {
+    void presignedGetUrl_utiliseLeClientPublicPourGenererUneUrlPresignee() throws Exception {
+        service = newService();
         when(minioProperties.getBucket()).thenReturn("documents");
-        when(minioProperties.getPublicEndpoint()).thenReturn("https://cdn.example.com/");
 
-        String minioUrl =
-                "http://minio:9000/documents/factures/FAC-2026-0001.pdf"
+        String publicUrl =
+                "https://cdn.example.com/documents/factures/FAC-2026-0001.pdf"
                         + "?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc%2Fdef";
-        when(minioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class))).thenReturn(minioUrl);
+        when(publicMinioClient.getPresignedObjectUrl(any(GetPresignedObjectUrlArgs.class))).thenReturn(publicUrl);
 
         String out = service.presignedGetUrl("factures/FAC-2026-0001.pdf");
 
-        assertThat(out)
-                .isEqualTo(
-                        "https://cdn.example.com/documents/factures/FAC-2026-0001.pdf"
-                                + "?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Signature=abc%2Fdef");
+        assertThat(out).isEqualTo(publicUrl);
     }
 }
 

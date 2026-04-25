@@ -6,7 +6,7 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { intlLocaleTag } from "@/lib/intl-locale";
@@ -17,7 +17,8 @@ import { Button } from "@/components/ui/button";
 import type { PaieResponse } from "@/lib/types/rh";
 import type { MarquerPayeRequest } from "@/lib/types/rh";
 import { useAuthStore } from "@/lib/store";
-import { annulerPaie, listPaieOrganisation, marquerPaye } from "@/services/paie.service";
+import { annulerPaie, getPayslipPresignedUrlForSalarie, listPaieOrganisation, marquerPaye } from "@/services/paie.service";
+import { toast } from "sonner";
 
 function fmtMoney(v: string | number, devise: string, localeTag: string) {
   const n = typeof v === "string" ? parseFloat(v) : v;
@@ -35,6 +36,7 @@ export default function PaieOrganisationPage() {
   const [annee, setAnnee] = useState(() => new Date().getFullYear());
   const [page, setPage] = useState(0);
   const [markOpen, setMarkOpen] = useState(false);
+  const [markConfirmOpen, setMarkConfirmOpen] = useState(false);
   const [markTarget, setMarkTarget] = useState<PaieResponse | null>(null);
   const [markForm, setMarkForm] = useState<MarquerPayeRequest>({
     datePaiement: new Date().toISOString().slice(0, 10),
@@ -42,6 +44,7 @@ export default function PaieOrganisationPage() {
     notes: "",
   });
   const [cancelId, setCancelId] = useState<string | null>(null);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["rh", "paie-org", annee, page],
@@ -55,6 +58,7 @@ export default function PaieOrganisationPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["rh", "paie-org"] });
       setMarkOpen(false);
+      setMarkConfirmOpen(false);
       setMarkTarget(null);
     },
   });
@@ -75,7 +79,37 @@ export default function PaieOrganisationPage() {
       notes: "",
     });
     setMarkOpen(true);
+    setMarkConfirmOpen(false);
   }
+
+  const downloadPayslip = useCallback(async (row: PaieResponse) => {
+    if (!row.hasPayslip) return;
+    setDownloading(row.id);
+    // Open the tab synchronously (otherwise browsers may block it after async awaits)
+    const w = window.open("about:blank", "_blank");
+    if (!w) {
+      toast.error(tc("popupBlocked"));
+      setDownloading(null);
+      return;
+    }
+    // Security hardening: avoid giving the new tab access to this window.
+    try { w.opener = null; } catch {}
+    try {
+      const res = await getPayslipPresignedUrlForSalarie(row.salarieId, row.annee, row.mois);
+      const url = res?.url;
+      if (!url) {
+        toast.error(tc("errorGeneric"));
+        try { w.close(); } catch {}
+        return;
+      }
+      w.location.href = url;
+    } catch {
+      toast.error(tc("errorGeneric"));
+      try { w.close(); } catch {}
+    } finally {
+      setDownloading(null);
+    }
+  }, [tc]);
 
   const columns = useMemo<ColumnDef<PaieResponse>[]>(
     () => [
@@ -103,18 +137,29 @@ export default function PaieOrganisationPage() {
               header: () => <div className="text-right">{t("thActions")}</div>,
               cell: ({ row }) => {
                 const p = row.original;
-                if (p.statut !== "EN_ATTENTE") {
-                  return <div className="text-right text-slate-400">{tc("emDash")}</div>;
-                }
+                const showMarkCancel = p.statut === "EN_ATTENTE";
                 return (
                   <div className="text-right">
                     <div className="inline-flex items-center justify-end gap-2">
-                      <Button type="button" size="sm" variant="secondary" onClick={() => openMarkPaid(p)}>
-                        {tc("markPaid")}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={!p.hasPayslip || downloading === p.id}
+                        onClick={() => downloadPayslip(p)}
+                      >
+                        {downloading === p.id ? tc("loading") : t("downloadPayslip")}
                       </Button>
-                      <Button type="button" size="sm" variant="outline" onClick={() => setCancelId(p.id)}>
-                        {tc("cancel")}
-                      </Button>
+                      {showMarkCancel ? (
+                        <>
+                          <Button type="button" size="sm" variant="secondary" onClick={() => openMarkPaid(p)}>
+                            {tc("markPaid")}
+                          </Button>
+                          <Button type="button" size="sm" variant="outline" onClick={() => setCancelId(p.id)}>
+                            {tc("cancel")}
+                          </Button>
+                        </>
+                      ) : null}
                     </div>
                   </div>
                 );
@@ -123,7 +168,7 @@ export default function PaieOrganisationPage() {
           ] as ColumnDef<PaieResponse>[])
         : []),
     ],
-    [canMark, localeTag, t, tc]
+    [canMark, downloadPayslip, downloading, localeTag, t, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
@@ -229,9 +274,51 @@ export default function PaieOrganisationPage() {
               <Button
                 type="button"
                 disabled={mutMarkPaid.isPending}
-                onClick={() => mutMarkPaid.mutate({ id: markTarget.id, body: markForm })}
+                onClick={() => setMarkConfirmOpen(true)}
               >
                 {tc("confirm")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {markConfirmOpen && markTarget && (
+        <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+            <h3 className="mb-1 font-semibold">{t("markPaidConfirmTitle")}</h3>
+            <p className="mb-3 text-sm text-slate-600">{t("markPaidConfirmHint")}</p>
+            <div className="rounded-md bg-slate-50 p-3 text-xs text-slate-700">
+              <div className="font-medium text-slate-900">{markTarget.salarieNomComplet}</div>
+              <div>
+                {markTarget.mois}/{markTarget.annee} · {fmtMoney(markTarget.montant, markTarget.devise, localeTag)}
+              </div>
+              <div className="mt-2 grid gap-1">
+                <div>
+                  <span className="text-slate-500">{t("labelDatePaiement")}:</span> {markForm.datePaiement}
+                </div>
+                <div>
+                  <span className="text-slate-500">{t("labelMode")}:</span> {markForm.modePaiement}
+                </div>
+                {markForm.notes ? (
+                  <div>
+                    <span className="text-slate-500">{t("labelNotes")}:</span> {markForm.notes}
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            <div className="mt-4 flex justify-end gap-2">
+              <Button type="button" variant="outline" disabled={mutMarkPaid.isPending} onClick={() => setMarkConfirmOpen(false)}>
+                {tc("back")}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={mutMarkPaid.isPending}
+                onClick={() => mutMarkPaid.mutate({ id: markTarget.id, body: markForm })}
+              >
+                {t("confirmMarkPaid")}
               </Button>
             </div>
           </div>
@@ -247,7 +334,7 @@ export default function PaieOrganisationPage() {
               <Button type="button" variant="outline" onClick={() => setCancelId(null)}>
                 {tc("back")}
               </Button>
-              <Button type="button" disabled={mutCancel.isPending} onClick={() => mutCancel.mutate(cancelId)}>
+              <Button type="button" variant="destructive" disabled={mutCancel.isPending} onClick={() => mutCancel.mutate(cancelId)}>
                 {t("confirmCancelPayment")}
               </Button>
             </div>

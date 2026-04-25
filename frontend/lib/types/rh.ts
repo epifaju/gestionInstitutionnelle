@@ -78,6 +78,7 @@ export type CongeValidationRequest = {
 
 export type PaieResponse = {
   id: string;
+  salarieId: string;
   salarieNomComplet: string;
   matricule: string;
   mois: number;
@@ -87,6 +88,8 @@ export type PaieResponse = {
   datePaiement: string | null;
   modePaiement: string | null;
   statut: string;
+  bulletinId: string | null;
+  hasPayslip: boolean;
 };
 
 export type MarquerPayeRequest = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { intlLocaleTag } from "@/lib/intl-locale";
@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store";
 import type { PaieResponse } from "@/lib/types/rh";
-import { listMyPaie } from "@/services/paie.service";
+import { getMyPayslipPresignedUrl, listMyPaie } from "@/services/paie.service";
+import { toast } from "sonner";
 
 function fmtMoney(v: string | number, devise: string, localeTag: string) {
   const n = typeof v === "string" ? parseFloat(v) : v;
@@ -33,6 +34,7 @@ export default function MyPaiePage() {
   const user = useAuthStore((s) => s.user);
   const [annee, setAnnee] = useState(() => new Date().getFullYear());
   const [page, setPage] = useState(0);
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["rh", "my-paie", annee, page],
@@ -40,6 +42,35 @@ export default function MyPaiePage() {
   });
 
   const rows = data?.content ?? [];
+
+  const downloadPayslip = useCallback(async (row: PaieResponse) => {
+    if (!row.hasPayslip) return;
+    setDownloading(row.id);
+    // Open the tab synchronously (otherwise browsers may block it after async awaits)
+    const w = window.open("about:blank", "_blank");
+    if (!w) {
+      toast.error(tc("popupBlocked"));
+      setDownloading(null);
+      return;
+    }
+    // Security hardening: avoid giving the new tab access to this window.
+    try { w.opener = null; } catch {}
+    try {
+      const res = await getMyPayslipPresignedUrl(row.annee, row.mois);
+      const url = res?.url;
+      if (!url) {
+        toast.error(tc("errorGeneric"));
+        try { w.close(); } catch {}
+        return;
+      }
+      w.location.href = url;
+    } catch {
+      toast.error(tc("errorGeneric"));
+      try { w.close(); } catch {}
+    } finally {
+      setDownloading(null);
+    }
+  }, [tc]);
 
   const columns = useMemo<ColumnDef<PaieResponse>[]>(
     () => [
@@ -64,8 +95,28 @@ export default function MyPaiePage() {
         header: t("thMode"),
         cell: ({ row }) => row.original.modePaiement ?? tc("emDash"),
       },
+      {
+        id: "actions",
+        header: () => <div className="text-right">{tc("actions")}</div>,
+        cell: ({ row }) => {
+          const r = row.original;
+          return (
+            <div className="text-right">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={!r.hasPayslip || downloading === r.id}
+                onClick={() => downloadPayslip(r)}
+              >
+                {downloading === r.id ? tc("loading") : t("downloadPayslip")}
+              </Button>
+            </div>
+          );
+        },
+      },
     ],
-    [localeTag, t, tc]
+    [downloading, downloadPayslip, localeTag, t, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });

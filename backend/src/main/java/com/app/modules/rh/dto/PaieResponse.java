@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record PaieResponse(
         UUID id,
+        UUID salarieId,
         String salarieNomComplet,
         String matricule,
         int mois,
@@ -14,6 +15,8 @@ public record PaieResponse(
         String devise,
         LocalDate datePaiement,
         String modePaiement,
-        String statut
+        String statut,
+        UUID bulletinId,
+        boolean hasPayslip
 ) {
 }

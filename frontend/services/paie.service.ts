@@ -20,3 +20,11 @@ export async function annulerPaie(id: string) {
 export async function listMyPaie(annee: number, params?: { page?: number; size?: number }) {
   return get<PageResponse<PaieResponse>>("rh/me/paie", { params: { annee, ...params } });
 }
+
+export async function getMyPayslipPresignedUrl(annee: number, mois: number) {
+  return get<{ url: string }>(`rh/me/paie/${annee}/${mois}/bulletin-url`);
+}
+
+export async function getPayslipPresignedUrlForSalarie(salarieId: string, annee: number, mois: number) {
+  return get<{ url: string }>(`rh/paie/${salarieId}/${annee}/${mois}/bulletin-url`);
+}

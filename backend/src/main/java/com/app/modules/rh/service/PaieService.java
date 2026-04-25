@@ -13,7 +13,9 @@ import com.app.modules.rh.entity.StatutSalarie;
 import com.app.modules.rh.repository.HistoriqueSalaireRepository;
 import com.app.modules.rh.repository.PaiementSalaireRepository;
 import com.app.modules.rh.repository.SalarieRepository;
+import com.app.modules.payroll.service.BulletinPaieService;
 import com.app.shared.exception.BusinessException;
+import com.app.shared.storage.MinioStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +25,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,6 +41,7 @@ public class PaieService {
     private final HistoriqueSalaireRepository historiqueSalaireRepository;
     private final PaiementSalaireRepository paiementSalaireRepository;
     private final AuditLogService auditLogService;
+    private final BulletinPaieService bulletinPaieService;
 
     @Scheduled(cron = "0 0 1 1 * *")
     @Transactional
@@ -194,6 +196,13 @@ public class PaieService {
         p.setModePaiement(req.modePaiement());
         p.setNotes(req.notes());
         paiementSalaireRepository.save(p);
+        try {
+            bulletinPaieService.generateForPaiementSalaire(p.getId(), orgId, userId);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            throw BusinessException.badRequest("BULLETIN_GENERATION_ERREUR");
+        }
         auditLogService.logRh(orgId, userId, "UPDATE", "PaiementSalaire", p.getId(), avant, snapshotPaie(p));
         return toResponse(p);
     }
@@ -222,8 +231,10 @@ public class PaieService {
     private PaieResponse toResponse(PaiementSalaire p) {
         Salarie s = p.getSalarie();
         String nom = (s.getNom() + " " + s.getPrenom()).trim();
+        boolean hasPayslip = p.getBulletinId() != null;
         return new PaieResponse(
                 p.getId(),
+                s.getId(),
                 nom,
                 s.getMatricule(),
                 p.getMois(),
@@ -232,7 +243,9 @@ public class PaieService {
                 p.getDevise(),
                 p.getDatePaiement(),
                 p.getModePaiement(),
-                p.getStatut().name());
+                p.getStatut().name(),
+                p.getBulletinId(),
+                hasPayslip);
     }
 
     private Map<String, Object> snapshotPaie(PaiementSalaire p) {
@@ -260,5 +273,44 @@ public class PaieService {
             throw BusinessException.unauthorized("TOKEN_INVALIDE");
         }
         return ud.getId();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public MinioStorageService.Download downloadMyBulletin(UUID orgId, UUID userId, String emailFallback, int annee, int mois) throws Exception {
+        Salarie s = salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId).orElse(null);
+        if (s == null) {
+            String email = emailFallback != null ? emailFallback : "";
+            if (!email.isBlank()) {
+                s = salarieRepository.findByOrganisationIdAndEmailIgnoreCase(orgId, email.trim()).orElse(null);
+            }
+        }
+        if (s == null) throw BusinessException.notFound("SALARIE_ABSENT");
+        ensureLignesAnnee(s, annee, orgId);
+        return bulletinPaieService.downloadMyBulletinForSalarie(orgId, s.getId(), annee, mois);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public String presignedMyBulletinUrl(UUID orgId, UUID userId, String emailFallback, int annee, int mois) throws Exception {
+        Salarie s = salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId).orElse(null);
+        if (s == null) {
+            String email = emailFallback != null ? emailFallback : "";
+            if (!email.isBlank()) {
+                s = salarieRepository.findByOrganisationIdAndEmailIgnoreCase(orgId, email.trim()).orElse(null);
+            }
+        }
+        if (s == null) throw BusinessException.notFound("SALARIE_ABSENT");
+        ensureLignesAnnee(s, annee, orgId);
+        return bulletinPaieService.presignedUrlForSalarie(orgId, s.getId(), annee, mois);
+    }
+
+    @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
+    @Transactional(readOnly = true)
+    public String presignedBulletinUrlForSalarie(UUID orgId, UUID salarieId, int annee, int mois) throws Exception {
+        Salarie s = salarieRepository.findById(salarieId).orElseThrow(() -> BusinessException.notFound("SALARIE_ABSENT"));
+        if (!orgId.equals(s.getOrganisationId())) throw BusinessException.forbidden("SALARIE_ORG_MISMATCH");
+        ensureLignesAnnee(s, annee, orgId);
+        return bulletinPaieService.presignedUrlForSalarie(orgId, salarieId, annee, mois);
     }
 }

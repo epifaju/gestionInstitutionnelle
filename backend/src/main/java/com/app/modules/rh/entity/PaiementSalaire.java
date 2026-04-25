@@ -16,6 +16,7 @@ import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "paiements_salaires")
@@ -52,4 +53,7 @@ public class PaiementSalaire extends BaseEntity {
 
     @Column(columnDefinition = "text")
     private String notes;
+
+    @Column(name = "bulletin_id")
+    private UUID bulletinId;
 }
