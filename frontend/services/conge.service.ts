@@ -14,6 +14,10 @@ export async function listConges(params: {
   return get<PageResponse<CongeResponse>>("rh/conges", { params });
 }
 
+export async function getCongeById(id: string) {
+  return get<CongeResponse>(`rh/conges/${id}`);
+}
+
 export async function soumettreConge(body: CongeRequest) {
   return post<CongeResponse>("rh/conges", body);
 }

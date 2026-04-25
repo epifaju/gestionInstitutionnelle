@@ -85,6 +85,7 @@
     "conges": "Congés",
     "paie": "Paie",
     "myPaie": "Ma paie",
+    "notifications": "Notifications",
     "budget": "Budget",
     "inventaire": "Inventaire",
     "rapports": "Rapports",
@@ -115,6 +116,24 @@
     "footerConges": "Congés signalés",
     "employeeSubtitle": "Vue limitée : vos congés en cours (pas d’agrégats financiers ni RH).",
     "employeeCongesOnly": "Congés en cours"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "subtitle": "Historique de vos notifications.",
+    "filterUnread": "Non lues",
+    "filterAll": "Toutes",
+    "markAllRead": "Tout marquer comme lu",
+    "markAllReadShort": "Tout lire",
+    "seeAll": "Voir tout",
+    "empty": "Aucune notification.",
+    "thType": "Type",
+    "thTitle": "Titre",
+    "thMessage": "Message",
+    "thDate": "Date",
+    "thStatus": "Statut",
+    "statusRead": "Lu",
+    "statusUnread": "Non lu",
+    "markRead": "Marquer lu"
   },
   "Finance": {
     "factures": {

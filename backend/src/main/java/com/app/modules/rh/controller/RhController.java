@@ -191,6 +191,14 @@ public class RhController {
                 return ResponseEntity.ok(ApiResponse.ok(PageResponse.from(page, r -> r)));
         }
 
+        @GetMapping("/conges/{id}")
+        @PreAuthorize("isAuthenticated()")
+        public ResponseEntity<ApiResponse<CongeResponse>> getConge(
+                        @AuthenticationPrincipal CustomUserDetails user,
+                        @PathVariable UUID id) {
+                return ResponseEntity.ok(ApiResponse.ok(congeService.getById(id, user.getOrganisationId())));
+        }
+
         @PostMapping("/conges")
         @PreAuthorize("isAuthenticated()")
         public ResponseEntity<ApiResponse<CongeResponse>> soumettreConge(

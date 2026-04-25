@@ -75,6 +75,7 @@
     "conges": "Férias/ausências",
     "paie": "Salários",
     "myPaie": "O meu salário",
+    "notifications": "Notificações",
     "budget": "Orçamento",
     "inventaire": "Inventário",
     "rapports": "Relatórios",
@@ -105,6 +106,24 @@
     "footerConges": "Ausências sinalizadas",
     "employeeSubtitle": "Vista limitada: as suas ausências em curso (sem agregados financeiros nem RH).",
     "employeeCongesOnly": "Ausências em curso"
+  },
+  "Notifications": {
+    "title": "Notificações",
+    "subtitle": "Histórico das suas notificações.",
+    "filterUnread": "Não lidas",
+    "filterAll": "Todas",
+    "markAllRead": "Marcar tudo como lido",
+    "markAllReadShort": "Marcar tudo",
+    "seeAll": "Ver tudo",
+    "empty": "Sem notificações.",
+    "thType": "Tipo",
+    "thTitle": "Título",
+    "thMessage": "Mensagem",
+    "thDate": "Data",
+    "thStatus": "Estado",
+    "statusRead": "Lido",
+    "statusUnread": "Não lido",
+    "markRead": "Marcar como lido"
   },
   "Finance": {
     "factures": {

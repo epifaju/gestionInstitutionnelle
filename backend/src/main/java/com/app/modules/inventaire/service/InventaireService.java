@@ -16,6 +16,8 @@ import com.app.modules.inventaire.repository.BienMaterielSpecifications;
 import com.app.modules.inventaire.repository.MouvementBienRepository;
 import com.app.modules.rh.entity.Salarie;
 import com.app.modules.rh.repository.SalarieRepository;
+import com.app.modules.notifications.entity.NotificationType;
+import com.app.modules.notifications.service.NotificationService;
 import com.app.shared.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,6 +50,7 @@ public class InventaireService {
     private final UtilisateurRepository utilisateurRepository;
     private final JdbcTemplate jdbcTemplate;
     private final AuditLogService auditLogService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<BienResponse> list(
@@ -182,7 +185,26 @@ public class InventaireService {
         bienRepo.save(b);
         BienMateriel refreshed = bienRepo.findByIdAndOrganisationId(id, orgId).orElse(b);
         auditLogService.log(orgId, userId, "UPDATE", "BienMateriel", id, avantSnap, snapshotBien(refreshed));
+
+        if (oldEtat != EtatBien.DEFAILLANT && newEtat == EtatBien.DEFAILLANT) {
+            notifierMaintenanceDefaillant(refreshed);
+        }
         return toResponse(refreshed);
+    }
+
+    private void notifierMaintenanceDefaillant(BienMateriel b) {
+        List<Utilisateur> logs = utilisateurRepository.findByOrganisationIdAndRoleAndActifTrue(
+                b.getOrganisationId(), com.app.modules.auth.entity.Role.LOGISTIQUE);
+        for (Utilisateur u : logs) {
+            notificationService.envoyer(
+                    b.getOrganisationId(),
+                    u.getId(),
+                    NotificationType.BIEN_MAINTENANCE,
+                    "Bien en maintenance",
+                    "Le bien " + b.getCodeInventaire() + " (" + b.getLibelle() + ") est passé à l'état DÉFAILLANT.",
+                    "/inventaire"
+            );
+        }
     }
 
     private void recordChange(

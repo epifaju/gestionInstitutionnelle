@@ -85,6 +85,7 @@
     "conges": "Leave",
     "paie": "Payroll",
     "myPaie": "My pay",
+    "notifications": "Notifications",
     "budget": "Budget",
     "inventaire": "Inventory",
     "rapports": "Reports",
@@ -115,6 +116,24 @@
     "footerConges": "Reported leave",
     "employeeSubtitle": "Limited view: your current leave only (no finance or HR aggregates).",
     "employeeCongesOnly": "Current leave"
+  },
+  "Notifications": {
+    "title": "Notifications",
+    "subtitle": "Your notification history.",
+    "filterUnread": "Unread",
+    "filterAll": "All",
+    "markAllRead": "Mark all as read",
+    "markAllReadShort": "Mark all",
+    "seeAll": "See all",
+    "empty": "No notifications.",
+    "thType": "Type",
+    "thTitle": "Title",
+    "thMessage": "Message",
+    "thDate": "Date",
+    "thStatus": "Status",
+    "statusRead": "Read",
+    "statusUnread": "Unread",
+    "markRead": "Mark read"
   },
   "Finance": {
     "factures": {

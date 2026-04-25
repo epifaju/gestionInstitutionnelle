@@ -51,6 +51,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/reset-password")
                         .permitAll()
+                        // WebSocket/SockJS handshake endpoints are authenticated at STOMP CONNECT (ChannelInterceptor)
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(eh -> eh

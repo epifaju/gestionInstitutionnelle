@@ -18,6 +18,8 @@ import com.app.modules.rh.repository.CongeSpecifications;
 import com.app.modules.rh.repository.DroitsCongesRepository;
 import com.app.modules.rh.repository.SalarieRepository;
 import com.app.modules.rh.util.JoursOuvres;
+import com.app.modules.notifications.entity.NotificationType;
+import com.app.modules.notifications.service.NotificationService;
 import com.app.shared.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -50,6 +52,7 @@ public class CongeService {
     private final DroitsCongesRepository droitsCongesRepository;
     private final UtilisateurRepository utilisateurRepository;
     private final AuditLogService auditLogService;
+    private final NotificationService notificationService;
 
     @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
@@ -114,6 +117,12 @@ public class CongeService {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public CongeResponse getById(UUID id, UUID orgId) {
+        return toResponse(loadOwned(id, orgId));
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public CongeResponse soumettre(CongeRequest req, boolean draft, UUID orgId, UUID auteurId) {
         UUID userId = currentUserId();
@@ -169,6 +178,9 @@ public class CongeService {
         c.setCommentaire(req.commentaire());
         c = congeRepository.save(c);
         auditLogService.logRh(orgId, auteurId, "CREATE", "CongeAbsence", c.getId(), null, snapshotConge(c));
+        if (!draft) {
+            notifierRhSoumission(orgId, c);
+        }
         return toResponse(c);
     }
 
@@ -214,6 +226,7 @@ public class CongeService {
         c.setStatut(StatutConge.EN_ATTENTE);
         congeRepository.save(c);
         auditLogService.logRh(orgId, auteurId, "UPDATE", "CongeAbsence", c.getId(), avant, snapshotConge(c));
+        notifierRhSoumission(orgId, c);
         return toResponse(c);
     }
 
@@ -247,6 +260,10 @@ public class CongeService {
         c.setMotifRejet(null);
         congeRepository.save(c);
         auditLogService.logRh(orgId, userId, "UPDATE", "CongeAbsence", c.getId(), avant, snapshotConge(c));
+        notifierEmploye(orgId, c, NotificationType.CONGE_VALIDE,
+                "Congé validé",
+                "Votre demande de congé a été validée.",
+                "/rh/conges/" + c.getId());
         return toResponse(c);
     }
 
@@ -265,6 +282,12 @@ public class CongeService {
         c.setDateValidation(Instant.now());
         congeRepository.save(c);
         auditLogService.logRh(orgId, userId, "UPDATE", "CongeAbsence", c.getId(), avant, snapshotConge(c));
+        notifierEmploye(orgId, c, NotificationType.CONGE_REJETE,
+                "Congé rejeté",
+                req.motifRejet() != null && !req.motifRejet().isBlank()
+                        ? ("Votre demande de congé a été rejetée: " + req.motifRejet())
+                        : "Votre demande de congé a été rejetée.",
+                "/rh/conges/" + c.getId());
         return toResponse(c);
     }
 
@@ -458,5 +481,35 @@ public class CongeService {
         if (userEmail == null || userEmail.isBlank()) return false;
         String salEmail = s.getEmail();
         return salEmail != null && !salEmail.isBlank() && salEmail.equalsIgnoreCase(userEmail.trim());
+    }
+
+    private void notifierRhSoumission(UUID orgId, CongeAbsence c) {
+        List<Utilisateur> rhs = utilisateurRepository.findByOrganisationIdAndRoleAndActifTrue(orgId, com.app.modules.auth.entity.Role.RH);
+        String salarieNom = c.getSalarie() != null ? (c.getSalarie().getPrenom() + " " + c.getSalarie().getNom()).trim() : "Un salarié";
+        for (Utilisateur u : rhs) {
+            notificationService.envoyer(
+                    orgId,
+                    u.getId(),
+                    NotificationType.CONGE_SOUMIS,
+                    "Nouvelle demande de congé",
+                    salarieNom + " a soumis une demande de congé.",
+                    "/rh/conges/" + c.getId()
+            );
+        }
+    }
+
+    private void notifierEmploye(UUID orgId, CongeAbsence c, NotificationType type, String titre, String message, String lien) {
+        Salarie s = c.getSalarie();
+        UUID userId = s != null ? s.getUtilisateurId() : null;
+        if (userId == null && s != null && s.getEmail() != null && !s.getEmail().isBlank()) {
+            userId = utilisateurRepository.findAllByEmailIgnoreCase(s.getEmail()).stream()
+                    .filter(u -> orgId.equals(u.getOrganisationId()))
+                    .findFirst()
+                    .map(Utilisateur::getId)
+                    .orElse(null);
+        }
+        if (userId != null) {
+            notificationService.envoyer(orgId, userId, type, titre, message, lien);
+        }
     }
 }

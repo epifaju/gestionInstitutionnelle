@@ -28,4 +28,6 @@ public interface PaiementSalaireRepository extends JpaRepository<PaiementSalaire
 
         Page<PaiementSalaire> findByOrganisationIdAndAnneeOrderBySalarie_NomAscSalarie_PrenomAscMoisAsc(
                         UUID organisationId, int annee, Pageable pageable);
+
+        List<PaiementSalaire> findByStatutAndAnneeAndMois(StatutPaie statut, int annee, int mois);
 }

@@ -29,4 +29,8 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
     boolean existsByOrganisationIdAndEmailIgnoreCase(UUID organisationId, String email);
 
     long countByOrganisationIdAndRoleAndActifTrue(UUID organisationId, Role role);
+
+    List<Utilisateur> findByOrganisationIdAndRoleAndActifTrue(UUID organisationId, Role role);
+
+    List<Utilisateur> findByOrganisationIdAndRoleInAndActifTrue(UUID organisationId, List<Role> roles);
 }

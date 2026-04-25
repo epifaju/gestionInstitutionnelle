@@ -12,6 +12,7 @@ import { useTranslations } from "next-intl";
 import { useAppLocale } from "@/lib/locale-context";
 import type { AppLocale } from "@/lib/locale-context";
 import { setLocaleCookie } from "@/lib/locale-cookie";
+import { NotificationBell } from "@/components/ui/NotificationBell";
 
 function syncTokenFromCookie() {
   if (typeof document === "undefined") return;
@@ -168,6 +169,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   ];
 
   const restItems: NavItem[] = [
+    { href: "/notifications", label: t("notifications") },
     ...(showBudget ? [{ href: "/budget", label: t("budget") }] : []),
     ...(showInv ? [{ href: "/inventaire", label: t("inventaire") }] : []),
     ...(showRapports ? [{ href: "/rapports", label: t("rapports") }] : []),
@@ -294,9 +296,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </Button>
             <span className="truncate font-semibold">{ta("name")}</span>
           </div>
-          <Button size="sm" variant="outline" onClick={handleLogout}>
-            {tc("exit")}
-          </Button>
+          <div className="flex items-center gap-2">
+            <NotificationBell />
+            <Button size="sm" variant="outline" onClick={handleLogout}>
+              {tc("exit")}
+            </Button>
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
