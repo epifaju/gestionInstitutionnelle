@@ -125,14 +125,14 @@ export default function MyPaiePage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
-          <p className="text-xs text-slate-500">
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
+          <p className="text-xs text-muted-foreground">
             {user?.prenom ?? ""} {user?.nom ?? ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-slate-600" htmlFor="annee-my-paie">
+          <label className="text-sm text-muted-foreground" htmlFor="annee-my-paie">
             {tc("year")}
           </label>
           <Input
@@ -148,7 +148,7 @@ export default function MyPaiePage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (

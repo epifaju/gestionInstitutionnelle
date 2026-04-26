@@ -8,11 +8,12 @@ import { useMemo, useState } from "react";
 import { AxiosError } from "axios";
 import { Building2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { post } from "@/lib/api";
+import { get, post } from "@/lib/api";
 import { getDefaultHomePath } from "@/lib/post-login";
 import { useAuthStore } from "@/lib/store";
 import { setLocaleCookie } from "@/lib/locale-cookie";
 import { useAppLocale } from "@/lib/locale-context";
+import { useAppTheme } from "@/lib/theme-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -44,6 +45,7 @@ export default function LoginPage() {
   const setAuth = useAuthStore((s) => s.setAuth);
   const [error, setError] = useState<string | null>(null);
   const { locale, setLocale } = useAppLocale();
+  const { setTheme } = useAppTheme();
 
   const schema = useMemo(
     () =>
@@ -74,6 +76,13 @@ export default function LoginPage() {
           setLocaleCookie(l);
         }
       }
+      // Applique le thème de l'utilisateur avant redirection (évite le "flash")
+      try {
+        const prefs = await get<{ theme: "system" | "light" | "dark" }>("auth/me/preferences");
+        if (prefs?.theme) setTheme(prefs.theme);
+      } catch {
+        /* ignore */
+      }
       router.push(getDefaultHomePath(data.user.role));
     } catch (e) {
       const err = e as AxiosError<ErrorBody>;
@@ -90,7 +99,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center text-white">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-background/10 ring-1 ring-border/40">
             <Building2 className="h-8 w-8 text-indigo-200" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
@@ -132,9 +141,9 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <Card className="border-slate-200 shadow-xl shadow-indigo-950/40">
+        <Card className="border-border shadow-xl shadow-indigo-950/40">
           <CardHeader>
-            <CardTitle className="text-slate-900">{t("title")}</CardTitle>
+            <CardTitle className="text-foreground">{t("title")}</CardTitle>
             <CardDescription>{t("cardDescription")}</CardDescription>
           </CardHeader>
           <CardContent>

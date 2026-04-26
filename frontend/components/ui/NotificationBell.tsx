@@ -56,9 +56,9 @@ export function NotificationBell() {
       </Button>
 
       {open ? (
-        <div className="absolute right-0 z-50 mt-2 w-[22rem] rounded-lg border border-slate-200 bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-            <p className="text-sm font-semibold text-slate-900">{t("title")}</p>
+        <div className="absolute right-0 z-50 mt-2 w-[22rem] rounded-lg border border-border bg-card text-card-foreground shadow-lg">
+          <div className="flex items-center justify-between border-b border-border px-3 py-2">
+            <p className="text-sm font-semibold text-foreground">{t("title")}</p>
             <div className="flex items-center gap-2">
               <Button type="button" variant="ghost" size="sm" onClick={() => markAllRead().catch(() => {})}>
                 {t("markAllReadShort")}
@@ -70,13 +70,13 @@ export function NotificationBell() {
           </div>
           <div className="max-h-[22rem] overflow-y-auto p-2">
             {items.length === 0 ? (
-              <p className="p-3 text-sm text-slate-600">{t("empty")}</p>
+              <p className="p-3 text-sm text-muted-foreground">{t("empty")}</p>
             ) : (
               items.slice(0, 10).map((n) => (
                 <button
                   key={n.id}
                   type="button"
-                  className={`w-full rounded-md px-3 py-2 text-left hover:bg-slate-50 ${n.lu ? "opacity-80" : ""}`}
+                  className={`w-full rounded-md px-3 py-2 text-left hover:bg-muted ${n.lu ? "opacity-80" : ""}`}
                   onClick={() => {
                     if (!n.lu) markAsRead(n.id).catch(() => {});
                     const href = normalizeNotificationLink(n.lien);
@@ -86,10 +86,10 @@ export function NotificationBell() {
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">{n.titre}</p>
-                      <p className="mt-0.5 line-clamp-2 text-xs text-slate-600">{n.message}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{n.titre}</p>
+                      <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{n.message}</p>
                     </div>
-                    <div className="shrink-0 text-[11px] text-slate-400">{formatRelative(n.createdAt, locale)}</div>
+                    <div className="shrink-0 text-[11px] text-muted-foreground">{formatRelative(n.createdAt, locale)}</div>
                   </div>
                 </button>
               ))

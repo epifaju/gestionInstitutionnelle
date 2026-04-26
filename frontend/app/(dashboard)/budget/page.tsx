@@ -192,8 +192,8 @@ export default function BudgetPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="mt-1 text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Label className="sr-only" htmlFor="annee">
@@ -201,7 +201,7 @@ export default function BudgetPage() {
           </Label>
           <select
             id="annee"
-            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+            className="rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
             value={annee}
             onChange={(e) => setAnnee(parseInt(e.target.value, 10))}
           >
@@ -224,7 +224,7 @@ export default function BudgetPage() {
       {!isLoading && !budget && (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-slate-600">{t("empty")}</p>
+            <p className="text-muted-foreground">{t("empty")}</p>
             {canEdit && (
               <Button className="mt-4" onClick={ouvrirCreation}>
                 {t("create")}
@@ -250,13 +250,13 @@ export default function BudgetPage() {
             )}
           </div>
 
-          <div className="flex gap-2 border-b border-slate-200">
+          <div className="flex gap-2 border-b border-border">
             <button
               type="button"
               className={`border-b-2 px-3 py-2 text-sm font-medium ${
                 tab === "DEPENSE"
                   ? "border-rose-500 text-rose-700"
-                  : "border-transparent text-slate-600 hover:text-slate-900"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setTab("DEPENSE")}
             >
@@ -267,7 +267,7 @@ export default function BudgetPage() {
               className={`border-b-2 px-3 py-2 text-sm font-medium ${
                 tab === "RECETTE"
                   ? "border-emerald-500 text-emerald-700"
-                  : "border-transparent text-slate-600 hover:text-slate-900"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
               onClick={() => setTab("RECETTE")}
             >
@@ -301,7 +301,7 @@ export default function BudgetPage() {
                       <TableCell className="text-right tabular-nums">{fmtMoney(n(l.ecart))}</TableCell>
                       <TableCell className="text-right tabular-nums">{n(l.tauxExecutionPct).toFixed(1)} %</TableCell>
                       <TableCell>
-                        <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                           <div
                             className={`h-full rounded-full ${l.alerteDepassement ? "bg-rose-500" : "bg-emerald-500"}`}
                             style={{ width: `${Math.min(n(l.tauxExecutionPct), 100)}%` }}
@@ -359,11 +359,11 @@ export default function BudgetPage() {
 
       {createOpen && categories && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-card p-6 text-card-foreground shadow-lg">
             <h2 className="text-lg font-semibold">
               {createMode === "revise" ? t("modalTitleRevise", { year: annee }) : t("modalTitleCreate", { year: annee })}
             </h2>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-muted-foreground">
               {createMode === "revise" ? t("modalHintRevise") : t("modalHintCreate")}
             </p>
             <div className="mt-4 space-y-4">
@@ -374,14 +374,14 @@ export default function BudgetPage() {
               <div>
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-sm font-medium text-rose-700">{t("tabDepenses")}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {t("totalPrevu", { total: fmtMoney(totalDepPrevu) })}
                   </p>
                 </div>
                 <div className="mt-2 space-y-2">
                   {depCats.map((c) => (
                     <div key={c.id} className="flex items-center justify-between gap-2">
-                      <span className="text-sm text-slate-700">{c.libelle}</span>
+                      <span className="text-sm text-muted-foreground">{c.libelle}</span>
                       <Input
                         className="w-28 text-right"
                         type="number"
@@ -401,14 +401,14 @@ export default function BudgetPage() {
               <div>
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-sm font-medium text-emerald-700">{t("tabRecettes")}</p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {t("totalPrevu", { total: fmtMoney(totalRecPrevu) })}
                   </p>
                 </div>
                 <div className="mt-2 space-y-2">
                   {recCats.map((c) => (
                     <div key={c.id} className="flex items-center justify-between gap-2">
-                      <span className="text-sm text-slate-700">{c.libelle}</span>
+                      <span className="text-sm text-muted-foreground">{c.libelle}</span>
                       <Input
                         className="w-28 text-right"
                         type="number"

@@ -21,9 +21,9 @@ export function SalarieModal({
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-lg bg-white p-4 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-lg bg-card p-4 text-card-foreground shadow-xl">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">{ts("modalTitleNew")}</h2>
+          <h2 className="text-lg font-semibold text-foreground">{ts("modalTitleNew")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
             {tc("close")}
           </Button>

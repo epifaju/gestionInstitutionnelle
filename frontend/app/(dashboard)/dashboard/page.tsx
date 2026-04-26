@@ -66,36 +66,36 @@ function KpiCard({
 }) {
   const ring =
     accent === "rose"
-      ? "border-rose-100 bg-rose-50/80"
+      ? "border-rose-100 bg-rose-50/80 dark:border-rose-950/30 dark:bg-rose-950/25"
       : accent === "emerald"
-        ? "border-emerald-100 bg-emerald-50/80"
+        ? "border-emerald-100 bg-emerald-50/80 dark:border-emerald-950/30 dark:bg-emerald-950/25"
         : accent === "sky"
-          ? "border-sky-100 bg-sky-50/80"
-          : "border-violet-100 bg-violet-50/80";
+          ? "border-sky-100 bg-sky-50/80 dark:border-sky-950/30 dark:bg-sky-950/25"
+          : "border-violet-100 bg-violet-50/80 dark:border-violet-950/30 dark:bg-violet-950/25";
   const iconBg =
     accent === "rose"
-      ? "bg-rose-100 text-rose-700"
+      ? "bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-200"
       : accent === "emerald"
-        ? "bg-emerald-100 text-emerald-700"
+        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-200"
         : accent === "sky"
-          ? "bg-sky-100 text-sky-700"
-          : "bg-violet-100 text-violet-700";
+          ? "bg-sky-100 text-sky-700 dark:bg-sky-950/40 dark:text-sky-200"
+          : "bg-violet-100 text-violet-700 dark:bg-violet-950/40 dark:text-violet-200";
   const upBad = invertDelta ?? false;
   const good = deltaPct === null ? null : upBad ? deltaPct <= 0 : deltaPct >= 0;
   return (
     <Card className={`border ${ring}`}>
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-slate-600">{title}</CardTitle>
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
         <div className={`rounded-lg p-2 ${iconBg}`}>
           <Icon className="h-4 w-4" />
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-semibold tracking-tight text-slate-900">{value}</div>
+        <div className="text-2xl font-semibold tracking-tight text-foreground">{value}</div>
         {deltaPct !== null && (
           <p
             className={`mt-1 flex items-center gap-1 text-xs font-medium ${
-              good ? "text-emerald-600" : "text-rose-600"
+              good ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
             }`}
           >
             {good ? <ArrowDownRight className="h-3.5 w-3.5" /> : <ArrowUpRight className="h-3.5 w-3.5" />}
@@ -150,9 +150,9 @@ export default function DashboardPage() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{td("title")}</h1>
-          <p className="mt-1 text-sm text-slate-600">{td("employeeSubtitle")}</p>
-          <p className="mt-1 text-xs text-slate-500">
+          <h1 className="text-2xl font-semibold text-foreground">{td("title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{td("employeeSubtitle")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">
             {data.moisCourant.mois.toString().padStart(2, "0")}/{data.moisCourant.annee}
           </p>
         </div>
@@ -166,12 +166,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {data.congesEnCours.length === 0 ? (
-              <p className="text-sm text-slate-500">{td("congesEmpty")}</p>
+              <p className="text-sm text-muted-foreground">{td("congesEmpty")}</p>
             ) : (
               data.congesEnCours.map((c) => (
                 <Badge key={`${c.salarieNomComplet}-${c.dateDebut}`} variant="secondary" className="text-xs">
                   {c.salarieNomComplet}{" "}
-                  <span className="text-slate-500">
+                  <span className="text-muted-foreground">
                     ({c.dateDebut} → {c.dateFin})
                   </span>
                 </Badge>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted-foreground">
           {td("footerConges")} : {data.kpis.congesEnCours}
         </p>
       </div>
@@ -206,8 +206,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{td("title")}</h1>
-        <p className="mt-1 text-sm text-slate-600">
+        <h1 className="text-2xl font-semibold text-foreground">{td("title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           {td("subtitle")} — {data.moisCourant.mois.toString().padStart(2, "0")}/{data.moisCourant.annee}
         </p>
       </div>
@@ -255,7 +255,7 @@ export default function DashboardPage() {
         <CardContent className="h-72">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200" />
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
               <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip formatter={(v) => fmtEur(typeof v === "number" ? v : Number(v))} />
@@ -274,15 +274,15 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {data.alertesBudget.length === 0 ? (
-              <p className="text-sm text-slate-500">{td("alertsEmpty")}</p>
+              <p className="text-sm text-muted-foreground">{td("alertsEmpty")}</p>
             ) : (
               data.alertesBudget.map((a) => (
                 <div key={a.categorie} className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span className="font-medium text-slate-800">{a.categorie}</span>
-                    <span className="text-rose-600">{num(a.tauxExecution).toFixed(1)} %</span>
+                    <span className="font-medium text-foreground">{a.categorie}</span>
+                    <span className="text-rose-600 dark:text-rose-400">{num(a.tauxExecution).toFixed(1)} %</span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
                       className="h-full rounded-full bg-rose-500 transition-all"
                       style={{ width: `${Math.min(num(a.tauxExecution), 100)}%` }}
@@ -318,7 +318,7 @@ export default function DashboardPage() {
                 ))}
               </TableBody>
             </Table>
-            <p className="mt-2 text-xs text-slate-500">Source: Frankfurter • Cache 4h</p>
+            <p className="mt-2 text-xs text-muted-foreground">Source: Frankfurter • Cache 4h</p>
           </CardContent>
         </Card>
 
@@ -329,17 +329,17 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               {!expDocs || expDocs.length === 0 ? (
-                <p className="text-sm text-slate-500">Aucun document expirant dans les 30 prochains jours.</p>
+                <p className="text-sm text-muted-foreground">Aucun document expirant dans les 30 prochains jours.</p>
               ) : (
                 <>
-                  <p className="text-sm text-slate-700">
+                  <p className="text-sm text-muted-foreground">
                     {expDocs.length} document(s) expirant dans les 30 prochains jours.
                   </p>
                   <div className="mt-3 space-y-2">
                     {expDocs.slice(0, 5).map((d) => (
                       <div key={d.id} className="flex items-center justify-between gap-3 text-sm">
-                        <span className="truncate font-medium text-slate-800">{d.titre}</span>
-                        <span className="shrink-0 text-slate-500">{d.dateExpiration ?? "—"}</span>
+                        <span className="truncate font-medium text-foreground">{d.titre}</span>
+                        <span className="shrink-0 text-muted-foreground">{d.dateExpiration ?? "—"}</span>
                       </div>
                     ))}
                   </div>
@@ -388,12 +388,12 @@ export default function DashboardPage() {
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {data.congesEnCours.length === 0 ? (
-            <p className="text-sm text-slate-500">{td("congesEmpty")}</p>
+            <p className="text-sm text-muted-foreground">{td("congesEmpty")}</p>
           ) : (
             data.congesEnCours.map((c) => (
               <Badge key={`${c.salarieNomComplet}-${c.dateDebut}`} variant="secondary" className="text-xs">
                 {c.salarieNomComplet}{" "}
-                <span className="text-slate-500">
+                <span className="text-muted-foreground">
                   ({c.dateDebut} → {c.dateFin})
                 </span>
               </Badge>
@@ -402,7 +402,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
 
-      <p className="text-xs text-slate-500">
+      <p className="text-xs text-muted-foreground">
         {td("footerParc")} : {fmtEur(num(data.kpis.valeurParcMateriel))} — {td("footerConges")} :{" "}
         {data.kpis.congesEnCours}
       </p>

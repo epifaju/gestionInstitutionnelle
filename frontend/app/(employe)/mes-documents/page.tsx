@@ -12,16 +12,16 @@ export default function EmployeMesDocumentsPage() {
   return (
     <div className="mx-auto max-w-md space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-900">Mes documents</h1>
+        <h1 className="text-lg font-semibold text-foreground">Mes documents</h1>
         <Button type="button" variant="outline" size="sm" onClick={() => q.refetch()}>
           Rafraîchir
         </Button>
       </div>
 
       {q.isLoading ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">Chargement…</div>
+        <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">Chargement…</div>
       ) : docs.length === 0 ? (
-        <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">Aucun document.</div>
+        <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">Aucun document.</div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {docs.map((d) => (
@@ -30,9 +30,9 @@ export default function EmployeMesDocumentsPage() {
               href={d.url}
               target="_blank"
               rel="noreferrer"
-              className="rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-700 active:scale-[0.99]"
+              className="rounded-2xl border border-border bg-card p-3 text-sm text-foreground active:scale-[0.99]"
             >
-              <div className="text-xs text-slate-500">PDF</div>
+              <div className="text-xs text-muted-foreground">PDF</div>
               <div className="mt-1 line-clamp-2 font-medium">{d.nomFichier}</div>
             </a>
           ))}

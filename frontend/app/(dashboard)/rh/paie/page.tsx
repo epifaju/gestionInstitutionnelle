@@ -177,11 +177,11 @@ export default function PaieOrganisationPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-sm text-slate-600" htmlFor="annee-paie">
+          <label className="text-sm text-muted-foreground" htmlFor="annee-paie">
             {tc("year")}
           </label>
           <Input
@@ -197,7 +197,7 @@ export default function PaieOrganisationPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -243,9 +243,9 @@ export default function PaieOrganisationPage() {
 
       {markOpen && markTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
             <h3 className="mb-1 font-semibold">{t("markPaidTitle")}</h3>
-            <p className="mb-3 text-xs text-slate-600">
+            <p className="mb-3 text-xs text-muted-foreground">
               {markTarget.salarieNomComplet} · {markTarget.mois}/{markTarget.annee} ·{" "}
               {fmtMoney(markTarget.montant, markTarget.devise, localeTag)}
             </p>
@@ -285,24 +285,24 @@ export default function PaieOrganisationPage() {
 
       {markConfirmOpen && markTarget && (
         <div className="fixed inset-0 z-[55] flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
             <h3 className="mb-1 font-semibold">{t("markPaidConfirmTitle")}</h3>
-            <p className="mb-3 text-sm text-slate-600">{t("markPaidConfirmHint")}</p>
-            <div className="rounded-md bg-slate-50 p-3 text-xs text-slate-700">
-              <div className="font-medium text-slate-900">{markTarget.salarieNomComplet}</div>
+            <p className="mb-3 text-sm text-muted-foreground">{t("markPaidConfirmHint")}</p>
+            <div className="rounded-md bg-muted p-3 text-xs text-foreground">
+              <div className="font-medium text-foreground">{markTarget.salarieNomComplet}</div>
               <div>
                 {markTarget.mois}/{markTarget.annee} · {fmtMoney(markTarget.montant, markTarget.devise, localeTag)}
               </div>
               <div className="mt-2 grid gap-1">
                 <div>
-                  <span className="text-slate-500">{t("labelDatePaiement")}:</span> {markForm.datePaiement}
+                  <span className="text-muted-foreground">{t("labelDatePaiement")}:</span> {markForm.datePaiement}
                 </div>
                 <div>
-                  <span className="text-slate-500">{t("labelMode")}:</span> {markForm.modePaiement}
+                  <span className="text-muted-foreground">{t("labelMode")}:</span> {markForm.modePaiement}
                 </div>
                 {markForm.notes ? (
                   <div>
-                    <span className="text-slate-500">{t("labelNotes")}:</span> {markForm.notes}
+                    <span className="text-muted-foreground">{t("labelNotes")}:</span> {markForm.notes}
                   </div>
                 ) : null}
               </div>
@@ -327,9 +327,9 @@ export default function PaieOrganisationPage() {
 
       {cancelId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
             <h3 className="mb-1 font-semibold">{t("cancelPaymentTitle")}</h3>
-            <p className="mb-3 text-xs text-slate-600">{t("cancelPaymentHint")}</p>
+            <p className="mb-3 text-xs text-muted-foreground">{t("cancelPaymentHint")}</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setCancelId(null)}>
                 {tc("back")}

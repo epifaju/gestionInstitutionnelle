@@ -153,7 +153,7 @@ export default function SalarieDetailPage() {
   const [confirmValidateCongeId, setConfirmValidateCongeId] = useState<string | null>(null);
 
   if (isLoading || !salarie) {
-    return <p className="p-4 text-slate-600">{tc("loading")}</p>;
+    return <p className="p-4 text-muted-foreground">{tc("loading")}</p>;
   }
 
   const droitNum = droits ? parseFloat(String(droits.joursDroit)) : 0;
@@ -190,17 +190,17 @@ export default function SalarieDetailPage() {
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
+          <h1 className="text-2xl font-semibold text-foreground">
             {salarie.prenom} {salarie.nom}
           </h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             {salarie.matricule} · {salarie.service}
           </p>
         </div>
         <Badge variant={statutVariant(salarie.statut)}>{salarie.statut}</Badge>
       </div>
 
-      <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap gap-2 border-b border-border pb-2">
         {(["infos", "conges", "paie", "docs"] as const).map((tabKey) => (
           <Button
             key={tabKey}
@@ -220,30 +220,30 @@ export default function SalarieDetailPage() {
       {tab === "infos" && (
         <div className="grid gap-6 lg:grid-cols-2">
           <Card className="p-4">
-            <h2 className="mb-3 font-semibold text-slate-900">{ts("cardFiche")}</h2>
+            <h2 className="mb-3 font-semibold text-foreground">{ts("cardFiche")}</h2>
             <dl className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
               <div>
-                <dt className="text-slate-500">{tdt("dtEmail")}</dt>
+                <dt className="text-muted-foreground">{tdt("dtEmail")}</dt>
                 <dd>{salarie.email ?? tc("emDash")}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">{tdt("dtTelephone")}</dt>
+                <dt className="text-muted-foreground">{tdt("dtTelephone")}</dt>
                 <dd>{salarie.telephone ?? tc("emDash")}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">{tdt("dtPoste")}</dt>
+                <dt className="text-muted-foreground">{tdt("dtPoste")}</dt>
                 <dd>{salarie.poste}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">{tdt("dtContrat")}</dt>
+                <dt className="text-muted-foreground">{tdt("dtContrat")}</dt>
                 <dd>{salarie.typeContrat}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">{tdt("dtEmbauche")}</dt>
+                <dt className="text-muted-foreground">{tdt("dtEmbauche")}</dt>
                 <dd>{salarie.dateEmbauche}</dd>
               </div>
               <div>
-                <dt className="text-slate-500">{tdt("dtNationalite")}</dt>
+                <dt className="text-muted-foreground">{tdt("dtNationalite")}</dt>
                 <dd>{salarie.nationalite ?? tc("emDash")}</dd>
               </div>
             </dl>
@@ -254,30 +254,30 @@ export default function SalarieDetailPage() {
             )}
           </Card>
           <Card className="p-4">
-            <h2 className="mb-3 font-semibold text-slate-900">{ts("cardEdit")}</h2>
+            <h2 className="mb-3 font-semibold text-foreground">{ts("cardEdit")}</h2>
             <SalarieForm defaultValues={defaultEdit} submitLabel={tc("save")} onSubmit={onUpdate} salaireEditable={false} />
           </Card>
           <Card className="p-4 lg:col-span-2">
-            <h2 className="mb-3 font-semibold text-slate-900">{ts("histSalaires")}</h2>
+            <h2 className="mb-3 font-semibold text-foreground">{ts("histSalaires")}</h2>
             <div className="relative space-y-4 border-l-2 border-indigo-200 pl-4">
               {(historique ?? []).map((h, i) => (
                 <div key={i} className="relative">
                   <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-indigo-500" />
-                  <p className="text-sm font-medium text-slate-900">
+                  <p className="text-sm font-medium text-foreground">
                     {ts("netBrut", {
                       net: fmtMoney(h.montantNet, h.devise, localeTag),
                       brut: fmtMoney(h.montantBrut, h.devise, localeTag),
                     })}
                   </p>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-muted-foreground">
                     {h.dateDebut}
                     {h.dateFin ? ` → ${h.dateFin}` : ` ${ts("ongoing")}`}
                   </p>
                 </div>
               ))}
             </div>
-            <div className="mt-6 border-t border-slate-100 pt-4">
-              <h3 className="mb-2 text-sm font-semibold text-slate-800">{ts("newGrille")}</h3>
+            <div className="mt-6 border-t border-border pt-4">
+              <h3 className="mb-2 text-sm font-semibold text-foreground">{ts("newGrille")}</h3>
               <GrilleInline
                 labels={{
                   brut: ts("labelBrut"),
@@ -303,18 +303,18 @@ export default function SalarieDetailPage() {
       {tab === "conges" && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-4">
-            <h2 className="mb-2 font-semibold text-slate-900">{ts("soldeYear", { year })}</h2>
+            <h2 className="mb-2 font-semibold text-foreground">{ts("soldeYear", { year })}</h2>
             {droits && (
               <>
-                <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
                   <div className="h-full bg-indigo-500 transition-all" style={{ width: `${pct}%` }} />
                 </div>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className="mt-2 text-sm text-muted-foreground">
                   {ts("soldeTaken", { pris: droits.joursPris, droit: droits.joursDroit, restants: droits.joursRestants })}
                 </p>
               </>
             )}
-            <div className="mt-6 border-t border-slate-100 pt-4">
+            <div className="mt-6 border-t border-border pt-4">
               <h3 className="mb-2 text-sm font-semibold">{ts("newRequest")}</h3>
               <CongeForm
                 salarieId={id}
@@ -325,11 +325,11 @@ export default function SalarieDetailPage() {
             </div>
           </Card>
           <Card className="p-4">
-            <h2 className="mb-2 font-semibold text-slate-900">{ts("demandes")}</h2>
+            <h2 className="mb-2 font-semibold text-foreground">{ts("demandes")}</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-slate-500">
+                  <tr className="border-b border-border text-left text-muted-foreground">
                     <th className="py-1">{ts("thPeriode")}</th>
                     <th>{ts("thType")}</th>
                     <th>{ts("thJours")}</th>
@@ -339,7 +339,7 @@ export default function SalarieDetailPage() {
                 </thead>
                 <tbody>
                   {(congesPage?.content ?? []).map((c) => (
-                    <tr key={c.id} className="border-b border-slate-100">
+                    <tr key={c.id} className="border-b border-border">
                       <td className="py-1">
                         {c.dateDebut} → {c.dateFin}
                       </td>
@@ -365,7 +365,7 @@ export default function SalarieDetailPage() {
                             </Button>
                           </div>
                         ) : (
-                          <span className="text-slate-400">{tc("emDash")}</span>
+                          <span className="text-muted-foreground">{tc("emDash")}</span>
                         )}
                       </td>
                     </tr>
@@ -379,11 +379,11 @@ export default function SalarieDetailPage() {
 
       {tab === "paie" && (
         <Card className="p-4">
-          <h2 className="mb-3 font-semibold text-slate-900">{ts("paieYear", { year })}</h2>
+          <h2 className="mb-3 font-semibold text-foreground">{ts("paieYear", { year })}</h2>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b text-left text-slate-500">
+                <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="py-1">{ts("thMois")}</th>
                   <th>{ts("thMontant")}</th>
                   <th>{ts("thStatut")}</th>
@@ -392,7 +392,7 @@ export default function SalarieDetailPage() {
               </thead>
               <tbody>
                 {(paiePage?.content ?? []).map((p) => (
-                  <tr key={p.id} className="border-b border-slate-100">
+                  <tr key={p.id} className="border-b border-border">
                     <td className="py-1">{p.mois}</td>
                     <td>{fmtMoney(p.montant, p.devise, localeTag)}</td>
                     <td>
@@ -415,8 +415,8 @@ export default function SalarieDetailPage() {
 
       {tab === "docs" && (
         <Card className="p-4">
-          <h2 className="mb-3 font-semibold text-slate-900">{ts("contractsPdf")}</h2>
-          <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center text-sm text-slate-600 hover:bg-slate-100">
+          <h2 className="mb-3 font-semibold text-foreground">{ts("contractsPdf")}</h2>
+          <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted p-8 text-center text-sm text-muted-foreground hover:bg-muted/80">
             <input
               type="file"
               accept="application/pdf"
@@ -494,7 +494,7 @@ export default function SalarieDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <Card className="w-full max-w-md p-4">
             <h3 className="mb-1 font-semibold">{ts("rejectTitle")}</h3>
-            <p className="mb-2 text-xs text-slate-600">{ts("rejectHint")}</p>
+            <p className="mb-2 text-xs text-muted-foreground">{ts("rejectHint")}</p>
             <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder={ts("placeholderRequired")} />
             <div className="mt-3 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
@@ -516,7 +516,7 @@ export default function SalarieDetailPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
           <Card className="w-full max-w-md p-4">
             <h3 className="mb-1 font-semibold">{ts("validateCongeTitle")}</h3>
-            <p className="mb-3 text-xs text-slate-600">{ts("validateCongeHint")}</p>
+            <p className="mb-3 text-xs text-muted-foreground">{ts("validateCongeHint")}</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirmValidateCongeId(null)}>
                 {tc("cancel")}

@@ -19,10 +19,10 @@ import { useTranslations } from "next-intl";
 function iconForMime(mime: string) {
   const m = (mime ?? "").toLowerCase();
   if (m === "application/pdf") return { Icon: FileText, className: "text-rose-600" };
-  if (m.startsWith("image/")) return { Icon: FileImage, className: "text-slate-600" };
+  if (m.startsWith("image/")) return { Icon: FileImage, className: "text-muted-foreground" };
   if (m.includes("spreadsheetml") || m.includes("excel")) return { Icon: FileSpreadsheet, className: "text-emerald-600" };
   if (m.includes("wordprocessingml") || m.includes("word")) return { Icon: FileType2, className: "text-sky-600" };
-  return { Icon: FileText, className: "text-slate-600" };
+  return { Icon: FileText, className: "text-muted-foreground" };
 }
 
 function daysUntil(dateIso: string | null) {
@@ -60,16 +60,16 @@ export function DocumentCard({
             : { label: t("expiresIn", { days: exp }), variant: "muted" as const };
 
   return (
-    <div className="group relative rounded-lg border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow">
+    <div className="group relative rounded-lg border border-border bg-card p-3 text-card-foreground shadow-sm transition hover:shadow">
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-3">
-          <div className={cn("mt-0.5 rounded-md bg-slate-50 p-2", className)}>
+          <div className={cn("mt-0.5 rounded-md bg-muted p-2", className)}>
             <Icon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
-            <p className="truncate font-semibold text-slate-900">{doc.titre}</p>
-            {doc.description ? <p className="line-clamp-2 text-sm text-slate-600">{doc.description}</p> : null}
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="truncate font-semibold text-foreground">{doc.titre}</p>
+            {doc.description ? <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p> : null}
+            <p className="mt-1 text-xs text-muted-foreground">
               {doc.typeDocument} · v{doc.version} · {(doc.tailleOctets / 1024).toFixed(0)} Ko
             </p>
           </div>
@@ -80,10 +80,10 @@ export function DocumentCard({
             <MoreVertical className="h-4 w-4" />
           </Button>
           {menuOpen ? (
-            <div className="absolute right-0 top-9 z-10 w-44 rounded-md border border-slate-200 bg-white p-1 shadow-lg">
+            <div className="absolute right-0 top-9 z-10 w-44 rounded-md border border-border bg-card p-1 text-card-foreground shadow-lg">
               <button
                 type="button"
-                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-100"
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm text-foreground hover:bg-muted"
                 onClick={() => {
                   setMenuOpen(false);
                   onDownload();

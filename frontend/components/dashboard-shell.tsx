@@ -13,6 +13,7 @@ import { useAppLocale } from "@/lib/locale-context";
 import type { AppLocale } from "@/lib/locale-context";
 import { setLocaleCookie } from "@/lib/locale-cookie";
 import { NotificationBell } from "@/components/ui/NotificationBell";
+import { useAppTheme } from "@/lib/theme-context";
 
 function syncTokenFromCookie() {
   if (typeof document === "undefined") return;
@@ -50,6 +51,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const setAuth = useAuthStore((s) => s.setAuth);
   const logout = useAuthStore((s) => s.logout);
   const { locale, setLocale } = useAppLocale();
+  const { setTheme } = useAppTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
 
@@ -66,6 +68,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         const me = await get<UserInfo>("auth/me");
         if (!cancelled) {
           setAuth(me, accessToken, 900);
+          try {
+            const prefs = await get<{ theme: "system" | "light" | "dark" }>("auth/me/preferences");
+            if (!cancelled && prefs?.theme) setTheme(prefs.theme);
+          } catch {
+            /* ignore: keep current theme */
+          }
         }
       } catch {
         if (!cancelled) {
@@ -77,7 +85,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, user, setAuth, logout, router]);
+  }, [accessToken, user, setAuth, logout, router, setTheme]);
 
   async function handleLogout() {
     try {
@@ -185,7 +193,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const linkClass = (href: string) =>
     `rounded-md px-3 py-2 text-sm font-medium ${
-      pathname === href || pathname.startsWith(href + "/") ? "bg-indigo-50 text-indigo-800" : "text-slate-700 hover:bg-slate-100"
+      pathname === href || pathname.startsWith(href + "/") ? "bg-indigo-50 text-indigo-800" : "text-muted-foreground hover:bg-muted hover:text-foreground"
     }`;
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
@@ -198,7 +206,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {financeItems.length > 0 ? (
         <>
-          <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("sectionFinance")}</p>
+          <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("sectionFinance")}</p>
           {financeItems.map((item) => (
             <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
               {item.label}
@@ -209,7 +217,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
       {rhItems.length > 0 ? (
         <>
-          <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-slate-400">{t("sectionRh")}</p>
+          <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("sectionRh")}</p>
           {rhItems.map((item) => (
             <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
               {item.label}
@@ -228,7 +236,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         href="/dashboard/settings"
         onClick={onNavigate}
         className={`mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
-          pathname.startsWith("/dashboard/settings") ? "bg-indigo-50 text-indigo-800" : "text-slate-700 hover:bg-slate-100"
+          pathname.startsWith("/dashboard/settings") ? "bg-indigo-50 text-indigo-800" : "text-muted-foreground hover:bg-muted hover:text-foreground"
         }`}
       >
         <Settings className="h-4 w-4 shrink-0 opacity-70" />
@@ -238,22 +246,22 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="hidden w-64 flex-col border-r border-slate-200 bg-white p-4 md:flex">
-        <div className="mb-8 flex items-center gap-2 text-slate-900">
+    <div className="flex min-h-screen bg-background">
+      <aside className="hidden w-64 flex-col border-r border-border bg-card p-4 text-card-foreground md:flex">
+        <div className="mb-8 flex items-center gap-2 text-foreground">
           <Building2 className="h-8 w-8 text-indigo-600" />
           <div>
             <p className="text-sm font-semibold leading-tight">{ta("name")}</p>
-            <p className="text-xs text-slate-500">{ta("tagline")}</p>
+            <p className="text-xs text-muted-foreground">{ta("tagline")}</p>
           </div>
         </div>
         <nav className="flex flex-1 flex-col gap-0.5">
           <NavLinks />
         </nav>
-        <div className="mt-auto border-t border-slate-100 pt-4">
+        <div className="mt-auto border-t border-border pt-4">
           <LanguagePicker />
-          <p className="truncate text-xs text-slate-500">{user?.email}</p>
-          <p className="truncate text-xs font-medium text-slate-800">{user?.organisationNom}</p>
+          <p className="truncate text-xs text-muted-foreground">{user?.email}</p>
+          <p className="truncate text-xs font-medium text-foreground">{user?.organisationNom}</p>
           <Button variant="outline" className="mt-3 w-full justify-start gap-2" type="button" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             {tc("logout")}
@@ -265,13 +273,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 md:hidden" role="dialog" aria-modal="true">
           <button
             type="button"
-            className="absolute inset-0 bg-slate-900/40"
+            className="absolute inset-0 bg-black/40"
             aria-label={tc("close")}
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 flex h-full w-[min(100%,20rem)] flex-col border-r border-slate-200 bg-white p-4 shadow-xl">
+          <div className="absolute left-0 top-0 flex h-full w-[min(100%,20rem)] flex-col border-r border-border bg-card p-4 text-card-foreground shadow-xl">
             <div className="mb-4 flex items-center justify-between">
-              <span className="font-semibold text-slate-900">{tc("menu")}</span>
+              <span className="font-semibold text-foreground">{tc("menu")}</span>
               <Button type="button" variant="ghost" size="icon" onClick={() => setMobileOpen(false)} aria-label={tc("close")}>
                 <X className="h-5 w-5" />
               </Button>
@@ -279,7 +287,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
               <NavLinks onNavigate={() => setMobileOpen(false)} />
             </nav>
-            <div className="mt-auto border-t border-slate-100 pt-4">
+            <div className="mt-auto border-t border-border pt-4">
               <LanguagePicker compact />
               <Button variant="outline" className="w-full justify-start gap-2" type="button" onClick={handleLogout}>
                 <LogOut className="h-4 w-4" />
@@ -291,7 +299,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden">
+        <header className="flex items-center justify-between border-b border-border bg-card px-4 py-3 text-card-foreground md:hidden">
           <div className="flex min-w-0 items-center gap-2">
             <Button type="button" variant="ghost" size="icon" onClick={() => setMobileOpen(true)} aria-label={tc("menu")}>
               <Menu className="h-6 w-6 text-indigo-600" />

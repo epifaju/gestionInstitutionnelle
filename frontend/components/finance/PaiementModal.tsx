@@ -34,9 +34,9 @@ export function PaiementModal({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+      <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
         <h3 className="mb-2 font-semibold">{t("title", { reference: facture.reference })}</h3>
-        <p className="mb-3 text-sm text-slate-600">
+        <p className="mb-3 text-sm text-muted-foreground">
           {t("remaining", { amount: restant.toFixed(2), currency: devise })}
         </p>
         {err && <p className="mb-2 text-sm text-red-600">{err}</p>}

@@ -131,7 +131,7 @@ export default function RecettesPage() {
                 {t("justificatif")}
               </Button>
               ) : (
-                <span className="text-slate-400">{tc("emDash")}</span>
+                <span className="text-muted-foreground">{tc("emDash")}</span>
               )}
             </div>
           );
@@ -147,8 +147,8 @@ export default function RecettesPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         {canCreate && (
           <Button type="button" onClick={() => setOpen(true)}>
@@ -157,7 +157,7 @@ export default function RecettesPage() {
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -240,16 +240,16 @@ export default function RecettesPage() {
 
       {deleteOpen && deleting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-slate-900">{t("deleteTitle")}</h2>
-            <p className="mt-2 text-sm text-slate-600">
+          <div className="w-full max-w-md rounded-lg bg-card p-6 text-card-foreground shadow-lg">
+            <h2 className="text-lg font-semibold text-foreground">{t("deleteTitle")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
               {t("deleteBody", {
                 date: deleting.dateRecette,
                 montant: fmt(deleting.montant),
                 devise: deleting.devise,
               })}
             </p>
-            <p className="mt-2 text-xs text-slate-500">{t("deleteHint")}</p>
+            <p className="mt-2 text-xs text-muted-foreground">{t("deleteHint")}</p>
 
             <div className="mt-6 flex justify-end gap-2">
               <Button

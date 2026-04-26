@@ -85,8 +85,8 @@ export default function InventairePage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{ti("title")}</h1>
-          <p className="mt-1 text-sm text-slate-600">{ti("pageSubtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{ti("title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{ti("pageSubtitle")}</p>
         </div>
         {canWrite && (
           <Button
@@ -106,7 +106,7 @@ export default function InventairePage() {
         </CardHeader>
         <CardContent>
           {stats ? (
-            <p className="text-3xl font-semibold tracking-tight text-slate-900">
+            <p className="text-3xl font-semibold tracking-tight text-foreground">
               {fmtEur(stats.valeurTotaleParc, localeTag, tc("emDash"))}
             </p>
           ) : (
@@ -186,7 +186,7 @@ export default function InventairePage() {
         <Button variant="outline" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
           {tc("previous")}
         </Button>
-        <span className="text-slate-600">
+        <span className="text-muted-foreground">
           {tc("page", { current: page + 1, total: Math.max(1, listData?.totalPages ?? 1) })}
         </span>
         <Button
@@ -212,31 +212,31 @@ export default function InventairePage() {
 
       {histId && (
         <div className="fixed inset-0 z-50 flex justify-end bg-black/40">
-          <div className="h-full w-full max-w-md overflow-y-auto bg-white p-6 shadow-xl">
+          <div className="h-full w-full max-w-md overflow-y-auto bg-card p-6 text-card-foreground shadow-xl">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold">{ti("drawerTitle")}</h2>
               <Button variant="ghost" size="sm" onClick={() => setHistId(null)}>
                 {ti("drawerClose")}
               </Button>
             </div>
-            <ul className="mt-6 space-y-4 border-l-2 border-slate-200 pl-4">
+            <ul className="mt-6 space-y-4 border-l-2 border-border pl-4">
               {(mouvements ?? []).map((m: MouvementResponse) => (
                 <li key={m.id} className="relative">
-                  <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-slate-400" />
-                  <p className="text-xs text-slate-500">
+                  <span className="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-muted-foreground" />
+                  <p className="text-xs text-muted-foreground">
                     {m.dateMouvement ? new Date(m.dateMouvement).toLocaleString(localeTag) : ""}
                   </p>
-                  <p className="font-medium text-slate-900">
+                  <p className="font-medium text-foreground">
                     {m.typeMouvement}
                     {m.champModifie ? ` · ${m.champModifie}` : ""}
                   </p>
                   {(m.ancienneValeur || m.nouvelleValeur) && (
-                    <p className="text-sm text-slate-600">
+                    <p className="text-sm text-muted-foreground">
                       {m.ancienneValeur} → {m.nouvelleValeur}
                     </p>
                   )}
-                  {m.motif && <p className="text-sm text-slate-500">{ti("movementMotif", { motif: m.motif })}</p>}
-                  <p className="text-xs text-slate-400">{m.auteurNomComplet}</p>
+                  {m.motif && <p className="text-sm text-muted-foreground">{ti("movementMotif", { motif: m.motif })}</p>}
+                  <p className="text-xs text-muted-foreground">{m.auteurNomComplet}</p>
                 </li>
               ))}
             </ul>

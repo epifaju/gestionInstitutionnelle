@@ -41,8 +41,8 @@ export default function DevisesPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="text-sm text-slate-600">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
@@ -53,14 +53,14 @@ export default function DevisesPage() {
           <div className="flex flex-wrap items-center gap-2">
             <div className="flex items-center gap-2">
               <DeviseSelector value={pair.base} onChange={(v) => setPair((p) => ({ ...p, base: v }))} />
-              <span className="text-sm text-slate-500">→</span>
+              <span className="text-sm text-muted-foreground">→</span>
               <DeviseSelector value={pair.cible} onChange={(v) => setPair((p) => ({ ...p, cible: v }))} />
             </div>
-            <div className="flex rounded-md border border-slate-200 bg-white p-1">
+            <div className="flex rounded-md border border-border bg-card p-1">
               {[30, 90, 365].map((d) => (
                 <button
                   key={d}
-                  className={`px-3 py-1 text-sm rounded ${range === d ? "bg-slate-100 text-slate-900" : "text-slate-600"}`}
+                  className={`rounded px-3 py-1 text-sm ${range === d ? "bg-muted text-foreground" : "text-muted-foreground hover:bg-muted/50"}`}
                   onClick={() => setRange(d as 30 | 90 | 365)}
                   type="button"
                 >
@@ -72,11 +72,11 @@ export default function DevisesPage() {
         </CardHeader>
         <CardContent className="h-80">
           {isLoading ? (
-            <p className="text-sm text-slate-500">Chargement…</p>
+            <p className="text-sm text-muted-foreground">Chargement…</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chart}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-slate-200" />
+                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                 <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 11 }} domain={["auto", "auto"]} />
                 <Tooltip formatter={(v) => Number(v).toFixed(6)} />

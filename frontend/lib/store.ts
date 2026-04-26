@@ -43,6 +43,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ accessToken: token });
   },
   logout: () => {
+    try {
+      // Legacy global theme key could leak between accounts in same browser.
+      localStorage.removeItem("app_theme");
+    } catch {
+      /* ignore */
+    }
     clearAccessTokenCookie();
     set({ user: null, accessToken: null });
   },

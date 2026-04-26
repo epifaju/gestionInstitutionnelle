@@ -119,7 +119,7 @@ export function RecetteModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+      <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
         <h2 className="mb-3 font-semibold">{resolvedTitle}</h2>
         <div className="space-y-2">
           <div>
@@ -133,7 +133,7 @@ export function RecetteModal({
           <div>
             <Label>{t("type")}</Label>
             <select
-              className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+              className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
               value={form.typeRecette}
               onChange={(e) => setForm((f) => ({ ...f, typeRecette: e.target.value }))}
             >
@@ -159,10 +159,10 @@ export function RecetteModal({
             </div>
           </div>
           {String(form.devise ?? "EUR").toUpperCase() !== "EUR" ? (
-            <p className="text-xs text-slate-600">
-              ≈ <span className="font-medium text-slate-900">{convEur != null ? convEur.toFixed(2) : "—"}</span> EUR{" "}
+            <p className="text-xs text-muted-foreground">
+              ≈ <span className="font-medium text-foreground">{convEur != null ? convEur.toFixed(2) : "—"}</span> EUR{" "}
               {taux != null ? (
-                <span className="text-slate-500">
+                <span className="text-muted-foreground">
                   (taux: {taux.toFixed(6)} · {form.dateRecette || "jour"})
                 </span>
               ) : null}
@@ -182,7 +182,7 @@ export function RecetteModal({
           <div>
             <Label>{t("category")}</Label>
             <select
-              className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+              className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
               value={form.categorieId ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, categorieId: e.target.value ? e.target.value : null }))}
             >
@@ -194,7 +194,7 @@ export function RecetteModal({
               ))}
             </select>
             {categories.length === 0 ? (
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t.rich("noCategoriesHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
               </p>
             ) : null}
@@ -208,10 +208,10 @@ export function RecetteModal({
                   accept="application/pdf,image/*"
                   onChange={(e) => setFile(e.target.files?.[0] ?? null)}
                 />
-                {file && <p className="text-xs text-slate-600">{file.name}</p>}
+                {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
               </>
             ) : (
-              <p className="text-xs text-slate-600">{t("receiptDisabled")}</p>
+              <p className="text-xs text-muted-foreground">{t("receiptDisabled")}</p>
             )}
           </div>
         </div>

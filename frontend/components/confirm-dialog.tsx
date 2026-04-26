@@ -27,10 +27,10 @@ export function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <button type="button" className="absolute inset-0 bg-slate-900/40" aria-label="Fermer" onClick={onCancel} />
-      <div className="relative z-10 w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
-        {description ? <p className="mt-2 text-sm text-slate-600">{description}</p> : null}
+      <button type="button" className="absolute inset-0 bg-black/40" aria-label="Fermer" onClick={onCancel} />
+      <div className="relative z-10 w-full max-w-md rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl">
+        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        {description ? <p className="mt-2 text-sm text-muted-foreground">{description}</p> : null}
         <div className="mt-6 flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={onCancel}>
             {cancelLabel}

@@ -32,19 +32,19 @@ export default function EmployeHomePage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-        <p className="text-sm text-slate-600">{todayLabel()}</p>
-        <p className="mt-1 text-lg font-semibold text-slate-900">Bonjour {user?.prenom ?? ""}</p>
+      <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+        <p className="text-sm text-muted-foreground">{todayLabel()}</p>
+        <p className="mt-1 text-lg font-semibold text-foreground">Bonjour {user?.prenom ?? ""}</p>
       </div>
 
       <div className="grid gap-3">
-        <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Solde congés</p>
-          <p className="mt-2 text-4xl font-bold text-slate-900">{restants ?? "—"}</p>
-          <p className="mt-1 text-sm text-slate-600">
+        <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Solde congés</p>
+          <p className="mt-2 text-4xl font-bold text-foreground">{restants ?? "—"}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
             Droit: {droit ?? "—"} · Pris: {pris ?? "—"}
           </p>
-          <div className="mt-3 h-2 rounded-full bg-slate-100">
+          <div className="mt-3 h-2 rounded-full bg-muted">
             <div
               className="h-2 rounded-full bg-indigo-600"
               style={{
@@ -54,23 +54,23 @@ export default function EmployeHomePage() {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Dernière paie</p>
-          <p className="mt-2 text-lg font-semibold text-slate-900">{lastPaie ? `${lastPaie.mois}/${lastPaie.annee}` : "—"}</p>
-          <p className="text-sm text-slate-600">{lastPaie ? `${lastPaie.montant} ${lastPaie.devise}` : ""}</p>
-          <p className="mt-1 text-xs text-slate-500">{lastPaie ? lastPaie.statut : ""}</p>
+        <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dernière paie</p>
+          <p className="mt-2 text-lg font-semibold text-foreground">{lastPaie ? `${lastPaie.mois}/${lastPaie.annee}` : "—"}</p>
+          <p className="text-sm text-muted-foreground">{lastPaie ? `${lastPaie.montant} ${lastPaie.devise}` : ""}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{lastPaie ? lastPaie.statut : ""}</p>
         </div>
 
-        <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Prochains congés validés</p>
+        <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Prochains congés validés</p>
           {upcoming.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-600">Aucun congé validé à venir.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Aucun congé validé à venir.</p>
           ) : (
             <div className="mt-2 space-y-2">
               {upcoming.map((c) => (
-                <div key={c.id} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm">
-                  <div className="font-medium text-slate-900">{c.typeConge}</div>
-                  <div className="text-slate-600">
+                <div key={c.id} className="rounded-lg border border-border bg-muted px-3 py-2 text-sm">
+                  <div className="font-medium text-foreground">{c.typeConge}</div>
+                  <div className="text-muted-foreground">
                     {c.dateDebut} → {c.dateFin}
                   </div>
                 </div>
@@ -79,16 +79,16 @@ export default function EmployeHomePage() {
           )}
         </div>
 
-        <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Notifications</p>
+        <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Notifications</p>
           {notifs.length === 0 ? (
-            <p className="mt-2 text-sm text-slate-600">Aucune notification non lue.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Aucune notification non lue.</p>
           ) : (
             <div className="mt-2 space-y-2">
               {notifs.map((n) => (
-                <div key={n.id} className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-                  <div className="text-sm font-medium text-slate-900">{n.titre}</div>
-                  <div className="text-xs text-slate-600 line-clamp-2">{n.message}</div>
+                <div key={n.id} className="rounded-lg border border-border bg-muted px-3 py-2">
+                  <div className="text-sm font-medium text-foreground">{n.titre}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2">{n.message}</div>
                 </div>
               ))}
             </div>

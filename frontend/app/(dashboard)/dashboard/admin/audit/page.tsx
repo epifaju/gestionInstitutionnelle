@@ -9,11 +9,11 @@ import { useAuthStore } from "@/lib/store";
 import { listAuditLogs } from "@/services/admin.service";
 
 function JsonCell({ value }: { value: unknown }) {
-  if (value == null) return <span className="text-slate-400">—</span>;
+  if (value == null) return <span className="text-muted-foreground">—</span>;
   const s = JSON.stringify(value, null, 0);
   const short = s.length > 120 ? `${s.slice(0, 120)}…` : s;
   return (
-    <pre className="max-w-[min(28rem,40vw)] overflow-x-auto whitespace-pre-wrap break-all text-xs text-slate-700" title={s}>
+    <pre className="max-w-[min(28rem,40vw)] overflow-x-auto whitespace-pre-wrap break-all text-xs text-muted-foreground" title={s}>
       {short}
     </pre>
   );
@@ -44,11 +44,11 @@ export default function AdminAuditPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="text-sm text-slate-600">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             <TableRow>
@@ -79,12 +79,12 @@ export default function AdminAuditPage() {
                   <TableCell className="align-top text-sm">
                     {log.entite}
                     {log.entiteId ? (
-                      <span className="block text-xs text-slate-500">{log.entiteId}</span>
+                      <span className="block text-xs text-muted-foreground">{log.entiteId}</span>
                     ) : null}
                   </TableCell>
                   <TableCell className="align-top text-xs">{log.utilisateurEmail ?? log.utilisateurId ?? tc("emDash")}</TableCell>
-                  <TableCell className="align-top text-xs text-slate-600">{log.ipAddress ?? tc("emDash")}</TableCell>
-                  <TableCell className="align-top max-w-[12rem] truncate text-xs text-slate-600" title={log.userAgent ?? undefined}>
+                  <TableCell className="align-top text-xs text-muted-foreground">{log.ipAddress ?? tc("emDash")}</TableCell>
+                  <TableCell className="align-top max-w-[12rem] truncate text-xs text-muted-foreground" title={log.userAgent ?? undefined}>
                     {log.userAgent ?? tc("emDash")}
                   </TableCell>
                   <TableCell className="align-top">
@@ -101,7 +101,7 @@ export default function AdminAuditPage() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {tc("page", { current: data.page + 1, total: data.totalPages })}
           </span>

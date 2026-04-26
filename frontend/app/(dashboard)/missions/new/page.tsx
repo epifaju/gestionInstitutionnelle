@@ -38,11 +38,11 @@ export default function NewMissionPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("createTitle")}</h1>
-        <p className="text-sm text-slate-600">{t("createSubtitle")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("createTitle")}</h1>
+        <p className="text-sm text-muted-foreground">{t("createSubtitle")}</p>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4 space-y-3">
+      <div className="space-y-3 rounded-lg border border-border bg-card p-4 text-card-foreground">
         <div className="space-y-1">
           <Label>{t("fTitre")}</Label>
           <Input value={form.titre} onChange={(e) => setForm((f) => ({ ...f, titre: e.target.value }))} />

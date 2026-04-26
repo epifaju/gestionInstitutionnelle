@@ -32,7 +32,7 @@ const typeColor: Record<string, string> = {
   ANNUEL: "bg-sky-200 text-sky-900",
   MALADIE: "bg-red-200 text-red-900",
   EXCEPTIONNEL: "bg-orange-200 text-orange-900",
-  SANS_SOLDE: "bg-slate-300 text-slate-800",
+  SANS_SOLDE: "bg-muted text-foreground",
 };
 
 function startOfMonth(d: Date) {
@@ -187,7 +187,7 @@ export default function CongesPage() {
               </div>
             );
           }
-          return <div className="text-right text-slate-400">{tc("emDash")}</div>;
+          return <div className="text-right text-muted-foreground">{tc("emDash")}</div>;
         },
       },
     ],
@@ -208,8 +208,8 @@ export default function CongesPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("pageTitle")}</h1>
-          <p className="text-sm text-slate-600">{t("pageSubtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("pageTitle")}</h1>
+          <p className="text-sm text-muted-foreground">{t("pageSubtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button type="button" variant={view === "liste" ? "default" : "outline"} size="sm" onClick={() => setView("liste")}>
@@ -224,8 +224,8 @@ export default function CongesPage() {
       {view === "liste" && (
         <>
           {isEmploye && mySalarie?.id ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-4">
-              <h2 className="mb-2 font-semibold text-slate-900">{t("newRequest")}</h2>
+            <div className="rounded-lg border border-border bg-card p-4 text-card-foreground">
+              <h2 className="mb-2 font-semibold text-foreground">{t("newRequest")}</h2>
               <CongeForm
                 salarieId={mySalarie.id}
                 onSubmit={async (b) => {
@@ -234,11 +234,11 @@ export default function CongesPage() {
               />
             </div>
           ) : null}
-          <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-3">
+          <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-card p-3 text-card-foreground">
             <div>
-              <Label className="text-xs text-slate-500">{t("filterStatut")}</Label>
+              <Label className="text-xs text-muted-foreground">{t("filterStatut")}</Label>
               <select
-                className="flex h-9 w-40 rounded-md border border-slate-200 bg-white px-2 text-sm"
+                className="flex h-9 w-40 rounded-md border border-border bg-background px-2 text-sm text-foreground"
                 value={statut}
                 onChange={(e) => {
                   setStatut(e.target.value);
@@ -253,9 +253,9 @@ export default function CongesPage() {
               </select>
             </div>
             <div>
-              <Label className="text-xs text-slate-500">{t("filterType")}</Label>
+              <Label className="text-xs text-muted-foreground">{t("filterType")}</Label>
               <select
-                className="flex h-9 w-44 rounded-md border border-slate-200 bg-white px-2 text-sm"
+                className="flex h-9 w-44 rounded-md border border-border bg-background px-2 text-sm text-foreground"
                 value={typeConge}
                 onChange={(e) => {
                   setTypeConge(e.target.value);
@@ -270,7 +270,7 @@ export default function CongesPage() {
               </select>
             </div>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white">
+          <div className="rounded-lg border border-border bg-card text-card-foreground">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((hg) => (
@@ -293,7 +293,7 @@ export default function CongesPage() {
             </Table>
           </div>
           {liste && liste.totalPages > 1 && (
-            <div className="flex justify-between text-sm text-slate-600">
+            <div className="flex justify-between text-sm text-muted-foreground">
               <Button type="button" variant="outline" size="sm" disabled={page <= 0} onClick={() => setPage((p) => p - 1)}>
                 {tc("previous")}
               </Button>
@@ -306,7 +306,7 @@ export default function CongesPage() {
       )}
 
       {view === "cal" && (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground">
           <div className="mb-3 flex items-center justify-between">
             <Button
               type="button"
@@ -328,7 +328,7 @@ export default function CongesPage() {
               →
             </Button>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-slate-500">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted-foreground">
             {[
               t("weekdayMon"),
               t("weekdayTue"),
@@ -343,17 +343,17 @@ export default function CongesPage() {
           </div>
           <div className="mt-1 grid grid-cols-7 gap-1">
             {Array.from({ length: offset }).map((_, i) => (
-              <div key={`e-${i}`} className="min-h-[72px] rounded border border-transparent bg-slate-50/50" />
+              <div key={`e-${i}`} className="min-h-[72px] rounded border border-transparent bg-muted/50" />
             ))}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const day = i + 1;
               const iso = fmtIso(new Date(cursor.getFullYear(), cursor.getMonth(), day));
               const dayEvents = dedupe((events ?? []).filter((e) => e.dateDebut <= iso && e.dateFin >= iso));
               return (
-                <div key={day} className="min-h-[72px] rounded border border-slate-100 bg-white p-1 text-left text-[10px]">
-                  <div className="font-semibold text-slate-800">{day}</div>
+                <div key={day} className="min-h-[72px] rounded border border-border bg-card p-1 text-left text-[10px]">
+                  <div className="font-semibold text-foreground">{day}</div>
                   {dayEvents.slice(0, 3).map((c) => (
-                    <div key={c.id} className={`mt-0.5 truncate rounded px-0.5 ${typeColor[c.typeConge] ?? "bg-slate-200"}`}>
+                    <div key={c.id} className={`mt-0.5 truncate rounded px-0.5 ${typeColor[c.typeConge] ?? "bg-muted text-foreground"}`}>
                       {c.typeConge}
                     </div>
                   ))}
@@ -366,9 +366,9 @@ export default function CongesPage() {
 
       {rejectId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
             <h3 className="mb-1 font-semibold">{t("rejectModalTitle")}</h3>
-            <p className="mb-2 text-xs text-slate-600">{t("rejectModalHint")}</p>
+            <p className="mb-2 text-xs text-muted-foreground">{t("rejectModalHint")}</p>
             <Input value={motif} onChange={(e) => setMotif(e.target.value)} placeholder={t("placeholderMotif")} />
             <div className="mt-3 flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setRejectId(null)}>
@@ -388,9 +388,9 @@ export default function CongesPage() {
 
       {confirmValidateId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-lg bg-card p-4 text-card-foreground shadow-xl">
             <h3 className="mb-1 font-semibold">{t("validateModalTitle")}</h3>
-            <p className="mb-3 text-xs text-slate-600">{t("validateModalHint")}</p>
+            <p className="mb-3 text-xs text-muted-foreground">{t("validateModalHint")}</p>
             <div className="flex justify-end gap-2">
               <Button type="button" variant="outline" onClick={() => setConfirmValidateId(null)}>
                 {tc("cancel")}

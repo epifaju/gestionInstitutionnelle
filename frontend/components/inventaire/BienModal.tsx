@@ -82,7 +82,7 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-6 shadow-lg">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-card p-6 text-card-foreground shadow-lg">
         <h2 className="text-lg font-semibold">{initial ? t("titleEdit") : t("titleNew")}</h2>
         <form onSubmit={handleSubmit} className="mt-4 space-y-3">
           <div>
@@ -122,7 +122,7 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
             <div>
               <Label>{t("labelEtat")}</Label>
               <select
-                className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+                className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
                 value={etat}
                 onChange={(e) => setEtat(e.target.value)}
               >
@@ -141,7 +141,7 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
           <div>
             <Label>{t("labelResponsable")}</Label>
             <select
-              className="flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
               value={responsableId}
               onChange={(e) => setResponsableId(e.target.value)}
             >
@@ -156,7 +156,7 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
           <div>
             <Label>{t("labelDescription")}</Label>
             <textarea
-              className="flex min-h-[72px] w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm"
+              className="flex min-h-[72px] w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />

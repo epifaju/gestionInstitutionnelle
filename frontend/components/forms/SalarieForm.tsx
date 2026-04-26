@@ -171,7 +171,7 @@ export function SalarieForm({
         <Label htmlFor="devise">{tf("devise")}</Label>
         <Input id="devise" maxLength={3} disabled={!salaireEditable} {...form.register("devise")} />
         {!salaireEditable ? (
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-muted-foreground">
             {tf.rich("salaryEditHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
           </p>
         ) : null}

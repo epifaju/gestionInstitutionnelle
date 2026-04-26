@@ -54,21 +54,21 @@ export default function ResetPasswordPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center text-white">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 ring-1 ring-white/20">
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-background/10 ring-1 ring-border/40">
             <Building2 className="h-8 w-8 text-indigo-200" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="mt-2 text-sm text-indigo-100/80">{t("subtitle")}</p>
         </div>
 
-        <Card className="border-slate-200 shadow-xl shadow-indigo-950/40">
+        <Card className="border-border shadow-xl shadow-indigo-950/40">
           <CardHeader>
-            <CardTitle className="text-slate-900">{t("title")}</CardTitle>
+            <CardTitle className="text-foreground">{t("title")}</CardTitle>
             <CardDescription>{t("description")}</CardDescription>
           </CardHeader>
           <CardContent>
             {done ? (
-              <p className="text-sm text-slate-600">{t("doneHint")}</p>
+              <p className="text-sm text-muted-foreground">{t("doneHint")}</p>
             ) : (
               <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                 <div className="space-y-2">
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                 </Button>
               </form>
             )}
-            <p className="mt-4 text-center text-sm text-slate-600">
+            <p className="mt-4 text-center text-sm text-muted-foreground">
               <Link href="/login" className="text-indigo-600 hover:underline">
                 {t("backLogin")}
               </Link>

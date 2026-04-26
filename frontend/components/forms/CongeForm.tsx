@@ -61,7 +61,7 @@ export function CongeForm({
       <div>
         <Label>Type de congé</Label>
         <select
-          className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+          className="flex h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
           {...form.register("typeConge")}
         >
           <option value="ANNUEL">Annuel</option>
@@ -80,8 +80,8 @@ export function CongeForm({
           <Input id="dateFin" type="date" {...form.register("dateFin")} />
         </div>
       </div>
-      <p className="text-sm text-slate-600">
-        Jours ouvrés estimés : <span className="font-semibold text-slate-900">{nb}</span>
+      <p className="text-sm text-muted-foreground">
+        Jours ouvrés estimés : <span className="font-semibold text-foreground">{nb}</span>
       </p>
       <div>
         <Label htmlFor="commentaire">Commentaire</Label>

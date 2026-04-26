@@ -12,41 +12,41 @@ export default function EmployeProfilPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <h1 className="text-lg font-semibold text-slate-900">Mon profil</h1>
-        <p className="text-sm text-slate-600">Informations liées à votre dossier salarié.</p>
+      <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground">
+        <h1 className="text-lg font-semibold text-foreground">Mon profil</h1>
+        <p className="text-sm text-muted-foreground">Informations liées à votre dossier salarié.</p>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
+      <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground">
         {q.isLoading ? (
-          <p className="text-sm text-slate-600">Chargement…</p>
+          <p className="text-sm text-muted-foreground">Chargement…</p>
         ) : q.data ? (
           <div className="space-y-2 text-sm">
             <div className="flex justify-between gap-3">
-              <span className="text-slate-500">Matricule</span>
-              <span className="font-medium text-slate-900">{q.data.matricule}</span>
+              <span className="text-muted-foreground">Matricule</span>
+              <span className="font-medium text-foreground">{q.data.matricule}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-slate-500">Nom</span>
-              <span className="font-medium text-slate-900">
+              <span className="text-muted-foreground">Nom</span>
+              <span className="font-medium text-foreground">
                 {q.data.prenom} {q.data.nom}
               </span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-slate-500">Service</span>
-              <span className="font-medium text-slate-900">{q.data.service ?? "—"}</span>
+              <span className="text-muted-foreground">Service</span>
+              <span className="font-medium text-foreground">{q.data.service ?? "—"}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-slate-500">Poste</span>
-              <span className="font-medium text-slate-900">{q.data.poste ?? "—"}</span>
+              <span className="text-muted-foreground">Poste</span>
+              <span className="font-medium text-foreground">{q.data.poste ?? "—"}</span>
             </div>
             <div className="flex justify-between gap-3">
-              <span className="text-slate-500">Email</span>
-              <span className="font-medium text-slate-900">{q.data.email ?? "—"}</span>
+              <span className="text-muted-foreground">Email</span>
+              <span className="font-medium text-foreground">{q.data.email ?? "—"}</span>
             </div>
           </div>
         ) : (
-          <p className="text-sm text-slate-600">Profil indisponible.</p>
+          <p className="text-sm text-muted-foreground">Profil indisponible.</p>
         )}
       </div>
 

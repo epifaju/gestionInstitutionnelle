@@ -62,8 +62,8 @@ export default function RapportsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="mt-1 text-sm text-slate-600">{t("subtitleLong")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("subtitleLong")}</p>
       </div>
 
       {canFinance && (
@@ -76,7 +76,7 @@ export default function RapportsPage() {
               <Label>{t("monthlyPdfLabel")}</Label>
               <div className="flex flex-wrap items-end gap-2">
                 <select
-                  className="rounded-md border border-slate-200 px-2 py-2 text-sm"
+                  className="rounded-md border border-border bg-background px-2 py-2 text-sm text-foreground"
                   value={mois}
                   onChange={(e) => setMois(parseInt(e.target.value, 10))}
                 >
@@ -87,7 +87,7 @@ export default function RapportsPage() {
                   ))}
                 </select>
                 <select
-                  className="rounded-md border border-slate-200 px-2 py-2 text-sm"
+                  className="rounded-md border border-border bg-background px-2 py-2 text-sm text-foreground"
                   value={annee}
                   onChange={(e) => setAnnee(parseInt(e.target.value, 10))}
                 >
@@ -107,7 +107,7 @@ export default function RapportsPage() {
               <Label>{t("annualExcelLabel")}</Label>
               <div className="flex flex-wrap items-end gap-2">
                 <select
-                  className="rounded-md border border-slate-200 px-2 py-2 text-sm"
+                  className="rounded-md border border-border bg-background px-2 py-2 text-sm text-foreground"
                   value={anneeExcel}
                   onChange={(e) => setAnneeExcel(parseInt(e.target.value, 10))}
                 >
@@ -127,7 +127,7 @@ export default function RapportsPage() {
               <Label>{t("csvExportLabel")}</Label>
               <div className="flex flex-wrap items-end gap-2">
                 <select
-                  className="rounded-md border border-slate-200 px-2 py-2 text-sm"
+                  className="rounded-md border border-border bg-background px-2 py-2 text-sm text-foreground"
                   value={csvType}
                   onChange={(e) => setCsvType(e.target.value as typeof csvType)}
                 >
@@ -148,7 +148,7 @@ export default function RapportsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">{t("previewTitle")}</CardTitle>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               {String(mois).padStart(2, "0")}/{annee}
             </p>
           </CardHeader>
@@ -158,28 +158,28 @@ export default function RapportsPage() {
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <p className="text-xs uppercase text-slate-500">{t("kpiDepenses")}</p>
-                  <p className="text-xl font-semibold text-rose-600">{fmtMoney(n(bilan.totalDepenses))}</p>
+                  <p className="text-xs uppercase text-muted-foreground">{t("kpiDepenses")}</p>
+                  <p className="text-xl font-semibold text-rose-600 dark:text-rose-400">{fmtMoney(n(bilan.totalDepenses))}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">{t("kpiRecettes")}</p>
-                  <p className="text-xl font-semibold text-emerald-600">{fmtMoney(n(bilan.totalRecettes))}</p>
+                  <p className="text-xs uppercase text-muted-foreground">{t("kpiRecettes")}</p>
+                  <p className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">{fmtMoney(n(bilan.totalRecettes))}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">{t("kpiSolde")}</p>
-                  <p className="text-xl font-semibold text-sky-700">{fmtMoney(n(bilan.solde))}</p>
+                  <p className="text-xs uppercase text-muted-foreground">{t("kpiSolde")}</p>
+                  <p className="text-xl font-semibold text-sky-700 dark:text-sky-400">{fmtMoney(n(bilan.solde))}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">{t("kpiFactures")}</p>
+                  <p className="text-xs uppercase text-muted-foreground">{t("kpiFactures")}</p>
                   <p className="text-lg font-medium">{bilan.nbFactures}</p>
-                  <p className="text-xs text-slate-500">{t("kpiFacturesEnAttente", { count: bilan.nbFacturesEnAttente })}</p>
+                  <p className="text-xs text-muted-foreground">{t("kpiFacturesEnAttente", { count: bilan.nbFacturesEnAttente })}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">{t("kpiEffectifsActifs")}</p>
+                  <p className="text-xs uppercase text-muted-foreground">{t("kpiEffectifsActifs")}</p>
                   <p className="text-lg font-medium">{bilan.effectifsActifs}</p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase text-slate-500">{t("kpiCongesPeriode")}</p>
+                  <p className="text-xs uppercase text-muted-foreground">{t("kpiCongesPeriode")}</p>
                   <p className="text-lg font-medium">{bilan.nbCongesDuMois}</p>
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function RapportsPage() {
       )}
 
       {!canFinance && (
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted-foreground">
           {t("restrictedHint")}
         </p>
       )}

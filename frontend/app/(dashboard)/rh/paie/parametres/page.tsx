@@ -44,7 +44,7 @@ type TabKey = "employer" | "profiles" | "constants" | "rubriques" | "cotisations
 
 function tabButton(active: boolean) {
   return `rounded-md px-3 py-2 text-sm font-medium ${
-    active ? "bg-indigo-600 text-white" : "bg-white text-slate-700 hover:bg-slate-100"
+    active ? "bg-indigo-600 text-white" : "bg-card text-foreground hover:bg-muted"
   }`;
 }
 
@@ -62,14 +62,14 @@ function CheckboxField({
   onChange: (next: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+    <label className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2 text-sm text-card-foreground">
       <input
         type="checkbox"
         className="h-4 w-4 accent-indigo-600"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
       />
-      <span className="text-slate-700">{label}</span>
+      <span>{label}</span>
     </label>
   );
 }
@@ -334,7 +334,7 @@ export default function PayrollSettingsPage() {
 
   if (!allowed) {
     return (
-      <div className="rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-700">
+      <div className="rounded-lg border border-border bg-card p-6 text-sm text-card-foreground">
         {tc("errorGeneric")}
       </div>
     );
@@ -344,10 +344,10 @@ export default function PayrollSettingsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <div className="text-sm text-slate-600">{localeTag}</div>
+        <div className="text-sm text-muted-foreground">{localeTag}</div>
       </div>
 
       <div className="flex flex-wrap gap-2">
@@ -369,7 +369,7 @@ export default function PayrollSettingsPage() {
       </div>
 
       {tab === "employer" ? (
-        <div className="rounded-lg border border-slate-200 bg-white p-4">
+        <div className="rounded-lg border border-border bg-card p-4 text-card-foreground">
           <div className="grid gap-3 md:grid-cols-2">
             <div>
               <Label>{t("employer.raisonSociale")}</Label>
@@ -431,7 +431,7 @@ export default function PayrollSettingsPage() {
       ) : null}
 
       {tab === "constants" ? (
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-4 text-card-foreground">
           <div className="grid gap-3 md:grid-cols-5">
             <div>
               <Label>{t("constants.code")}</Label>
@@ -460,7 +460,7 @@ export default function PayrollSettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200">
+          <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -513,7 +513,7 @@ export default function PayrollSettingsPage() {
       ) : null}
 
       {tab === "rubriques" ? (
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-4 text-card-foreground">
           <div className="grid gap-3 md:grid-cols-6">
             <div>
               <Label>{t("rubriques.code")}</Label>
@@ -595,7 +595,7 @@ export default function PayrollSettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200">
+          <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -674,7 +674,7 @@ export default function PayrollSettingsPage() {
       ) : null}
 
       {tab === "cotisations" ? (
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-4 text-card-foreground">
           <div className="grid gap-3 md:grid-cols-6">
             <div>
               <Label>{t("cotisations.code")}</Label>
@@ -766,7 +766,7 @@ export default function PayrollSettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200">
+          <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -844,12 +844,12 @@ export default function PayrollSettingsPage() {
       ) : null}
 
       {tab === "profiles" ? (
-        <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4">
+        <div className="space-y-4 rounded-lg border border-border bg-card p-4 text-card-foreground">
           <div className="grid gap-3 md:grid-cols-5">
             <div className="md:col-span-2">
               <Label>{t("profiles.salarie")}</Label>
               <select
-                className="h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
+                className="h-10 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
                 value={profileDraft.salarieId}
                 onChange={(e) => setProfileDraft((f) => ({ ...f, salarieId: e.target.value }))}
               >
@@ -887,7 +887,7 @@ export default function PayrollSettingsPage() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200">
+          <div className="rounded-lg border border-border">
             <Table>
               <TableHeader>
                 <TableRow>

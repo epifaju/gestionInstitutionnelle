@@ -100,17 +100,17 @@ export default function SalariesPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{ts("title")}</h1>
-          <p className="text-sm text-slate-600">{ts("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{ts("title")}</h1>
+          <p className="text-sm text-muted-foreground">{ts("subtitle")}</p>
         </div>
         <Button type="button" onClick={() => setModal(true)}>
           {ts("create")}
         </Button>
       </div>
 
-      <div className="flex flex-wrap gap-2 rounded-lg border border-slate-200 bg-white p-3">
+      <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-card p-3 text-card-foreground">
         <div>
-          <label className="text-xs text-slate-500">{ts("filterService")}</label>
+          <label className="text-xs text-muted-foreground">{ts("filterService")}</label>
           <Input
             className="h-9 w-40"
             value={service}
@@ -119,9 +119,9 @@ export default function SalariesPage() {
           />
         </div>
         <div>
-          <label className="text-xs text-slate-500">{ts("filterStatut")}</label>
+          <label className="text-xs text-muted-foreground">{ts("filterStatut")}</label>
           <select
-            className="flex h-9 w-44 rounded-md border border-slate-200 bg-white px-2 text-sm"
+            className="flex h-9 w-44 rounded-md border border-border bg-background px-2 text-sm text-foreground"
             value={statut}
             onChange={(e) => {
               setStatut(e.target.value);
@@ -136,7 +136,7 @@ export default function SalariesPage() {
           </select>
         </div>
         <div className="min-w-[200px] flex-1">
-          <label className="text-xs text-slate-500">{ts("filterSearch")}</label>
+          <label className="text-xs text-muted-foreground">{ts("filterSearch")}</label>
           <Input
             className="h-9"
             value={search}
@@ -149,7 +149,7 @@ export default function SalariesPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -183,7 +183,7 @@ export default function SalariesPage() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {tc("page", { current: data.page + 1, total: data.totalPages })}
           </span>

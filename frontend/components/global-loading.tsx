@@ -11,7 +11,7 @@ export function GlobalLoading() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-4 right-4 z-[100] flex items-center gap-2 rounded-lg border border-slate-200 bg-white/95 px-3 py-2 text-sm text-slate-700 shadow-lg backdrop-blur"
+      className="pointer-events-none fixed bottom-4 right-4 z-[100] flex items-center gap-2 rounded-lg border border-border bg-card/95 px-3 py-2 text-sm text-foreground shadow-lg backdrop-blur"
       role="status"
       aria-live="polite"
     >

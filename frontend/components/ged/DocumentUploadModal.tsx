@@ -75,7 +75,7 @@ export function DocumentUploadModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg bg-card p-4 text-card-foreground shadow-xl">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h2 className="text-lg font-semibold">{t("title")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
@@ -85,11 +85,11 @@ export function DocumentUploadModal({
 
         <div
           {...dz.getRootProps()}
-          className="mb-4 cursor-pointer rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 p-4 text-center"
+          className="mb-4 cursor-pointer rounded-lg border-2 border-dashed border-border bg-muted p-4 text-center"
         >
           <input {...dz.getInputProps()} />
-          <p className="text-sm text-slate-700">{file ? file.name : t("dropzoneText")}</p>
-          <p className="mt-1 text-xs text-slate-500">{t("dropzoneHint")}</p>
+          <p className="text-sm text-foreground">{file ? file.name : t("dropzoneText")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t("dropzoneHint")}</p>
         </div>
 
         <form
@@ -127,7 +127,7 @@ export function DocumentUploadModal({
             <div>
               <Label>{t("fieldType")}</Label>
               <select
-                className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+                className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
                 value={typeDocument}
                 onChange={(e) => setTypeDocument(e.target.value)}
               >
@@ -141,7 +141,7 @@ export function DocumentUploadModal({
             <div>
               <Label>{t("fieldVisibility")}</Label>
               <select
-                className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+                className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
                 value={visibilite}
                 onChange={(e) => setVisibilite(e.target.value)}
               >

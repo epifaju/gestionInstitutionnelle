@@ -118,12 +118,12 @@ export default function FinanceCategoriesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="text-sm text-slate-600">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-4">
-        <h2 className="text-sm font-semibold text-slate-900">{t("createTitle")}</h2>
+      <div className="rounded-lg border border-border bg-card p-4 text-card-foreground">
+        <h2 className="text-sm font-semibold text-foreground">{t("createTitle")}</h2>
         <div className="mt-3 grid gap-3 md:grid-cols-4">
           <div className="md:col-span-2">
             <Label>{t("libelle")}</Label>
@@ -146,7 +146,7 @@ export default function FinanceCategoriesPage() {
           <div>
             <Label>{t("type")}</Label>
             <select
-              className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+              className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
               value={form.type}
               onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))}
             >
@@ -173,15 +173,15 @@ export default function FinanceCategoriesPage() {
           </div>
         </div>
         {!canManage && (
-          <p className="mt-2 text-sm text-slate-600">
+          <p className="mt-2 text-sm text-muted-foreground">
             Les catégories ne peuvent être modifiées que par un Administrateur ou un Financier.
           </p>
         )}
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         {canManage && (
-          <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-3 text-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-border p-3 text-sm">
             <label className="inline-flex items-center gap-2">
               <input
                 type="checkbox"
@@ -190,7 +190,7 @@ export default function FinanceCategoriesPage() {
               />
               <span>Afficher les inactives</span>
             </label>
-            <span className="text-xs text-slate-500">Les catégories supprimées sont marquées inactives.</span>
+            <span className="text-xs text-muted-foreground">Les catégories supprimées sont marquées inactives.</span>
           </div>
         )}
         <Table>
@@ -222,7 +222,7 @@ export default function FinanceCategoriesPage() {
                   <TableCell>
                     <span className="inline-flex items-center gap-2">
                       <span className="h-3 w-3 rounded-full" style={{ background: c.couleur }} />
-                      <span className="text-xs text-slate-600">{c.couleur}</span>
+                      <span className="text-xs text-muted-foreground">{c.couleur}</span>
                     </span>
                   </TableCell>
                   <TableCell>{c.actif ? t("yes") : t("no")}</TableCell>
@@ -265,7 +265,7 @@ export default function FinanceCategoriesPage() {
 
       {editOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
+          <div className="w-full max-w-md rounded-lg bg-card p-6 text-card-foreground shadow-lg">
             <h2 className="text-lg font-semibold">Modifier la catégorie</h2>
             <div className="mt-4 space-y-3">
               <div>
@@ -289,7 +289,7 @@ export default function FinanceCategoriesPage() {
               <div>
                 <Label>{t("type")}</Label>
                 <select
-                  className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+                  className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
                   value={editForm.type}
                   onChange={(e) => setEditForm((f) => ({ ...f, type: e.target.value }))}
                 >
@@ -326,11 +326,11 @@ export default function FinanceCategoriesPage() {
 
       {deleteOpen && deleteTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg">
-            <h2 className="text-lg font-semibold text-slate-900">Supprimer la catégorie</h2>
-            <p className="mt-2 text-sm text-slate-600">
+          <div className="w-full max-w-md rounded-lg bg-card p-6 text-card-foreground shadow-lg">
+            <h2 className="text-lg font-semibold text-foreground">Supprimer la catégorie</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
               Cette action va <span className="font-medium">désactiver</span> la catégorie{" "}
-              <span className="font-semibold text-slate-900">“{deleteTarget.libelle}”</span>. Elle pourra être réactivée
+              <span className="font-semibold text-foreground">“{deleteTarget.libelle}”</span>. Elle pourra être réactivée
               plus tard via “Afficher les inactives”.
             </p>
 

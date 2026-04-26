@@ -19,9 +19,9 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-slate-50 p-6 text-center">
-      <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-      <p className="max-w-md text-sm text-slate-600">{t("globalDescription")}</p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-background p-6 text-center">
+      <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+      <p className="max-w-md text-sm text-muted-foreground">{t("globalDescription")}</p>
       <div className="flex gap-2">
         <Button type="button" variant="outline" onClick={() => reset()}>
           {tc("retry")}

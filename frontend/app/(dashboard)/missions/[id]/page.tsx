@@ -136,7 +136,7 @@ export default function MissionDetailPage() {
   const solde = mission ? Number(fmt(mission.soldeARegler)) : 0;
 
   const fraisRows = mission?.frais ?? [];
-  const soldeColor = solde <= 0 ? "text-emerald-700" : "text-rose-700";
+  const soldeColor = solde <= 0 ? "text-emerald-700 dark:text-emerald-400" : "text-rose-700 dark:text-rose-400";
 
   const actionBar = useMemo(() => {
     if (!mission) return null;
@@ -179,8 +179,8 @@ export default function MissionDetailPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{mission.titre}</h1>
-          <p className="text-sm text-slate-600">
+          <h1 className="text-2xl font-semibold text-foreground">{mission.titre}</h1>
+          <p className="text-sm text-muted-foreground">
             {mission.destination} • {mission.dateDepart} → {mission.dateRetour} • {t("nbJours", { n: mission.nbJours })}
           </p>
         </div>
@@ -193,8 +193,8 @@ export default function MissionDetailPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="p-4 space-y-2 lg:col-span-2">
-          <p className="text-sm font-semibold text-slate-900">{t("details")}</p>
-          <p className="text-sm text-slate-700 whitespace-pre-wrap">{mission.objectif ?? "—"}</p>
+          <p className="text-sm font-semibold text-foreground">{t("details")}</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{mission.objectif ?? "—"}</p>
           <div className="flex flex-wrap gap-2 pt-2">
             {mission.ordreMissionUrl ? (
               <a className="text-sm text-indigo-700 hover:underline" href={mission.ordreMissionUrl} target="_blank" rel="noreferrer">
@@ -202,7 +202,7 @@ export default function MissionDetailPage() {
               </a>
             ) : null}
             <Label className="inline-flex items-center gap-2">
-              <span className="text-xs text-slate-500">{t("uploadOrdre")}</span>
+              <span className="text-xs text-muted-foreground">{t("uploadOrdre")}</span>
               <input
                 type="file"
                 accept="application/pdf"
@@ -213,7 +213,7 @@ export default function MissionDetailPage() {
               />
             </Label>
             <Label className="inline-flex items-center gap-2">
-              <span className="text-xs text-slate-500">{t("uploadRapport")}</span>
+              <span className="text-xs text-muted-foreground">{t("uploadRapport")}</span>
               <input
                 type="file"
                 accept="application/pdf"
@@ -227,11 +227,11 @@ export default function MissionDetailPage() {
         </Card>
 
         <Card className="p-4 space-y-1">
-          <p className="text-sm font-semibold text-slate-900">{t("resume")}</p>
-          <p className="text-sm text-slate-700">
+          <p className="text-sm font-semibold text-foreground">{t("resume")}</p>
+          <p className="text-sm text-muted-foreground">
             {t("avanceVersee")}: {fmt(mission.avanceVersee)} EUR
           </p>
-          <p className="text-sm text-slate-700">
+          <p className="text-sm text-muted-foreground">
             {t("totalFraisValides")}: {fmt(mission.totalFraisValides)} EUR
           </p>
           <p className={`text-sm font-semibold ${soldeColor}`}>
@@ -242,8 +242,8 @@ export default function MissionDetailPage() {
 
       <Card className="p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="text-sm font-semibold text-slate-900">{t("fraisTitle")}</p>
-          <p className="text-xs text-slate-500">
+          <p className="text-sm font-semibold text-foreground">{t("fraisTitle")}</p>
+          <p className="text-xs text-muted-foreground">
             {t("totalsLine", { total: fmt(total), solde: fmt(solde) })}
           </p>
         </div>
@@ -252,7 +252,7 @@ export default function MissionDetailPage() {
           <div className="space-y-1">
             <Label>{t("fTypeFrais")}</Label>
             <select
-              className="flex h-9 w-full rounded border border-slate-200 px-2 text-sm"
+              className="flex h-9 w-full rounded border border-border bg-background px-2 text-sm text-foreground"
               value={frais.typeFrais}
               onChange={(e) => setFrais((f) => ({ ...f, typeFrais: e.target.value }))}
             >
@@ -295,7 +295,7 @@ export default function MissionDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200">
+        <div className="rounded-lg border border-border">
           <Table>
             <TableHeader>
               <TableRow>

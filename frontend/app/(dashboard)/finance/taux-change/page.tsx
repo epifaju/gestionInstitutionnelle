@@ -71,8 +71,8 @@ export default function TauxChangePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="mt-1 text-sm text-slate-600">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <Card>
@@ -105,10 +105,10 @@ export default function TauxChangePage() {
             <p className="text-sm text-red-600">{tc("errorGeneric")}</p>
           ) : (
             devises.map((devise) => (
-              <div key={devise} className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white p-3">
+              <div key={devise} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card p-3 text-card-foreground">
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{devise}</p>
-                  <p className="text-xs text-slate-500">{t("rateHint", { devise })}</p>
+                  <p className="text-sm font-medium text-foreground">{devise}</p>
+                  <p className="text-xs text-muted-foreground">{t("rateHint", { devise })}</p>
                 </div>
                 <Input
                   className="w-40 text-right"
@@ -121,7 +121,7 @@ export default function TauxChangePage() {
               </div>
             ))
           )}
-          <p className="text-xs text-slate-500">{t("footer")}</p>
+          <p className="text-xs text-muted-foreground">{t("footer")}</p>
         </CardContent>
       </Card>
     </div>

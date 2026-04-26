@@ -22,7 +22,7 @@ function badge(statut: string) {
   if (statut === "VALIDE") return `${base} bg-emerald-50 text-emerald-700`;
   if (statut === "REJETE") return `${base} bg-rose-50 text-rose-700`;
   if (statut === "EN_ATTENTE") return `${base} bg-amber-50 text-amber-700`;
-  return `${base} bg-slate-100 text-slate-700`;
+  return `${base} bg-muted text-foreground`;
 }
 
 export default function EmployeCongesPage() {
@@ -52,24 +52,24 @@ export default function EmployeCongesPage() {
 
   return (
     <div className="mx-auto max-w-md space-y-4">
-      <div className="rounded-2xl border border-slate-200 bg-white p-4">
-        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Solde annuel</p>
-        <p className="mt-2 text-3xl font-bold text-slate-900">{droitsQ.data?.joursRestants ?? "—"}</p>
-        <p className="text-sm text-slate-600">
+      <div className="rounded-2xl border border-border bg-card p-4 text-card-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Solde annuel</p>
+        <p className="mt-2 text-3xl font-bold text-foreground">{droitsQ.data?.joursRestants ?? "—"}</p>
+        <p className="text-sm text-muted-foreground">
           Droit: {droitsQ.data?.joursDroit ?? "—"} · Pris: {droitsQ.data?.joursPris ?? "—"}
         </p>
       </div>
 
       <div className="space-y-2">
         {timeline.length === 0 ? (
-          <div className="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600">Aucune demande.</div>
+          <div className="rounded-2xl border border-border bg-card p-4 text-sm text-muted-foreground">Aucune demande.</div>
         ) : (
           timeline.map((c) => (
-            <div key={c.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+            <div key={c.id} className="rounded-2xl border border-border bg-card p-4 text-card-foreground">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">{c.typeConge}</p>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-sm font-semibold text-foreground">{c.typeConge}</p>
+                  <p className="text-xs text-muted-foreground">
                     {c.dateDebut} → {c.dateFin} · {c.nbJours} j
                   </p>
                 </div>
@@ -92,10 +92,10 @@ export default function EmployeCongesPage() {
 
       {open ? (
         <div className="fixed inset-0 z-50">
-          <button type="button" className="absolute inset-0 bg-slate-900/40" onClick={() => setOpen(false)} aria-label="Fermer" />
-          <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-white p-4 shadow-2xl">
+          <button type="button" className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} aria-label="Fermer" />
+          <div className="absolute bottom-0 left-0 right-0 rounded-t-2xl bg-card p-4 text-card-foreground shadow-2xl">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-slate-900">Nouvelle demande</p>
+              <p className="text-sm font-semibold text-foreground">Nouvelle demande</p>
               <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
                 Fermer
               </Button>
@@ -110,7 +110,7 @@ export default function EmployeCongesPage() {
                       key={t.key}
                       type="button"
                       className={`rounded-xl border px-3 py-2 text-sm ${
-                        typeConge === t.key ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-slate-200 bg-white text-slate-700"
+                        typeConge === t.key ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-border bg-background text-foreground"
                       }`}
                       onClick={() => setTypeConge(t.key)}
                     >

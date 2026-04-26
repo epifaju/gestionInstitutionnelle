@@ -110,7 +110,7 @@ function UserModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-card p-4 text-card-foreground shadow-xl">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-lg font-semibold">{editing ? t("modalTitleEdit") : t("modalTitleNew")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
@@ -153,7 +153,7 @@ function UserModal({
             <Label htmlFor="rl">{t("role")}</Label>
             <select
               id="rl"
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm"
+              className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
               value={role}
               onChange={(e) => setRole(e.target.value)}
             >
@@ -248,8 +248,8 @@ export default function AdminUsersPage() {
     <div className="space-y-4">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <Button
           type="button"
@@ -262,7 +262,7 @@ export default function AdminUsersPage() {
         </Button>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             <TableRow>
@@ -314,7 +314,7 @@ export default function AdminUsersPage() {
       </div>
 
       {data && data.totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <span>
             {tc("page", { current: data.page + 1, total: data.totalPages })}
           </span>

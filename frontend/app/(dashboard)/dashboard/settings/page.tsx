@@ -127,8 +127,8 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-        <p className="text-sm text-slate-600">{t("subtitle")}</p>
+        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -153,8 +153,8 @@ export default function SettingsPage() {
               <Input value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
             <div>
-              <p className="text-xs text-slate-500">{t("organisation")}</p>
-              <p className="text-sm font-medium text-slate-900">{user?.organisationNom ?? tc("emDash")}</p>
+              <p className="text-xs text-muted-foreground">{t("organisation")}</p>
+              <p className="text-sm font-medium text-foreground">{user?.organisationNom ?? tc("emDash")}</p>
             </div>
             <Button type="button" onClick={() => mutProfile.mutate()} disabled={mutProfile.isPending || !token}>
               {tc("save")}
@@ -207,8 +207,8 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-900">{t("languageLabel")}</p>
-            <p className="text-xs text-slate-500">{t("localeHint")}</p>
+            <p className="text-sm font-medium text-foreground">{t("languageLabel")}</p>
+            <p className="text-xs text-muted-foreground">{t("localeHint")}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -238,7 +238,7 @@ export default function SettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-900">{t("themeLabel")}</p>
+            <p className="text-sm font-medium text-foreground">{t("themeLabel")}</p>
             <div className="flex flex-wrap gap-2">
               {(["system", "light", "dark"] as const).map((v) => (
                 <Button
@@ -259,13 +259,16 @@ export default function SettingsPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-900">{t("notificationsUiTitle")}</p>
-              <p className="text-xs text-slate-500">{t("notificationsUiHint")}</p>
+              <p className="text-sm font-medium text-foreground">{t("notificationsUiTitle")}</p>
+              <p className="text-xs text-muted-foreground">{t("notificationsUiHint")}</p>
               <div className="space-y-2">
                 {NOTIF_TYPES.map((nt) => {
                   const checked = prefs.notificationsUiEnabled.length === 0 ? true : prefs.notificationsUiEnabled.includes(nt);
                   return (
-                    <label key={nt} className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+                    <label
+                      key={nt}
+                      className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm text-card-foreground"
+                    >
                       <span>{t(`notif_${nt}`)}</span>
                       <input
                         type="checkbox"
@@ -284,13 +287,16 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-900">{t("notificationsEmailTitle")}</p>
-              <p className="text-xs text-slate-500">{t("notificationsEmailHint")}</p>
+              <p className="text-sm font-medium text-foreground">{t("notificationsEmailTitle")}</p>
+              <p className="text-xs text-muted-foreground">{t("notificationsEmailHint")}</p>
               <div className="space-y-2">
                 {NOTIF_TYPES.map((nt) => {
                   const checked = prefs.notificationsEmailEnabled.includes(nt);
                   return (
-                    <label key={nt} className="flex items-center justify-between gap-3 rounded-md border border-slate-200 bg-white px-3 py-2 text-sm">
+                    <label
+                      key={nt}
+                      className="flex items-center justify-between gap-3 rounded-md border border-border bg-card px-3 py-2 text-sm text-card-foreground"
+                    >
                       <span>{t(`notif_${nt}`)}</span>
                       <input
                         type="checkbox"
@@ -310,7 +316,7 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {prefsQuery.isLoading ? <p className="text-xs text-slate-500">{tc("loading")}</p> : null}
+          {prefsQuery.isLoading ? <p className="text-xs text-muted-foreground">{tc("loading")}</p> : null}
         </CardContent>
       </Card>
     </div>

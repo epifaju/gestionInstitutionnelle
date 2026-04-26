@@ -116,8 +116,8 @@ export default function DocumentsPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={() => setView((v) => (v === "grid" ? "list" : "grid"))}>
@@ -137,25 +137,25 @@ export default function DocumentsPage() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-4">
-        <aside className="space-y-3 rounded-lg border border-slate-200 bg-white p-3">
-          <p className="text-xs font-semibold uppercase text-slate-500">{t("filters")}</p>
+        <aside className="space-y-3 rounded-lg border border-border bg-card p-3 text-card-foreground">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">{t("filters")}</p>
           <div>
-            <label className="text-xs text-slate-500">{t("type")}</label>
+            <label className="text-xs text-muted-foreground">{t("type")}</label>
             <Input className="h-8 text-sm" value={type} onChange={(e) => setType(e.target.value)} placeholder={t("typePlaceholder")} />
           </div>
           <div>
-            <label className="text-xs text-slate-500">{t("tags")}</label>
+            <label className="text-xs text-muted-foreground">{t("tags")}</label>
             <Input className="h-8 text-sm" value={tags} onChange={(e) => setTags(e.target.value)} placeholder={t("tagsPlaceholder")} />
           </div>
           <div>
-            <label className="text-xs text-slate-500">{t("service")}</label>
+            <label className="text-xs text-muted-foreground">{t("service")}</label>
             <Input className="h-8 text-sm" value={service} onChange={(e) => setService(e.target.value)} placeholder={t("servicePlaceholder")} />
           </div>
-          <label className="flex items-center gap-2 text-sm text-slate-700">
+          <label className="flex items-center gap-2 text-sm text-foreground">
             <input type="checkbox" checked={expSoon} onChange={(e) => setExpSoon(e.target.checked)} />
             {t("expiringSoon")}
           </label>
-          <p className="text-xs text-slate-500">{t("hintDropzone")}</p>
+          <p className="text-xs text-muted-foreground">{t("hintDropzone")}</p>
         </aside>
 
         <div className="md:col-span-3">
@@ -176,9 +176,9 @@ export default function DocumentsPage() {
           ) : (
             <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
               {isLoading ? (
-                <p className="text-sm text-slate-600">{tc("loading")}</p>
+                <p className="text-sm text-muted-foreground">{tc("loading")}</p>
               ) : rows.length === 0 ? (
-                <p className="text-sm text-slate-600">{t("empty")}</p>
+                <p className="text-sm text-muted-foreground">{t("empty")}</p>
               ) : (
                 rows.map((d) => (
                   <DocumentCard

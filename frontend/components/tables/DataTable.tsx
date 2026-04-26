@@ -96,7 +96,7 @@ export function DataTable<T>({
         {actions ? <div className="flex flex-wrap justify-end gap-2">{actions}</div> : null}
       </div>
 
-      <div className="overflow-x-auto rounded-md border border-slate-200 bg-white">
+      <div className="overflow-x-auto rounded-md border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -107,14 +107,14 @@ export function DataTable<T>({
                       <button
                         type="button"
                         className={cn(
-                          "inline-flex items-center gap-1 font-semibold text-slate-700",
-                          header.column.getCanSort() && "cursor-pointer select-none hover:text-slate-900"
+                          "inline-flex items-center gap-1 font-semibold text-foreground",
+                          header.column.getCanSort() && "cursor-pointer select-none hover:text-foreground"
                         )}
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getCanSort() ? (
-                          <ChevronsUpDown className="h-4 w-4 text-slate-400" />
+                          <ChevronsUpDown className="h-4 w-4 text-muted-foreground" />
                         ) : null}
                       </button>
                     )}
@@ -158,7 +158,7 @@ export function DataTable<T>({
       </div>
 
       {pagination && onPageChange ? (
-        <div className="flex items-center justify-between text-sm text-slate-600">
+        <div className="flex items-center justify-between text-sm text-muted-foreground">
           <p>
             Page {pagination.page + 1} sur {Math.max(1, pagination.totalPages)} · {pagination.totalElements}{" "}
             éléments

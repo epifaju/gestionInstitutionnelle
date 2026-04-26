@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useAuthStore } from "@/lib/store";
 
 export type AppTheme = "system" | "light" | "dark";
 
@@ -11,7 +12,12 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-const STORAGE_KEY = "app_theme";
+const LEGACY_STORAGE_KEY = "app_theme";
+const STORAGE_KEY_PREFIX = "app_theme:";
+
+function storageKeyForUser(userId: string | null | undefined) {
+  return `${STORAGE_KEY_PREFIX}${userId ?? "anon"}`;
+}
 
 function applyThemeToDom(theme: AppTheme) {
   if (typeof window === "undefined") return;
@@ -22,21 +28,30 @@ function applyThemeToDom(theme: AppTheme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const userId = useAuthStore((s) => s.user?.id);
   const [theme, setThemeState] = useState<AppTheme>("system");
+  const activeKeyRef = useRef<string>(storageKeyForUser(userId));
 
   useEffect(() => {
     try {
-      const s = localStorage.getItem(STORAGE_KEY);
+      // Ensure legacy global key doesn't leak across users.
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+
+      const key = storageKeyForUser(userId);
+      activeKeyRef.current = key;
+      const s = localStorage.getItem(key);
       if (s === "system" || s === "light" || s === "dark") {
         setThemeState(s);
         applyThemeToDom(s);
       } else {
+        setThemeState("system");
         applyThemeToDom("system");
       }
     } catch {
+      setThemeState("system");
       applyThemeToDom("system");
     }
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     // Keep in sync when system theme changes and user chose 'system'
@@ -53,7 +68,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setThemeState(t);
     applyThemeToDom(t);
     try {
-      localStorage.setItem(STORAGE_KEY, t);
+      localStorage.setItem(activeKeyRef.current, t);
     } catch {
       /* ignore */
     }

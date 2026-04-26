@@ -29,8 +29,8 @@ export default function NotificationsPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-          <p className="text-sm text-slate-600">{t("subtitle")}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+          <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" variant={nonLuesSeulement ? "secondary" : "outline"} onClick={() => setNonLuesSeulement((v) => !v)}>
@@ -42,7 +42,7 @@ export default function NotificationsPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white">
+      <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>
           <TableHeader>
             <TableRow>
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
                   <TableCell className="text-xs">{n.type}</TableCell>
                   <TableCell className="font-medium">{n.titre}</TableCell>
                   <TableCell className="max-w-[30rem] truncate">{n.message}</TableCell>
-                  <TableCell className="text-sm text-slate-600">{n.createdAt ?? tc("emDash")}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{n.createdAt ?? tc("emDash")}</TableCell>
                   <TableCell>{n.lu ? t("statusRead") : t("statusUnread")}</TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex items-center justify-end gap-2">
@@ -106,7 +106,7 @@ export default function NotificationsPage() {
       </div>
 
       <div className="flex items-center justify-between">
-        <div className="text-sm text-slate-600">{pageLabel}</div>
+        <div className="text-sm text-muted-foreground">{pageLabel}</div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" disabled={page <= 0} onClick={() => setPage((p) => Math.max(0, p - 1))}>
             {tc("previous")}

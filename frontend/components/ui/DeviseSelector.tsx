@@ -28,7 +28,7 @@ export function DeviseSelector({
 }) {
   return (
     <select
-      className={cn("flex h-9 w-full rounded-md border border-slate-200 bg-white px-2 text-sm", className)}
+      className={cn("flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground", className)}
       value={value.toUpperCase()}
       onChange={(e) => onChange(e.target.value.toUpperCase())}
     >

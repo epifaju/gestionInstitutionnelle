@@ -75,7 +75,7 @@ export default function MissionsPage() {
         id: "dates",
         header: t("thDates"),
         cell: ({ row }) => (
-          <span className="text-sm text-slate-700">
+          <span className="text-sm text-foreground">
             {row.original.dateDepart} → {row.original.dateRetour}
           </span>
         ),
@@ -108,19 +108,23 @@ export default function MissionsPage() {
 
   return (
     <div className="flex gap-6">
-      <aside className="hidden w-56 shrink-0 space-y-3 rounded-lg border border-slate-200 bg-white p-3 lg:block">
-        <p className="text-xs font-semibold uppercase text-slate-500">{t("filters")}</p>
+      <aside className="hidden w-56 shrink-0 space-y-3 rounded-lg border border-border bg-card p-3 text-card-foreground lg:block">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">{t("filters")}</p>
         <div>
-          <label className="text-xs text-slate-500">{t("debut")}</label>
+          <label className="text-xs text-muted-foreground">{t("debut")}</label>
           <Input type="date" className="h-8 text-sm" value={debut} onChange={(e) => setDebut(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs text-slate-500">{t("fin")}</label>
+          <label className="text-xs text-muted-foreground">{t("fin")}</label>
           <Input type="date" className="h-8 text-sm" value={fin} onChange={(e) => setFin(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs text-slate-500">{t("statut")}</label>
-          <select className="flex h-8 w-full rounded border border-slate-200 px-1 text-sm" value={statut} onChange={(e) => setStatut(e.target.value)}>
+          <label className="text-xs text-muted-foreground">{t("statut")}</label>
+          <select
+            className="flex h-8 w-full rounded border border-border bg-background px-1 text-sm text-foreground"
+            value={statut}
+            onChange={(e) => setStatut(e.target.value)}
+          >
             <option value="">{tc("all")}</option>
             {["BROUILLON", "SOUMISE", "APPROUVEE", "EN_COURS", "TERMINEE", "ANNULEE"].map((s) => (
               <option key={s} value={s}>
@@ -134,12 +138,12 @@ export default function MissionsPage() {
       <div className="min-w-0 flex-1 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-            <p className="text-sm text-slate-600">{t("subtitle")}</p>
+            <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
           </div>
           <div className="flex gap-2">
             {canAll ? (
-              <div className="flex rounded-md border border-slate-200 bg-white p-1">
+              <div className="flex rounded-md border border-border bg-card p-1 text-card-foreground">
                 <Button type="button" size="sm" variant={mode === "mine" ? "secondary" : "ghost"} onClick={() => setMode("mine")}>
                   {t("tabMine")}
                 </Button>
@@ -155,7 +159,7 @@ export default function MissionsPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="rounded-lg border border-border bg-card text-card-foreground">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((hg) => (

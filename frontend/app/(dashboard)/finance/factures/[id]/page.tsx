@@ -93,7 +93,7 @@ export default function FactureDetailPage() {
   });
 
   if (isLoading || !detail) {
-    return <p className="text-sm text-slate-600">{tc("loading")}</p>;
+    return <p className="text-sm text-muted-foreground">{tc("loading")}</p>;
   }
 
   return (
@@ -104,28 +104,28 @@ export default function FactureDetailPage() {
         </Link>
       </div>
 
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">{detail.reference}</h1>
-            <p className="text-sm text-slate-600">{detail.fournisseur}</p>
+            <h1 className="text-2xl font-semibold text-foreground">{detail.reference}</h1>
+            <p className="text-sm text-muted-foreground">{detail.fournisseur}</p>
           </div>
           <Badge variant={statutBadge(detail.statut)}>{detail.statut}</Badge>
         </div>
 
         <dl className="mt-6 space-y-3 text-sm">
           <div className="grid grid-cols-2 gap-2">
-            <dt className="text-slate-500">{t("fieldDate")}</dt>
+            <dt className="text-muted-foreground">{t("fieldDate")}</dt>
             <dd>{detail.dateFacture}</dd>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <dt className="text-slate-500">{t("fieldTtc")}</dt>
+            <dt className="text-muted-foreground">{t("fieldTtc")}</dt>
             <dd>
               {fmt(detail.montantTtc)} {detail.devise} (≈ {fmt(detail.montantTtcEur)} EUR)
             </dd>
           </div>
           <div className="grid grid-cols-2 gap-2">
-            <dt className="text-slate-500">{t("fieldPaidRemaining")}</dt>
+            <dt className="text-muted-foreground">{t("fieldPaidRemaining")}</dt>
             <dd>
               {fmt(detail.montantPaye)} / {fmt(detail.montantRestant)}
             </dd>
@@ -144,7 +144,7 @@ export default function FactureDetailPage() {
         )}
 
         {canEdit && (
-          <div className="mt-8 flex flex-col gap-2 border-t border-slate-100 pt-6">
+          <div className="mt-8 flex flex-col gap-2 border-t border-border pt-6">
             {detail.statut === "A_PAYER" && parseFloat(String(detail.montantRestant)) > 0 && (
               <Button type="button" onClick={() => setPayOpen(true)}>
                 {t("registerPayment")}

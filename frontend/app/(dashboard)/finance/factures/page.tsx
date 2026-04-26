@@ -155,20 +155,20 @@ export default function FacturesPage() {
 
   return (
     <div className="flex gap-6">
-      <aside className="hidden w-56 shrink-0 space-y-3 rounded-lg border border-slate-200 bg-white p-3 lg:block">
-        <p className="text-xs font-semibold uppercase text-slate-500">{t("filters")}</p>
+      <aside className="hidden w-56 shrink-0 space-y-3 rounded-lg border border-border bg-card p-3 text-card-foreground lg:block">
+        <p className="text-xs font-semibold uppercase text-muted-foreground">{t("filters")}</p>
         <div>
-          <label className="text-xs text-slate-500">{t("debut")}</label>
+          <label className="text-xs text-muted-foreground">{t("debut")}</label>
           <Input type="date" className="h-8 text-sm" value={debut} onChange={(e) => setDebut(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs text-slate-500">{t("fin")}</label>
+          <label className="text-xs text-muted-foreground">{t("fin")}</label>
           <Input type="date" className="h-8 text-sm" value={fin} onChange={(e) => setFin(e.target.value)} />
         </div>
         <div>
-          <label className="text-xs text-slate-500">{t("categorie")}</label>
+          <label className="text-xs text-muted-foreground">{t("categorie")}</label>
           <select
-            className="flex h-8 w-full rounded border border-slate-200 px-1 text-sm"
+            className="flex h-8 w-full rounded border border-border bg-background px-1 text-sm text-foreground"
             value={categorieId}
             onChange={(e) => setCategorieId(e.target.value)}
           >
@@ -181,9 +181,9 @@ export default function FacturesPage() {
           </select>
         </div>
         <div>
-          <label className="text-xs text-slate-500">{t("statut")}</label>
+          <label className="text-xs text-muted-foreground">{t("statut")}</label>
           <select
-            className="flex h-8 w-full rounded border border-slate-200 px-1 text-sm"
+            className="flex h-8 w-full rounded border border-border bg-background px-1 text-sm text-foreground"
             value={statut}
             onChange={(e) => setStatut(e.target.value)}
           >
@@ -195,7 +195,7 @@ export default function FacturesPage() {
           </select>
         </div>
         <div>
-          <label className="text-xs text-slate-500">{t("fournisseur")}</label>
+          <label className="text-xs text-muted-foreground">{t("fournisseur")}</label>
           <Input className="h-8 text-sm" value={fournisseur} onChange={(e) => setFournisseur(e.target.value)} />
         </div>
       </aside>
@@ -203,8 +203,8 @@ export default function FacturesPage() {
       <div className="min-w-0 flex-1 space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h1 className="text-2xl font-semibold text-slate-900">{t("title")}</h1>
-            <p className="text-sm text-slate-600">{t("subtitle")}</p>
+            <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+            <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
           </div>
           <div className="flex gap-2">
             {canCreate && (
@@ -218,7 +218,7 @@ export default function FacturesPage() {
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white">
+        <div className="rounded-lg border border-border bg-card text-card-foreground">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((hg) => (

@@ -141,7 +141,7 @@ export function FactureModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-lg bg-card p-4 text-card-foreground shadow-xl">
         <div className="mb-3 flex justify-between">
           <h2 className="text-lg font-semibold">{isEdit ? t("titleEdit") : t("titleNew")}</h2>
           <Button type="button" variant="outline" size="sm" onClick={onClose}>
@@ -183,14 +183,14 @@ export function FactureModal({
               <Input type="number" step="0.01" {...form.register("tva", { valueAsNumber: true })} />
             </div>
           </div>
-          <p className="text-sm text-slate-600">
-            {t("ttcCalculated")} : <span className="font-semibold text-slate-900">{ttc.toFixed(2)}</span>
+          <p className="text-sm text-muted-foreground">
+            {t("ttcCalculated")} : <span className="font-semibold text-foreground">{ttc.toFixed(2)}</span>
           </p>
           {String(devise ?? "EUR").toUpperCase() !== "EUR" ? (
-            <p className="text-xs text-slate-600">
-              ≈ <span className="font-medium text-slate-900">{convEur != null ? convEur.toFixed(2) : "—"}</span> EUR{" "}
+            <p className="text-xs text-muted-foreground">
+              ≈ <span className="font-medium text-foreground">{convEur != null ? convEur.toFixed(2) : "—"}</span> EUR{" "}
               {taux != null ? (
-                <span className="text-slate-500">
+                <span className="text-muted-foreground">
                   (taux: {taux.toFixed(6)} · {dateFacture || "jour"})
                 </span>
               ) : null}
@@ -203,7 +203,7 @@ export function FactureModal({
           <div>
             <Label>{t("category")}</Label>
             <select
-              className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm"
+              className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground"
               {...form.register("categorieId")}
             >
               <option value="">{tc("emDash")}</option>
@@ -214,14 +214,14 @@ export function FactureModal({
               ))}
             </select>
             {categories.length === 0 ? (
-              <p className="mt-1 text-xs text-slate-600">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {t.rich("noCategoriesHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
               </p>
             ) : null}
           </div>
           <div>
             <Label>{t("status")}</Label>
-            <select className="flex h-9 w-full rounded-md border border-slate-200 px-2 text-sm" {...form.register("statut")}>
+            <select className="flex h-9 w-full rounded-md border border-border bg-background px-2 text-sm text-foreground" {...form.register("statut")}>
               <option value="BROUILLON">{t("statusDraft")}</option>
               <option value="A_PAYER">{t("statusToPay")}</option>
               <option value="PAYE">{t("statusPaid")}</option>
@@ -239,9 +239,9 @@ export function FactureModal({
               accept="application/pdf,image/*"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
-            {file && <p className="text-xs text-slate-600">{file.name}</p>}
+            {file && <p className="text-xs text-muted-foreground">{file.name}</p>}
             {isEdit && !file ? (
-              <p className="text-xs text-slate-500">{t("receiptKeepHint")}</p>
+              <p className="text-xs text-muted-foreground">{t("receiptKeepHint")}</p>
             ) : null}
           </div>
           <Button type="submit" disabled={form.formState.isSubmitting}>
