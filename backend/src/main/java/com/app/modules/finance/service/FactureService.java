@@ -168,7 +168,7 @@ public class FactureService {
         f.setTva(req.tva());
         f.setMontantTtc(calculerTtc(req.montantHt(), req.tva()));
         f.setDevise(req.devise());
-        f.setTauxChangeEur(tauxChangeService.tauxVersEur(orgId, req.devise(), req.dateFacture()));
+        f.setTauxChangeEur(exchangeRateService.getTauxALaDate(orgId, req.devise(), "EUR", req.dateFacture()));
         f.setStatut(StatutFacture.valueOf(req.statut().trim().toUpperCase()));
         f.setNotes(req.notes());
         if (req.categorieId() != null) {

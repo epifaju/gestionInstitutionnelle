@@ -53,7 +53,7 @@ class TauxChangeServiceTest {
 
     @Test
     void upsert_deviseInvalide_refuse() {
-        assertThatThrownBy(() -> tauxChangeService.upsert(orgId, LocalDate.now(), "GBP", new BigDecimal("1.2")))
+        assertThatThrownBy(() -> tauxChangeService.upsert(orgId, LocalDate.now(), "ZZZ", new BigDecimal("1.2")))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("code", "DEVISE_INVALIDE");
     }

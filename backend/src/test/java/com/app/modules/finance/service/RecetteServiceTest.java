@@ -38,6 +38,7 @@ class RecetteServiceTest {
     @Mock private CategorieDepenseRepository categorieDepenseRepository;
     @Mock private UtilisateurRepository utilisateurRepository;
     @Mock private TauxChangeService tauxChangeService;
+    @Mock private ExchangeRateService exchangeRateService;
     @Mock private MinioStorageService minioStorageService;
     @Mock private AuditLogService auditLogService;
 
@@ -49,7 +50,7 @@ class RecetteServiceTest {
 
     @Test
     void creer_AvecJustificatifPdf_UploadEtSauveUrl() throws Exception {
-        when(tauxChangeService.tauxVersEur(orgId, "EUR", LocalDate.of(2026, 4, 1))).thenReturn(BigDecimal.ONE);
+        when(exchangeRateService.getTauxALaDate("EUR", "EUR", LocalDate.of(2026, 4, 1))).thenReturn(BigDecimal.ONE);
 
         Utilisateur u = new Utilisateur();
         u.setId(userId);
@@ -82,7 +83,7 @@ class RecetteServiceTest {
 
     @Test
     void creer_FichierTypeInvalide_Refuse() throws Exception {
-        when(tauxChangeService.tauxVersEur(orgId, "EUR", LocalDate.of(2026, 4, 1))).thenReturn(BigDecimal.ONE);
+        when(exchangeRateService.getTauxALaDate("EUR", "EUR", LocalDate.of(2026, 4, 1))).thenReturn(BigDecimal.ONE);
         Utilisateur u = new Utilisateur();
         u.setId(userId);
         when(utilisateurRepository.getReferenceById(userId)).thenReturn(u);

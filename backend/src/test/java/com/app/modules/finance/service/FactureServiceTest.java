@@ -44,6 +44,7 @@ class FactureServiceTest {
     @Mock private UtilisateurRepository utilisateurRepository;
     @Mock private FactureSequenceService factureSequenceService;
     @Mock private TauxChangeService tauxChangeService;
+    @Mock private ExchangeRateService exchangeRateService;
     @Mock private MinioStorageService minioStorageService;
     @Mock private AuditLogService auditLogService;
 
@@ -55,7 +56,7 @@ class FactureServiceTest {
     @Test
     void testCreerFacture_GenerateReference() throws Exception {
         when(factureSequenceService.nextSequence(orgId, 2024)).thenReturn(7);
-        when(tauxChangeService.tauxVersEur(orgId, "EUR", LocalDate.of(2024, 3, 15))).thenReturn(BigDecimal.ONE);
+        when(exchangeRateService.getTauxALaDate("EUR", "EUR", LocalDate.of(2024, 3, 15))).thenReturn(BigDecimal.ONE);
 
         Utilisateur u = new Utilisateur();
         u.setId(userId);
@@ -97,7 +98,7 @@ class FactureServiceTest {
     @Test
     void testCreerFacture_JustificatifRequis_LanceException() throws Exception {
         when(factureSequenceService.nextSequence(orgId, 2024)).thenReturn(1);
-        when(tauxChangeService.tauxVersEur(orgId, "EUR", LocalDate.of(2024, 6, 1))).thenReturn(BigDecimal.ONE);
+        when(exchangeRateService.getTauxALaDate("EUR", "EUR", LocalDate.of(2024, 6, 1))).thenReturn(BigDecimal.ONE);
 
         Utilisateur u = new Utilisateur();
         u.setId(userId);
@@ -240,7 +241,7 @@ class FactureServiceTest {
         f.setStatut(StatutFacture.BROUILLON);
         f.setMontantTtc(new BigDecimal("120.00"));
         when(factureRepository.findById(id)).thenReturn(Optional.of(f));
-        when(tauxChangeService.tauxVersEur(orgId, "EUR", LocalDate.of(2024, 2, 1))).thenReturn(BigDecimal.ONE);
+        when(exchangeRateService.getTauxALaDate(orgId, "EUR", "EUR", LocalDate.of(2024, 2, 1))).thenReturn(BigDecimal.ONE);
 
         UUID catId = UUID.fromString("aaaaaaaa-0000-0000-0000-000000000001");
         when(categorieDepenseRepository.findById(catId)).thenReturn(Optional.empty());

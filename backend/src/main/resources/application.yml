@@ -36,10 +36,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
   endpoint:
     health:
       show-details: never
+      probes:
+        enabled: true
 
 app:
   jwt:
@@ -72,3 +77,9 @@ spring:
 app:
   error:
     expose-stack-trace: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
