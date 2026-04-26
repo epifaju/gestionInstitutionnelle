@@ -8,6 +8,7 @@ import fr from "@/messages/fr.json";
 import en from "@/messages/en.json";
 import ptPT from "@/messages/pt-PT.json";
 import { LocaleProvider, useAppLocale } from "@/lib/locale-context";
+import { ThemeProvider } from "@/lib/theme-context";
 import { GlobalLoading } from "@/components/global-loading";
 
 type Messages = Record<string, unknown>;
@@ -50,9 +51,11 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <LocaleProvider>
-      <QueryClientProvider client={queryClient}>
-        <IntlBridge>{children}</IntlBridge>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <IntlBridge>{children}</IntlBridge>
+        </QueryClientProvider>
+      </ThemeProvider>
     </LocaleProvider>
   );
 }

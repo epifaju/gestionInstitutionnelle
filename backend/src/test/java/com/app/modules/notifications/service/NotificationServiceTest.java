@@ -1,9 +1,13 @@
 package com.app.modules.notifications.service;
 
+import com.app.modules.auth.entity.Utilisateur;
+import com.app.modules.auth.repository.UtilisateurRepository;
 import com.app.modules.notifications.entity.Notification;
 import com.app.modules.notifications.entity.NotificationType;
 import com.app.modules.notifications.repository.NotificationRepository;
+import com.app.shared.email.EmailService;
 import com.app.shared.exception.BusinessException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -26,6 +30,9 @@ class NotificationServiceTest {
 
     @Mock NotificationRepository notificationRepository;
     @Mock SimpMessagingTemplate messagingTemplate;
+    @Mock UtilisateurRepository utilisateurRepository;
+    @Mock ObjectMapper objectMapper;
+    @Mock EmailService emailService;
 
     @InjectMocks NotificationService service;
 
@@ -33,6 +40,12 @@ class NotificationServiceTest {
     void envoyer_sendsToUserQueue_whenUserIdProvided() {
         UUID orgId = UUID.randomUUID();
         UUID userId = UUID.randomUUID();
+
+        // no preferences -> default: UI enabled
+        Utilisateur u = new Utilisateur();
+        u.setEmail("user@test.local");
+        u.setPreferences("{}");
+        when(utilisateurRepository.findById(userId)).thenReturn(java.util.Optional.of(u));
 
         service.envoyer(orgId, userId, NotificationType.SALAIRE_DU, "Titre", "Msg", "/lien");
 

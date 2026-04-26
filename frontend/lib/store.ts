@@ -14,6 +14,12 @@ export type UserInfo = {
   langue?: string | null;
 };
 
+export type UserPreferences = {
+  theme: "system" | "light" | "dark";
+  notificationsUiEnabled: string[];
+  notificationsEmailEnabled: string[];
+};
+
 type AuthState = {
   user: UserInfo | null;
   accessToken: string | null;

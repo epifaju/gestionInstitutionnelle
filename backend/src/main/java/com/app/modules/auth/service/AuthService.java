@@ -8,7 +8,12 @@ import com.app.modules.auth.dto.LoginResponse;
 import com.app.modules.auth.dto.MessageResponse;
 import com.app.modules.auth.dto.RefreshResponse;
 import com.app.modules.auth.dto.ResetPasswordRequest;
+import com.app.modules.auth.dto.UpdatePasswordRequest;
+import com.app.modules.auth.dto.UpdateProfileRequest;
+import com.app.modules.auth.dto.UpdateProfileResponse;
 import com.app.modules.auth.dto.UserInfo;
+import com.app.modules.auth.dto.UserPreferencesRequest;
+import com.app.modules.auth.dto.UserPreferencesResponse;
 import com.app.modules.auth.entity.PasswordResetToken;
 import com.app.modules.auth.entity.RefreshToken;
 import com.app.modules.auth.entity.Utilisateur;
@@ -17,6 +22,10 @@ import com.app.modules.auth.repository.RefreshTokenRepository;
 import com.app.modules.auth.repository.UtilisateurRepository;
 import com.app.modules.auth.security.CustomUserDetails;
 import com.app.shared.exception.BusinessException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -60,6 +69,7 @@ public class AuthService {
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
     private final Environment environment;
+    private final ObjectMapper objectMapper;
 
     /** HTTPS : activer en prod pour le flag Secure du cookie refresh (PRD §7.5). */
     @Value("${app.security.refresh-cookie-secure:false}")
@@ -195,6 +205,179 @@ public class AuthService {
         details.getUtilisateur().setLangue(u.getLangue());
 
         return UserInfo.from(details);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public UpdateProfileResponse updateProfile(UpdateProfileRequest req) {
+        CustomUserDetails details = requireUserDetails();
+        UUID userId = details.getId();
+
+        Utilisateur u = utilisateurRepository
+                .findById(userId)
+                .orElseThrow(() -> BusinessException.notFound("USER_NOT_FOUND"));
+
+        String newEmail = req.email() == null ? "" : req.email().trim().toLowerCase();
+        if (newEmail.isEmpty()) {
+            throw BusinessException.badRequest("EMAIL_INVALIDE");
+        }
+        if (!newEmail.equalsIgnoreCase(u.getEmail())) {
+            // email est utilisé comme subject JWT -> on doit assurer l'unicité globale
+            var users = utilisateurRepository.findAllByEmailIgnoreCase(newEmail);
+            boolean takenByOther = users.stream().anyMatch(x -> !x.getId().equals(u.getId()));
+            if (takenByOther) {
+                throw BusinessException.badRequest("EMAIL_DEJA_UTILISE");
+            }
+            u.setEmail(newEmail);
+        }
+
+        u.setNom(normalizeOptional(req.nom(), 100));
+        u.setPrenom(normalizeOptional(req.prenom(), 100));
+        utilisateurRepository.save(u);
+
+        // rafraîchir userDetails (important si email changé)
+        details.getUtilisateur().setEmail(u.getEmail());
+        details.getUtilisateur().setNom(u.getNom());
+        details.getUtilisateur().setPrenom(u.getPrenom());
+
+        String newAccessToken = jwtService.generateAccessToken(
+                u.getEmail(),
+                details.getOrganisationId(),
+                u.getRole().name()
+        );
+        long expiresInSeconds = jwtService.getAccessTokenExpiresInSeconds();
+
+        return new UpdateProfileResponse(UserInfo.from(details), newAccessToken, expiresInSeconds);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public MessageResponse updatePassword(UpdatePasswordRequest req) {
+        CustomUserDetails details = requireUserDetails();
+        UUID userId = details.getId();
+
+        Utilisateur u = utilisateurRepository
+                .findById(userId)
+                .orElseThrow(() -> BusinessException.notFound("USER_NOT_FOUND"));
+
+        if (!passwordEncoder.matches(req.currentPassword(), u.getPasswordHash())) {
+            throw BusinessException.badRequest("MOTDEPASSE_ACTUEL_INCORRECT");
+        }
+        if (req.newPassword() == null || req.newPassword().trim().length() < 8) {
+            throw BusinessException.badRequest("MOTDEPASSE_INVALIDE");
+        }
+
+        u.setPasswordHash(passwordEncoder.encode(req.newPassword().trim()));
+        utilisateurRepository.save(u);
+
+        // invalider les refresh tokens existants (défense en profondeur)
+        refreshTokenRepository.invalidateAllForUser(userId);
+        return new MessageResponse("OK");
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
+    public UserPreferencesResponse getPreferences() {
+        CustomUserDetails details = requireUserDetails();
+        Utilisateur u = utilisateurRepository
+                .findById(details.getId())
+                .orElseThrow(() -> BusinessException.notFound("USER_NOT_FOUND"));
+        return parsePreferences(u.getPreferences());
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @Transactional
+    public UserPreferencesResponse updatePreferences(UserPreferencesRequest req) {
+        CustomUserDetails details = requireUserDetails();
+        Utilisateur u = utilisateurRepository
+                .findById(details.getId())
+                .orElseThrow(() -> BusinessException.notFound("USER_NOT_FOUND"));
+
+        String theme = normalizeTheme(req.theme());
+        var uiEnabled = sanitizeNotificationTypes(req.notificationsUiEnabled());
+        var emailEnabled = sanitizeNotificationTypes(req.notificationsEmailEnabled());
+
+        ObjectNode root = objectMapper.createObjectNode();
+        root.put("theme", theme);
+        ObjectNode notifs = root.putObject("notifications");
+        ArrayNode uiArr = notifs.putArray("uiEnabled");
+        uiEnabled.forEach(uiArr::add);
+        ArrayNode emailArr = notifs.putArray("emailEnabled");
+        emailEnabled.forEach(emailArr::add);
+
+        u.setPreferences(root.toString());
+        utilisateurRepository.save(u);
+
+        return new UserPreferencesResponse(theme, uiEnabled, emailEnabled);
+    }
+
+    private CustomUserDetails requireUserDetails() {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (!(principal instanceof CustomUserDetails details)) {
+            throw BusinessException.unauthorized("TOKEN_INVALIDE");
+        }
+        return details;
+    }
+
+    private static String normalizeOptional(String v, int maxLen) {
+        if (v == null) return null;
+        String t = v.trim();
+        if (t.isEmpty()) return null;
+        return t.length() > maxLen ? t.substring(0, maxLen) : t;
+    }
+
+    private String normalizeTheme(String theme) {
+        String t = theme == null ? "" : theme.trim().toLowerCase();
+        return switch (t) {
+            case "light", "dark", "system" -> t;
+            default -> throw BusinessException.badRequest("THEME_INVALIDE");
+        };
+    }
+
+    private java.util.List<String> sanitizeNotificationTypes(java.util.List<String> raw) {
+        if (raw == null) return java.util.List.of();
+        java.util.ArrayList<String> out = new java.util.ArrayList<>();
+        for (String s : raw) {
+            if (s == null) continue;
+            String v = s.trim();
+            if (v.isEmpty()) continue;
+            // validation : doit être un NotificationType existant
+            try {
+                com.app.modules.notifications.entity.NotificationType.valueOf(v);
+            } catch (Exception ex) {
+                throw BusinessException.badRequest("NOTIFICATION_TYPE_INVALIDE");
+            }
+            if (!out.contains(v)) out.add(v);
+        }
+        return java.util.List.copyOf(out);
+    }
+
+    private UserPreferencesResponse parsePreferences(String json) {
+        try {
+            if (json == null || json.isBlank()) {
+                return new UserPreferencesResponse("system", java.util.List.of(), java.util.List.of());
+            }
+            JsonNode root = objectMapper.readTree(json);
+            String theme = root.path("theme").asText("system");
+            if (!("light".equals(theme) || "dark".equals(theme) || "system".equals(theme))) theme = "system";
+            java.util.List<String> ui = readStringArray(root.path("notifications").path("uiEnabled"));
+            java.util.List<String> email = readStringArray(root.path("notifications").path("emailEnabled"));
+            return new UserPreferencesResponse(theme, ui, email);
+        } catch (Exception ex) {
+            return new UserPreferencesResponse("system", java.util.List.of(), java.util.List.of());
+        }
+    }
+
+    private static java.util.List<String> readStringArray(JsonNode n) {
+        if (n == null || !n.isArray()) return java.util.List.of();
+        java.util.ArrayList<String> out = new java.util.ArrayList<>();
+        for (JsonNode it : n) {
+            if (it != null && it.isTextual()) {
+                String v = it.asText().trim();
+                if (!v.isEmpty()) out.add(v);
+            }
+        }
+        return java.util.List.copyOf(out);
     }
 
     @PermitAll

@@ -5,6 +5,9 @@ import com.app.config.JwtService;
 import com.app.modules.auth.dto.ForgotPasswordRequest;
 import com.app.modules.auth.dto.LoginRequest;
 import com.app.modules.auth.dto.ResetPasswordRequest;
+import com.app.modules.auth.dto.UpdatePasswordRequest;
+import com.app.modules.auth.dto.UpdateProfileRequest;
+import com.app.modules.auth.dto.UserPreferencesRequest;
 import com.app.modules.auth.entity.PasswordResetToken;
 import com.app.modules.auth.entity.RefreshToken;
 import com.app.modules.auth.entity.Role;
@@ -14,10 +17,12 @@ import com.app.modules.auth.repository.RefreshTokenRepository;
 import com.app.modules.auth.repository.UtilisateurRepository;
 import com.app.shared.exception.BusinessException;
 import jakarta.servlet.http.Cookie;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -50,6 +55,7 @@ class AuthServiceTest {
     @Mock private JwtService jwtService;
     @Mock private JwtProperties jwtProperties;
     @Mock private Environment environment;
+    @Spy private ObjectMapper objectMapper = new ObjectMapper();
 
     @InjectMocks private AuthService authService;
 
@@ -249,6 +255,94 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.updateLangue("pt-BR"))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("code", "LANGUE_INVALIDE");
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void updateProfile_changeEmail_retourneNouveauToken_etPersiste() {
+        Utilisateur principal = new Utilisateur();
+        principal.setId(userId);
+        principal.setOrganisationId(orgId);
+        principal.setEmail("old@test.com");
+        principal.setRole(Role.ADMIN);
+        principal.setActif(true);
+        setSecurityContext(principal);
+
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("old@test.com");
+        u.setRole(Role.ADMIN);
+        u.setActif(true);
+        when(utilisateurRepository.findById(userId)).thenReturn(Optional.of(u));
+        when(utilisateurRepository.findAllByEmailIgnoreCase("new@test.com")).thenReturn(List.of());
+        when(jwtService.generateAccessToken(eq("new@test.com"), eq(orgId), eq("ADMIN"))).thenReturn("new-access");
+        when(jwtService.getAccessTokenExpiresInSeconds()).thenReturn(900);
+
+        var out = authService.updateProfile(new UpdateProfileRequest("new@test.com", "Nom", "Prenom"));
+
+        assertThat(u.getEmail()).isEqualTo("new@test.com");
+        assertThat(out.accessToken()).isEqualTo("new-access");
+        assertThat(out.user().email()).isEqualTo("new@test.com");
+        verify(utilisateurRepository).save(u);
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void updatePassword_badCurrent_refuse() {
+        Utilisateur principal = new Utilisateur();
+        principal.setId(userId);
+        principal.setOrganisationId(orgId);
+        principal.setEmail("x@test.com");
+        principal.setRole(Role.ADMIN);
+        principal.setActif(true);
+        setSecurityContext(principal);
+
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("x@test.com");
+        u.setRole(Role.ADMIN);
+        u.setActif(true);
+        u.setPasswordHash("hash");
+        when(utilisateurRepository.findById(userId)).thenReturn(Optional.of(u));
+        when(passwordEncoder.matches("bad", "hash")).thenReturn(false);
+
+        assertThatThrownBy(() -> authService.updatePassword(new UpdatePasswordRequest("bad", "NewPass123!")))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "MOTDEPASSE_ACTUEL_INCORRECT");
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void updatePreferences_themeEtNotifs_persisteJson() throws Exception {
+        Utilisateur principal = new Utilisateur();
+        principal.setId(userId);
+        principal.setOrganisationId(orgId);
+        principal.setEmail("x@test.com");
+        principal.setRole(Role.ADMIN);
+        principal.setActif(true);
+        setSecurityContext(principal);
+
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("x@test.com");
+        u.setRole(Role.ADMIN);
+        u.setActif(true);
+        when(utilisateurRepository.findById(userId)).thenReturn(Optional.of(u));
+
+        var out = authService.updatePreferences(new UserPreferencesRequest(
+                "dark",
+                List.of("SALAIRE_DU"),
+                List.of("DOCUMENT_EXPIRE_BIENTOT")
+        ));
+
+        assertThat(out.theme()).isEqualTo("dark");
+        assertThat(out.notificationsUiEnabled()).containsExactly("SALAIRE_DU");
+        assertThat(out.notificationsEmailEnabled()).containsExactly("DOCUMENT_EXPIRE_BIENTOT");
+        verify(utilisateurRepository).save(u);
+        assertThat(u.getPreferences()).contains("\"theme\":\"dark\"");
         SecurityContextHolder.clearContext();
     }
 }

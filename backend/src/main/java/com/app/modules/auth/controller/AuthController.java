@@ -7,6 +7,11 @@ import com.app.modules.auth.dto.MessageResponse;
 import com.app.modules.auth.dto.RefreshResponse;
 import com.app.modules.auth.dto.ResetPasswordRequest;
 import com.app.modules.auth.dto.UpdateLangueRequest;
+import com.app.modules.auth.dto.UpdatePasswordRequest;
+import com.app.modules.auth.dto.UpdateProfileRequest;
+import com.app.modules.auth.dto.UpdateProfileResponse;
+import com.app.modules.auth.dto.UserPreferencesRequest;
+import com.app.modules.auth.dto.UserPreferencesResponse;
 import com.app.modules.auth.dto.UserInfo;
 import com.app.modules.auth.service.AuthService;
 import com.app.shared.dto.ApiResponse;
@@ -76,5 +81,29 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<UserInfo>> updateLangue(@Valid @RequestBody UpdateLangueRequest req) {
         return ResponseEntity.ok(ApiResponse.ok(authService.updateLangue(req.langue())));
+    }
+
+    @PutMapping("/me/profile")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UpdateProfileResponse>> updateProfile(@Valid @RequestBody UpdateProfileRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.updateProfile(req)));
+    }
+
+    @PutMapping("/me/password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<MessageResponse>> updatePassword(@Valid @RequestBody UpdatePasswordRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.updatePassword(req)));
+    }
+
+    @GetMapping("/me/preferences")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserPreferencesResponse>> getPreferences() {
+        return ResponseEntity.ok(ApiResponse.ok(authService.getPreferences()));
+    }
+
+    @PutMapping("/me/preferences")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ApiResponse<UserPreferencesResponse>> updatePreferences(@Valid @RequestBody UserPreferencesRequest req) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.updatePreferences(req)));
     }
 }

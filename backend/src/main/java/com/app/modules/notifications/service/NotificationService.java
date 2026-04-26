@@ -4,7 +4,12 @@ import com.app.modules.notifications.dto.NotificationResponse;
 import com.app.modules.notifications.entity.Notification;
 import com.app.modules.notifications.entity.NotificationType;
 import com.app.modules.notifications.repository.NotificationRepository;
+import com.app.modules.auth.entity.Utilisateur;
+import com.app.modules.auth.repository.UtilisateurRepository;
+import com.app.shared.email.EmailService;
 import com.app.shared.exception.BusinessException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashSet;
 import java.util.UUID;
 
 @Service
@@ -22,6 +28,9 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final UtilisateurRepository utilisateurRepository;
+    private final ObjectMapper objectMapper;
+    private final EmailService emailService;
 
     @Transactional
     public void envoyer(
@@ -32,6 +41,28 @@ public class NotificationService {
             String message,
             String lien
     ) {
+        // Préférences utilisateur : si utilisateurId != null, on peut filtrer
+        // - UI disabled => on ne crée pas de ligne notification
+        // - Email enabled => on envoie un email
+        if (utilisateurId != null) {
+            Utilisateur u = utilisateurRepository.findById(utilisateurId)
+                    .orElse(null);
+            if (u != null) {
+                Preferences prefs = Preferences.fromJson(objectMapper, u.getPreferences());
+                if (!prefs.isUiEnabled(type.name())) {
+                    // UI désactivée => pas de notif DB/websocket.
+                    // On continue quand même pour l'email si activé.
+                    if (prefs.isEmailEnabled(type.name())) {
+                        emailService.send(u.getEmail(), titre, buildEmailBody(message, lien));
+                    }
+                    return;
+                }
+                if (prefs.isEmailEnabled(type.name())) {
+                    emailService.send(u.getEmail(), titre, buildEmailBody(message, lien));
+                }
+            }
+        }
+
         Notification n = new Notification();
         n.setOrganisationId(orgId);
         n.setUtilisateurId(utilisateurId);
@@ -47,6 +78,49 @@ public class NotificationService {
             messagingTemplate.convertAndSend("/queue/notifications/" + utilisateurId, payload);
         } else {
             messagingTemplate.convertAndSend("/topic/org/" + orgId + "/notifications", payload);
+        }
+    }
+
+    private static String buildEmailBody(String message, String lien) {
+        if (lien == null || lien.isBlank()) {
+            return message;
+        }
+        return message + "\n\n" + lien.trim();
+    }
+
+    private record Preferences(HashSet<String> uiEnabled, HashSet<String> emailEnabled) {
+        static Preferences fromJson(ObjectMapper om, String json) {
+            try {
+                if (json == null || json.isBlank()) return new Preferences(new HashSet<>(), new HashSet<>());
+                JsonNode root = om.readTree(json);
+                HashSet<String> ui = readSet(root.path("notifications").path("uiEnabled"));
+                HashSet<String> email = readSet(root.path("notifications").path("emailEnabled"));
+                return new Preferences(ui, email);
+            } catch (Exception ex) {
+                return new Preferences(new HashSet<>(), new HashSet<>());
+            }
+        }
+
+        boolean isUiEnabled(String type) {
+            // par défaut: tout activé si liste vide
+            return uiEnabled == null || uiEnabled.isEmpty() || uiEnabled.contains(type);
+        }
+
+        boolean isEmailEnabled(String type) {
+            // par défaut: pas d'emails si liste vide
+            return emailEnabled != null && emailEnabled.contains(type);
+        }
+
+        private static HashSet<String> readSet(JsonNode n) {
+            HashSet<String> set = new HashSet<>();
+            if (n == null || !n.isArray()) return set;
+            for (JsonNode it : n) {
+                if (it != null && it.isTextual()) {
+                    String v = it.asText().trim();
+                    if (!v.isEmpty()) set.add(v);
+                }
+            }
+            return set;
         }
     }
 

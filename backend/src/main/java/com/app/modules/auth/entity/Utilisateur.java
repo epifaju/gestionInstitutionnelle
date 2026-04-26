@@ -52,6 +52,10 @@ public class Utilisateur extends BaseEntity {
     @Column(nullable = false, length = 10)
     private String langue = "fr";
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false, columnDefinition = "jsonb")
+    private String preferences = "{}";
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "organisation_id", insertable = false, updatable = false)
     private Organisation organisation;
