@@ -29,6 +29,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuthStore } from "@/lib/store";
 import { getDashboard } from "@/services/dashboard.service";
 import { tauxDuJour } from "@/services/devises.service";
+import { getExpiringSoon } from "@/services/documents.service";
+import Link from "next/link";
 
 function num(s: string | number | undefined) {
   if (s === undefined || s === null) return 0;
@@ -111,11 +113,19 @@ export default function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const { data, isLoading, error } = useQuery({ queryKey: ["rapports", "dashboard"], queryFn: getDashboard });
   const isEmploye = user?.role === "EMPLOYE";
+  const canSeeDocs = user?.role === "RH" || user?.role === "ADMIN";
   const { data: fx } = useQuery({
     queryKey: ["devises", "taux-du-jour", "EUR"],
     queryFn: () => tauxDuJour("EUR"),
     staleTime: 1000 * 60 * 30,
     enabled: !isEmploye,
+  });
+
+  const { data: expDocs } = useQuery({
+    queryKey: ["documents", "expiringSoon", 30],
+    queryFn: () => getExpiringSoon(30),
+    enabled: canSeeDocs && !isEmploye,
+    staleTime: 1000 * 60 * 30,
   });
 
   if (error) {
@@ -311,6 +321,38 @@ export default function DashboardPage() {
             <p className="mt-2 text-xs text-slate-500">Source: Frankfurter • Cache 4h</p>
           </CardContent>
         </Card>
+
+        {canSeeDocs ? (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Documents expirant bientôt</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!expDocs || expDocs.length === 0 ? (
+                <p className="text-sm text-slate-500">Aucun document expirant dans les 30 prochains jours.</p>
+              ) : (
+                <>
+                  <p className="text-sm text-slate-700">
+                    {expDocs.length} document(s) expirant dans les 30 prochains jours.
+                  </p>
+                  <div className="mt-3 space-y-2">
+                    {expDocs.slice(0, 5).map((d) => (
+                      <div key={d.id} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="truncate font-medium text-slate-800">{d.titre}</span>
+                        <span className="shrink-0 text-slate-500">{d.dateExpiration ?? "—"}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3">
+                    <Link href="/documents?expirantBientot=true" className="text-sm font-medium text-indigo-700 hover:underline">
+                      Voir tout
+                    </Link>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card>
           <CardHeader>

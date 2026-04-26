@@ -23,6 +23,7 @@
     "next-pwa": "^5.6.0",
     "react": "^18",
     "react-dom": "^18",
+    "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.72.1",
     "recharts": "^3.8.1",
     "shadcn": "^4.3.0",

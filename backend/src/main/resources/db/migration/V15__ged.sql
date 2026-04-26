@@ -20,6 +20,8 @@ CREATE TYPE visibilite_doc AS ENUM ('PRIVE','SERVICE','ORGANISATION','PUBLIC');
        entite_liee_type VARCHAR(100), -- 'Salarie', 'Facture', 'Mission'...
        entite_liee_id   UUID,         -- ID de l'entité liée
        date_expiration  DATE,         -- pour accréditations, visas...
+       supprime         BOOLEAN       NOT NULL DEFAULT FALSE,
+       date_suppression TIMESTAMPTZ,
        uploade_par      UUID          REFERENCES utilisateurs(id),
        created_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
        updated_at       TIMESTAMPTZ   NOT NULL DEFAULT NOW()
@@ -31,6 +33,7 @@ CREATE TYPE visibilite_doc AS ENUM ('PRIVE','SERVICE','ORGANISATION','PUBLIC');
    CREATE INDEX idx_doc_search      ON documents USING GIN(
      to_tsvector('french', titre || ' ' || COALESCE(description,''))
    );
+   CREATE INDEX idx_doc_not_deleted ON documents(organisation_id, type_document) WHERE supprime = FALSE;
 
    CREATE TABLE document_acces (
        document_id     UUID NOT NULL REFERENCES documents(id) ON DELETE CASCADE,

@@ -55,14 +55,18 @@ public class CategorieService {
 
     @Transactional
     public CategorieResponse creer(CategorieRequest req, UUID orgId) {
-        if (categorieDepenseRepository.existsByOrganisationIdAndCode(orgId, req.code().trim())) {
+        String code = req.code().trim();
+        if (code.length() > 60) {
+            throw BusinessException.badRequest("CATEGORIE_CODE_TROP_LONG");
+        }
+        if (categorieDepenseRepository.existsByOrganisationIdAndCode(orgId, code)) {
             throw BusinessException.badRequest("CATEGORIE_CODE_DUPLIQUE");
         }
         TypeCategorie type = TypeCategorie.valueOf(req.type().trim().toUpperCase());
         CategorieDepense c = new CategorieDepense();
         c.setOrganisationId(orgId);
         c.setLibelle(req.libelle().trim());
-        c.setCode(req.code().trim());
+        c.setCode(code);
         c.setType(type);
         c.setCouleur(req.couleur() != null && !req.couleur().isBlank() ? req.couleur().trim() : "#6B7280");
         c.setActif(true);
@@ -78,6 +82,9 @@ public class CategorieService {
                         .orElseThrow(() -> BusinessException.notFound("CATEGORIE_ABSENTE"));
 
         String newCode = req.code().trim();
+        if (newCode.length() > 60) {
+            throw BusinessException.badRequest("CATEGORIE_CODE_TROP_LONG");
+        }
         if (!c.getCode().equalsIgnoreCase(newCode)
                 && categorieDepenseRepository.existsByOrganisationIdAndCode(orgId, newCode)) {
             throw BusinessException.badRequest("CATEGORIE_CODE_DUPLIQUE");

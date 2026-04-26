@@ -248,14 +248,14 @@ public class FinanceController {
     }
 
     @PostMapping("/categories")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCIER')")
     public ResponseEntity<ApiResponse<CategorieResponse>> creerCategorie(
             @AuthenticationPrincipal CustomUserDetails user, @Valid @RequestBody CategorieRequest req) {
         return ResponseEntity.ok(ApiResponse.ok(categorieService.creer(req, user.getOrganisationId())));
     }
 
     @PutMapping("/categories/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCIER')")
     public ResponseEntity<ApiResponse<CategorieResponse>> modifierCategorie(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable UUID id,
@@ -264,7 +264,7 @@ public class FinanceController {
     }
 
     @DeleteMapping("/categories/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCIER')")
     public ResponseEntity<ApiResponse<Object>> supprimerCategorie(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable UUID id) {
@@ -273,7 +273,7 @@ public class FinanceController {
     }
 
     @PostMapping("/categories/{id}/reactiver")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','FINANCIER')")
     public ResponseEntity<ApiResponse<Object>> reactiverCategorie(
             @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) {
         categorieService.reactiver(id, user.getOrganisationId());

@@ -67,6 +67,19 @@ public class MinioStorageService {
                         .build());
     }
 
+    public String presignedGetUrl(String objectName, int expirySeconds) throws Exception {
+        if (expirySeconds <= 0) {
+            expirySeconds = 3600;
+        }
+        return publicMinioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                        .method(Method.GET)
+                        .bucket(minioProperties.getBucket())
+                        .object(objectName)
+                        .expiry(expirySeconds, TimeUnit.SECONDS)
+                        .build());
+    }
+
     public List<String> listObjectNames(String prefix) throws Exception {
         ensureBucket();
         List<String> names = new ArrayList<>();

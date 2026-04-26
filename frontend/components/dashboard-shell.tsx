@@ -170,6 +170,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const restItems: NavItem[] = [
     { href: "/notifications", label: t("notifications") },
+    { href: "/documents", label: t("documents") },
     { href: "/missions", label: t("missions") },
     ...(showBudget ? [{ href: "/budget", label: t("budget") }] : []),
     ...(showInv ? [{ href: "/inventaire", label: t("inventaire") }] : []),

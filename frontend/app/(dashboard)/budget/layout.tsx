@@ -1,5 +1,3 @@
-import { DashboardShell } from "@/components/dashboard-shell";
-
 export default function BudgetSectionLayout({ children }: { children: React.ReactNode }) {
-  return <DashboardShell>{children}</DashboardShell>;
+  return children;
 }

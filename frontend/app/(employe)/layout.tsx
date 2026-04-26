@@ -46,7 +46,7 @@ export default function EmployeLayout({ children }: { children: React.ReactNode 
             <Wallet className="h-5 w-5" />
             Paie
           </Link>
-          <Link href="/employe/documents" className={tabClass(pathname.startsWith("/employe/documents"))}>
+          <Link href="/mes-documents" className={tabClass(pathname.startsWith("/mes-documents"))}>
             <FileText className="h-5 w-5" />
             Docs
           </Link>

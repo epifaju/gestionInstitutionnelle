@@ -21,6 +21,7 @@ import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "factures")
@@ -64,6 +65,9 @@ public class Facture extends BaseEntity {
 
     @Column(name = "justificatif_url", length = 500)
     private String justificatifUrl;
+
+    @Column(name = "document_justificatif_id")
+    private UUID documentJustificatifId;
 
     @Column(columnDefinition = "text")
     private String notes;

@@ -5,14 +5,14 @@ import { useQuery } from "@tanstack/react-query";
 import { listEmployeDocuments } from "@/services/employe.service";
 import { Button } from "@/components/ui/button";
 
-export default function EmployeDocumentsPage() {
+export default function EmployeMesDocumentsPage() {
   const q = useQuery({ queryKey: ["employe", "documents"], queryFn: () => listEmployeDocuments() });
   const docs = q.data ?? [];
 
   return (
     <div className="mx-auto max-w-md space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-900">Documents</h1>
+        <h1 className="text-lg font-semibold text-slate-900">Mes documents</h1>
         <Button type="button" variant="outline" size="sm" onClick={() => q.refetch()}>
           Rafraîchir
         </Button>

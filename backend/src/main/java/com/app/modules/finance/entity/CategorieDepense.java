@@ -33,7 +33,7 @@ public class CategorieDepense {
     @Column(nullable = false, length = 150)
     private String libelle;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 60)
     private String code;
 
     @Enumerated(EnumType.STRING)

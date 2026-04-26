@@ -29,6 +29,8 @@ export default function FinanceCategoriesPage() {
   const qc = useQueryClient();
   const role = useAuthStore((s) => s.user?.role);
   const isAdmin = role === "ADMIN";
+  const isFin = role === "FINANCIER";
+  const canManage = isAdmin || isFin;
 
   const [showInactive, setShowInactive] = useState(false);
   const { data, isLoading } = useQuery({
@@ -163,22 +165,22 @@ export default function FinanceCategoriesPage() {
           <div className="flex items-end justify-end">
             <Button
               type="button"
-              disabled={!isAdmin || mut.isPending}
+              disabled={!canManage || mut.isPending}
               onClick={() => mut.mutate({ ...form, libelle: form.libelle.trim(), code: form.code.trim() })}
             >
               {t("createButton")}
             </Button>
           </div>
         </div>
-        {!isAdmin && (
+        {!canManage && (
           <p className="mt-2 text-sm text-slate-600">
-            Les catégories ne peuvent être modifiées que par un Administrateur.
+            Les catégories ne peuvent être modifiées que par un Administrateur ou un Financier.
           </p>
         )}
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white">
-        {isAdmin && (
+        {canManage && (
           <div className="flex items-center justify-between gap-3 border-b border-slate-200 p-3 text-sm">
             <label className="inline-flex items-center gap-2">
               <input
@@ -199,17 +201,17 @@ export default function FinanceCategoriesPage() {
               <TableHead>{t("thType")}</TableHead>
               <TableHead>{t("thCouleur")}</TableHead>
               <TableHead>{t("thActif")}</TableHead>
-              {isAdmin && <TableHead className="text-right">Actions</TableHead>}
+              {canManage && <TableHead className="text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 6 : 5}>{tc("loading")}</TableCell>
+                <TableCell colSpan={canManage ? 6 : 5}>{tc("loading")}</TableCell>
               </TableRow>
             ) : rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 6 : 5}>{t("empty")}</TableCell>
+                <TableCell colSpan={canManage ? 6 : 5}>{t("empty")}</TableCell>
               </TableRow>
             ) : (
               rows.map((c) => (
@@ -224,7 +226,7 @@ export default function FinanceCategoriesPage() {
                     </span>
                   </TableCell>
                   <TableCell>{c.actif ? t("yes") : t("no")}</TableCell>
-                  {isAdmin && (
+                  {canManage && (
                     <TableCell className="text-right">
                       <div className="inline-flex items-center gap-2">
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(c)}>

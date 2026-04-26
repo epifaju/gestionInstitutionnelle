@@ -19,6 +19,7 @@ import org.hibernate.type.SqlTypes;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Entity
 @Table(name = "missions")
@@ -74,8 +75,14 @@ public class Mission extends BaseEntity {
     @Column(name = "ordre_mission_url", length = 500)
     private String ordreMissionUrl;
 
+    @Column(name = "ordre_mission_document_id")
+    private UUID ordreMissionDocumentId;
+
     @Column(name = "rapport_url", length = 500)
     private String rapportUrl;
+
+    @Column(name = "rapport_document_id")
+    private UUID rapportDocumentId;
 
     @PreUpdate
     void onPreUpdate() {

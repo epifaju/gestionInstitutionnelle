@@ -57,6 +57,9 @@ public class FraisMission {
     @Column(name = "justificatif_url", length = 500)
     private String justificatifUrl;
 
+    @Column(name = "justificatif_document_id")
+    private UUID justificatifDocumentId;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false, columnDefinition = "statut_frais")

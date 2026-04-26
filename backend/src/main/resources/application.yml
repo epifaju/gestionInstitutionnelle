@@ -22,8 +22,9 @@ spring:
     locations: classpath:db/migration
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 12MB
+      # GED supports larger files; keep a small buffer above 50MB.
+      max-file-size: 55MB
+      max-request-size: 60MB
   cache:
     type: caffeine
     caffeine:
@@ -65,6 +66,10 @@ app:
     refresh-cookie-secure: ${REFRESH_COOKIE_SECURE:false}
     auth-rate-limit-max: ${AUTH_RATE_LIMIT_MAX:30}
     auth-rate-limit-window-seconds: ${AUTH_RATE_LIMIT_WINDOW_SECONDS:60}
+  ged:
+    max-file-bytes: ${GED_MAX_FILE_BYTES:52428800} # 50 MiB
+    presign-expiry-seconds: ${GED_PRESIGN_EXPIRY_SECONDS:3600} # 1h
+    allowed-mime-types: ${GED_ALLOWED_MIME_TYPES:application/pdf,image/png,image/jpeg,image/webp,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet}
 
 ---
 spring:
