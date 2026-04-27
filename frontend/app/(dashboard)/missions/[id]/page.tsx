@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
@@ -132,6 +132,22 @@ export default function MissionDetailPage() {
     },
   });
 
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [avanceInput, setAvanceInput] = useState("0");
+  const [avanceError, setAvanceError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!approveOpen) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setApproveOpen(false);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [approveOpen]);
+
   const total = mission ? Number(fmt(mission.totalFraisValides)) : 0;
   const solde = mission ? Number(fmt(mission.soldeARegler)) : 0;
 
@@ -153,9 +169,10 @@ export default function MissionDetailPage() {
             type="button"
             disabled={mutApprouver.isPending}
             onClick={() => {
-              const v = window.prompt(t("promptAvanceVersee"), "0");
-              const n = v == null ? null : Number(v);
-              mutApprouver.mutate(Number.isFinite(n) ? n : null);
+              setAvanceError(null);
+              const current = mission.avanceVersee == null ? 0 : Number(mission.avanceVersee);
+              setAvanceInput(Number.isFinite(current) ? String(current) : "0");
+              setApproveOpen(true);
             }}
           >
             {t("actionApprouver")}
@@ -177,6 +194,59 @@ export default function MissionDetailPage() {
 
   return (
     <div className="space-y-4">
+      {approveOpen ? (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" role="dialog" aria-modal="true">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40"
+            aria-label={tc("close")}
+            onClick={() => setApproveOpen(false)}
+          />
+          <div className="relative z-10 w-full max-w-md rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xl">
+            <h2 className="text-lg font-semibold text-foreground">{t("actionApprouver")}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">{t("promptAvanceVersee")}</p>
+            <div className="mt-4 space-y-1">
+              <Label>{t("avanceVersee")}</Label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min={0}
+                value={avanceInput}
+                onChange={(e) => setAvanceInput(e.target.value)}
+                autoFocus
+                aria-invalid={!!avanceError}
+              />
+              {avanceError ? <p className="text-xs text-destructive">{avanceError}</p> : null}
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setApproveOpen(false)}>
+                {tc("cancel")}
+              </Button>
+              <Button
+                type="button"
+                disabled={mutApprouver.isPending}
+                onClick={() => {
+                  const raw = String(avanceInput ?? "").trim();
+                  const n = raw.length === 0 ? NaN : Number(raw);
+                  if (!Number.isFinite(n) || n < 0) {
+                    const msg = "Montant invalide.";
+                    setAvanceError(msg);
+                    toast.error(msg);
+                    return;
+                  }
+                  setAvanceError(null);
+                  setApproveOpen(false);
+                  mutApprouver.mutate(n);
+                }}
+              >
+                {tc("confirm")}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold text-foreground">{mission.titre}</h1>

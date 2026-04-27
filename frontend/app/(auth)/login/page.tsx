@@ -74,6 +74,7 @@ export default function LoginPage() {
         const l = data.user.langue === "pt_pt" ? "pt-PT" : data.user.langue;
         if (l === "fr" || l === "en" || l === "pt-PT") {
           setLocaleCookie(l);
+          setLocale(l);
         }
       }
       // Applique le thème de l'utilisateur avant redirection (évite le "flash")

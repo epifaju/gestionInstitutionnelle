@@ -66,10 +66,22 @@ public class MissionController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ApiResponse<MissionResponse>> create(
-            @AuthenticationPrincipal CustomUserDetails user, @Valid @RequestBody MissionRequest req) {
+            @AuthenticationPrincipal CustomUserDetails user,
+            @RequestParam(required = false) UUID salarieId,
+            @Valid @RequestBody MissionRequest req) {
         UUID orgId = user.getOrganisationId();
-        UUID salarieId = resolveMySalarieId(orgId, user);
-        return ResponseEntity.ok(ApiResponse.ok(missionService.creer(req, orgId, salarieId)));
+        String role = user.getUtilisateur() != null && user.getUtilisateur().getRole() != null ? user.getUtilisateur().getRole().name() : "";
+        boolean canCreateForOthers = "ADMIN".equals(role) || "RH".equals(role);
+        UUID effectiveSalarieId;
+        if (canCreateForOthers && salarieId != null) {
+            effectiveSalarieId = salarieId;
+        } else if (canCreateForOthers && salarieId == null) {
+            // Un compte ADMIN/RH n'est pas forcément lié à une fiche salarié → il doit choisir un salarié cible.
+            throw com.app.shared.exception.BusinessException.badRequest("SALARIE_REQUIS");
+        } else {
+            effectiveSalarieId = resolveMySalarieId(orgId, user);
+        }
+        return ResponseEntity.ok(ApiResponse.ok(missionService.creer(req, orgId, effectiveSalarieId)));
     }
 
     @GetMapping("/{id}")

@@ -2,6 +2,35 @@ import axios, { AxiosError, AxiosRequestConfig } from "axios";
 import { toast } from "sonner";
 import { useAuthStore } from "./store";
 
+type UiLocale = "fr" | "en" | "pt-PT";
+
+function getUiLocale(): UiLocale {
+  try {
+    const s = localStorage.getItem("app_locale");
+    if (s === "fr" || s === "en" || s === "pt-PT") return s;
+  } catch {
+    /* ignore */
+  }
+  try {
+    const m = document.cookie.match(/(?:^|;\s*)locale=([^;]+)/);
+    const v = m ? decodeURIComponent(m[1]) : "";
+    if (v === "fr" || v === "en" || v === "pt-PT") return v;
+  } catch {
+    /* ignore */
+  }
+  return "fr";
+}
+
+function translateApiCode(code: string): string | null {
+  const l = getUiLocale();
+  if (code === "SALARIE_REQUIS") {
+    if (l === "en") return "Please select an employee.";
+    if (l === "pt-PT") return "Por favor selecione um colaborador.";
+    return "Veuillez sélectionner un salarié.";
+  }
+  return null;
+}
+
 function buildBaseUrl(): string {
   const env = process.env.NEXT_PUBLIC_API_URL || "/api";
   const trimmed = env.replace(/\/$/, "");
@@ -110,10 +139,11 @@ api.interceptors.response.use(
         if (data?.fieldErrors && Object.keys(data.fieldErrors).length > 0) {
           const first = Object.values(data.fieldErrors)[0];
           msg = data?.code ? `${data.code}: ${first}` : first;
-        } else if (data?.code && data?.message) {
-          msg = `${data.code} — ${data.message}`;
         } else if (data?.code) {
-          msg = data.code;
+          const mapped = translateApiCode(data.code);
+          if (mapped) msg = mapped;
+          else if (data?.message) msg = `${data.code} — ${data.message}`;
+          else msg = data.code;
         }
         toast.error(msg);
       }

@@ -68,6 +68,14 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         const me = await get<UserInfo>("auth/me");
         if (!cancelled) {
           setAuth(me, accessToken, 900);
+          // IMPORTANT: la langue est un paramètre global (cookie/localStorage),
+          // donc on la resynchronise explicitement à chaque login en fonction de l'utilisateur.
+          const rawLang = me.langue ?? null;
+          const l = rawLang === "pt_pt" ? "pt-PT" : rawLang;
+          if (l === "fr" || l === "en" || l === "pt-PT") {
+            setLocaleCookie(l);
+            setLocale(l);
+          }
           try {
             const prefs = await get<{ theme: "system" | "light" | "dark" }>("auth/me/preferences");
             if (!cancelled && prefs?.theme) setTheme(prefs.theme);

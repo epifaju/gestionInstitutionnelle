@@ -18,4 +18,6 @@ public interface SalarieRepository extends JpaRepository<Salarie, UUID>, JpaSpec
     Optional<Salarie> findByOrganisationIdAndUtilisateur_Id(UUID organisationId, UUID utilisateurId);
 
     Optional<Salarie> findByOrganisationIdAndEmailIgnoreCase(UUID organisationId, String email);
+
+    Optional<Salarie> findByIdAndOrganisationId(UUID id, UUID organisationId);
 }

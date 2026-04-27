@@ -21,6 +21,10 @@ export async function createMission(body: MissionRequest) {
   return post<MissionResponse>("missions", body);
 }
 
+export async function createMissionForSalarie(salarieId: string, body: MissionRequest) {
+  return post<MissionResponse>("missions", body, { params: { salarieId } });
+}
+
 export async function updateMission(id: string, body: MissionRequest) {
   return put<MissionResponse>(`missions/${id}`, body);
 }

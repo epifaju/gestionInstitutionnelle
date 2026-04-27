@@ -2,19 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createMission } from "@/services/missions.service";
+import { createMission, createMissionForSalarie } from "@/services/missions.service";
 import type { MissionRequest } from "@/lib/types/missions";
+import { useAuthStore } from "@/lib/store";
+import { listSalaries } from "@/services/salarie.service";
+import { cn } from "@/lib/utils";
 
 export default function NewMissionPage() {
   const t = useTranslations("Missions");
   const tc = useTranslations("Common");
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const role = user?.role ?? "";
+  const canCreateForOthers = role === "ADMIN" || role === "RH";
+  const [salarieId, setSalarieId] = useState<string>("");
 
   const [form, setForm] = useState<MissionRequest>({
     titre: "",
@@ -27,8 +34,23 @@ export default function NewMissionPage() {
     avanceDevise: "EUR",
   });
 
+  const salariesQuery = useQuery({
+    queryKey: ["rh", "salaries", "picklist"],
+    queryFn: () => listSalaries({ page: 0, size: 200 }),
+    enabled: canCreateForOthers,
+  });
+
   const mut = useMutation({
-    mutationFn: () => createMission(form),
+    mutationFn: () => {
+      if (canCreateForOthers) {
+        if (!salarieId) {
+          toast.error("Veuillez sélectionner un salarié.");
+          return Promise.reject(new Error("Missing salarieId"));
+        }
+        return createMissionForSalarie(salarieId, form);
+      }
+      return createMission(form);
+    },
     onSuccess: (m) => {
       toast.success(tc("successCreated"));
       router.push(`/missions/${m.id}`);
@@ -43,6 +65,27 @@ export default function NewMissionPage() {
       </div>
 
       <div className="space-y-3 rounded-lg border border-border bg-card p-4 text-card-foreground">
+        {canCreateForOthers ? (
+          <div className="space-y-1">
+            <Label>Salarié</Label>
+            <select
+              value={salarieId}
+              onChange={(e) => setSalarieId(e.target.value)}
+              disabled={salariesQuery.isLoading || !salariesQuery.data}
+              className={cn(
+                "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80"
+              )}
+            >
+              <option value="">{salariesQuery.isLoading ? "Chargement…" : "— Sélectionner —"}</option>
+              {(salariesQuery.data?.content ?? []).map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.matricule} — {s.nom} {s.prenom}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : null}
+
         <div className="space-y-1">
           <Label>{t("fTitre")}</Label>
           <Input value={form.titre} onChange={(e) => setForm((f) => ({ ...f, titre: e.target.value }))} />

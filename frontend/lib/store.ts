@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { clearAccessTokenCookie, setAccessTokenCookie } from "./auth-cookie";
+import { clearLocaleCookie } from "./locale-cookie";
 
 export type UserInfo = {
   id: string;
@@ -46,6 +47,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       // Legacy global theme key could leak between accounts in same browser.
       localStorage.removeItem("app_theme");
+      // Évite que la langue du dernier compte connecté "déteigne" sur le suivant.
+      localStorage.removeItem("app_locale");
+    } catch {
+      /* ignore */
+    }
+    try {
+      clearLocaleCookie();
     } catch {
       /* ignore */
     }
