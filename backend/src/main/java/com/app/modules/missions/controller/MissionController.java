@@ -6,6 +6,8 @@ import com.app.modules.missions.dto.FraisResponse;
 import com.app.modules.missions.dto.MissionRequest;
 import com.app.modules.missions.dto.MissionResponse;
 import com.app.modules.missions.service.MissionService;
+import com.app.modules.workflow.service.WorkflowEngineService;
+import com.app.modules.workflow.service.WorkflowProcessKey;
 import com.app.modules.rh.service.SalarieService;
 import com.app.shared.dto.ApiResponse;
 import com.app.shared.dto.PageResponse;
@@ -36,6 +38,7 @@ public class MissionController {
     private final MissionService missionService;
     private final SalarieService salarieService;
     private final MinioStorageService minioStorageService;
+    private final WorkflowEngineService workflowEngineService;
 
     private UUID resolveMySalarieId(UUID orgId, CustomUserDetails user) {
         // Avoid hard failure "SALARIE_NON_LIE" for EMPLOYE accounts not strictly linked yet:
@@ -106,7 +109,13 @@ public class MissionController {
             @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) {
         UUID orgId = user.getOrganisationId();
         UUID salarieId = resolveMySalarieId(orgId, user);
-        return ResponseEntity.ok(ApiResponse.ok(missionService.soumettre(id, orgId, salarieId)));
+        MissionResponse res = missionService.soumettre(id, orgId, salarieId);
+        if (workflowEngineService.isEnabled(orgId, WorkflowProcessKey.MISSION_APPROVAL)) {
+            // Use avanceDemandee as a proxy amount for rule selection (can be configured to ignore amounts).
+            // createdBy: userId
+            workflowEngineService.submitIfAbsent(orgId, WorkflowProcessKey.MISSION_APPROVAL, "Mission", id, null, user.getId());
+        }
+        return ResponseEntity.ok(ApiResponse.ok(res));
     }
 
     @PostMapping("/{id}/approuver")
@@ -118,6 +127,16 @@ public class MissionController {
         BigDecimal avanceVersee = null;
         if (body != null && body.get("avanceVersee") != null) {
             avanceVersee = new BigDecimal(String.valueOf(body.get("avanceVersee")));
+        }
+        if (workflowEngineService.isEnabled(orgId, WorkflowProcessKey.MISSION_APPROVAL)) {
+            var inst = workflowEngineService.submitIfAbsent(orgId, WorkflowProcessKey.MISSION_APPROVAL, "Mission", id, avanceVersee, approbateurId);
+            var rule = workflowEngineService.resolveRule(orgId, WorkflowProcessKey.MISSION_APPROVAL, avanceVersee);
+            var role = user.getUtilisateur() != null && user.getUtilisateur().getRole() != null ? user.getUtilisateur().getRole().name() : "";
+            var updated = workflowEngineService.approve(orgId, inst.getId(), rule, approbateurId, role, null);
+            if (updated.getStatus() != com.app.modules.workflow.entity.WorkflowInstanceStatus.APPROVED) {
+                // Not fully approved yet (level2 pending): keep mission as SOUMISE.
+                return ResponseEntity.ok(ApiResponse.ok(missionService.getById(id, orgId)));
+            }
         }
         return ResponseEntity.ok(ApiResponse.ok(missionService.approuver(id, approbateurId, avanceVersee, orgId)));
     }
@@ -168,14 +187,35 @@ public class MissionController {
     @PreAuthorize("hasAnyRole('RH','FINANCIER','ADMIN')")
     public ResponseEntity<ApiResponse<FraisResponse>> valider(
             @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id, @PathVariable UUID fraisId) {
-        return ResponseEntity.ok(ApiResponse.ok(missionService.validerFrais(id, fraisId, user.getOrganisationId())));
+        UUID orgId = user.getOrganisationId();
+        if (workflowEngineService.isEnabled(orgId, WorkflowProcessKey.FRAIS_VALIDATE)) {
+            // Use montantEur not directly available here; submit with null and rules can be unbounded.
+            var inst = workflowEngineService.submitIfAbsent(orgId, WorkflowProcessKey.FRAIS_VALIDATE, "FraisMission", fraisId, null, user.getId());
+            var rule = workflowEngineService.resolveRule(orgId, WorkflowProcessKey.FRAIS_VALIDATE, BigDecimal.ZERO);
+            var role = user.getUtilisateur() != null && user.getUtilisateur().getRole() != null ? user.getUtilisateur().getRole().name() : "";
+            var updated = workflowEngineService.approve(orgId, inst.getId(), rule, user.getId(), role, null);
+            if (updated.getStatus() != com.app.modules.workflow.entity.WorkflowInstanceStatus.APPROVED) {
+                return ResponseEntity.ok(ApiResponse.ok(missionService.getFrais(id, fraisId, orgId)));
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.ok(missionService.validerFrais(id, fraisId, orgId)));
     }
 
     @PostMapping("/{id}/frais/{fraisId}/rembourser")
     @PreAuthorize("hasAnyRole('FINANCIER','ADMIN')")
     public ResponseEntity<ApiResponse<FraisResponse>> rembourser(
             @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id, @PathVariable UUID fraisId) {
-        return ResponseEntity.ok(ApiResponse.ok(missionService.rembourserFrais(id, fraisId, user.getOrganisationId(), user.getId())));
+        UUID orgId = user.getOrganisationId();
+        if (workflowEngineService.isEnabled(orgId, WorkflowProcessKey.FRAIS_REIMBURSE)) {
+            var inst = workflowEngineService.submitIfAbsent(orgId, WorkflowProcessKey.FRAIS_REIMBURSE, "FraisMission", fraisId, null, user.getId());
+            var rule = workflowEngineService.resolveRule(orgId, WorkflowProcessKey.FRAIS_REIMBURSE, BigDecimal.ZERO);
+            var role = user.getUtilisateur() != null && user.getUtilisateur().getRole() != null ? user.getUtilisateur().getRole().name() : "";
+            var updated = workflowEngineService.approve(orgId, inst.getId(), rule, user.getId(), role, null);
+            if (updated.getStatus() != com.app.modules.workflow.entity.WorkflowInstanceStatus.APPROVED) {
+                return ResponseEntity.ok(ApiResponse.ok(missionService.getFrais(id, fraisId, orgId)));
+            }
+        }
+        return ResponseEntity.ok(ApiResponse.ok(missionService.rembourserFrais(id, fraisId, orgId, user.getId())));
     }
 
     @GetMapping("/{id}/frais/{fraisId}/justificatif")

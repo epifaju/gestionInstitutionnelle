@@ -23,11 +23,14 @@ import {
   YAxis,
 } from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useAuthStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 import { getDashboard } from "@/services/dashboard.service";
+import { getEcheancesDashboard } from "@/services/contrat.service";
 import { tauxDuJour } from "@/services/devises.service";
 import { getExpiringSoon } from "@/services/documents.service";
 import Link from "next/link";
@@ -114,6 +117,7 @@ export default function DashboardPage() {
   const { data, isLoading, error } = useQuery({ queryKey: ["rapports", "dashboard"], queryFn: getDashboard });
   const isEmploye = user?.role === "EMPLOYE";
   const canSeeDocs = user?.role === "RH" || user?.role === "ADMIN";
+  const canSeeRhUrgent = user?.role === "RH" || user?.role === "ADMIN";
   const { data: fx } = useQuery({
     queryKey: ["devises", "taux-du-jour", "EUR"],
     queryFn: () => tauxDuJour("EUR"),
@@ -126,6 +130,13 @@ export default function DashboardPage() {
     queryFn: () => getExpiringSoon(30),
     enabled: canSeeDocs && !isEmploye,
     staleTime: 1000 * 60 * 30,
+  });
+
+  const { data: rhDash } = useQuery({
+    queryKey: ["rh", "contrats", "dashboard", "home-widget"],
+    queryFn: () => getEcheancesDashboard(),
+    enabled: canSeeRhUrgent && !isEmploye,
+    staleTime: 60_000,
   });
 
   if (error) {
@@ -401,6 +412,53 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {canSeeRhUrgent && rhDash ? (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-base">{td("rhUrgentTitle")}</CardTitle>
+            <Link href="/rh/contrats" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              {td("rhUrgentSeeAll")}
+            </Link>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {(rhDash.prochainesEcheances ?? []).slice(0, 5).length === 0 ? (
+              <p className="text-sm text-muted-foreground">{td("rhUrgentEmpty")}</p>
+            ) : (
+              <div className="space-y-2">
+                {(rhDash.prochainesEcheances ?? []).slice(0, 5).map((e) => {
+                  const n = (e.niveauUrgence ?? "NORMAL").toUpperCase();
+                  const badgeCls =
+                    n === "CRITIQUE"
+                      ? "bg-red-900 text-white"
+                      : n === "URGENT"
+                        ? "bg-red-500 text-white"
+                        : n === "ATTENTION"
+                          ? "bg-orange-500 text-white"
+                          : "bg-muted text-foreground";
+                  return (
+                    <div key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border p-2 text-sm">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${badgeCls}`}>{n}</span>
+                          <span className="font-medium text-foreground">{e.salarieNomComplet}</span>
+                          <span className="text-muted-foreground">· {e.typeEcheance}</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {e.titre} · {e.dateEcheance}
+                        </div>
+                      </div>
+                      <Link href="/rh/contrats" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+                        {td("rhUrgentTreat")}
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      ) : null}
 
       <p className="text-xs text-muted-foreground">
         {td("footerParc")} : {fmtEur(num(data.kpis.valeurParcMateriel))} — {td("footerConges")} :{" "}

@@ -35,7 +35,8 @@ public class AdminService {
     private final AuditLogService auditLogService;
     private final PasswordEncoder passwordEncoder;
 
-    @PreAuthorize("hasRole('ADMIN')")
+    /** Lecture seule ; aligné sur AdminController (RH = listes type modal échéances). */
+    @PreAuthorize("hasAnyRole('ADMIN','RH')")
     @Transactional(readOnly = true)
     public Page<AdminUserResponse> listUsers(UUID organisationId, Pageable pageable) {
         return utilisateurRepository

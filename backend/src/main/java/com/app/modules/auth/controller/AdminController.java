@@ -34,7 +34,7 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/users")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','RH')")
     public ResponseEntity<ApiResponse<PageResponse<AdminUserResponse>>> listUsers(
             @AuthenticationPrincipal CustomUserDetails user, @PageableDefault(size = 20) Pageable pageable) {
         Page<AdminUserResponse> page = adminService.listUsers(user.getOrganisationId(), pageable);

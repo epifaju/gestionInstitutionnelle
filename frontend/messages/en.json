@@ -78,6 +78,7 @@
   },
   "Nav": {
     "dashboard": "Dashboard",
+    "rhContrats": "Contracts & HR deadlines",
     "finance": "Finance",
     "recettes": "Income",
     "paiements": "Payments",
@@ -93,6 +94,8 @@
     "rapports": "Reports",
     "settings": "Settings",
     "adminUsers": "Users",
+    "adminWorkflows": "Workflows",
+    "adminTemplates": "Templates",
     "adminAudit": "Audit",
     "sectionFinance": "Finance",
     "sectionRh": "HR"
@@ -127,6 +130,7 @@
     "details": "Details",
     "resume": "Summary",
     "downloadOrdre": "Download mission order",
+    "generateOrdrePdf": "Generate order (PDF)",
     "uploadOrdre": "Upload order (PDF)",
     "uploadRapport": "Upload report (PDF)",
     "avanceVersee": "Advance paid",
@@ -175,7 +179,11 @@
     "footerParc": "Fleet value (excluding service)",
     "footerConges": "Reported leave",
     "employeeSubtitle": "Limited view: your current leave only (no finance or HR aggregates).",
-    "employeeCongesOnly": "Current leave"
+    "employeeCongesOnly": "Current leave",
+    "rhUrgentTitle": "Urgent HR deadlines",
+    "rhUrgentSeeAll": "See all deadlines →",
+    "rhUrgentTreat": "Handle",
+    "rhUrgentEmpty": "No urgent deadlines."
   },
   "Notifications": {
     "title": "Notifications",
@@ -421,6 +429,7 @@
       "thMois": "Month",
       "thMontant": "Amount",
       "contractsPdf": "Contracts (PDF)",
+      "contractsPdfStructuredHint": "These PDFs are archived on the file only. For deadline tracking (CDD end, probation, etc.), also register a contract under “Contracts & deadlines”.",
       "uploadPdfHint": "Drag and drop or click to upload a PDF (max 10 MB)",
       "validateDossier": "Validate record",
       "newGrille": "New pay scale",
@@ -448,7 +457,10 @@
         "dtPoste": "Role",
         "dtContrat": "Contract",
         "dtEmbauche": "Hire date",
-        "dtNationalite": "Nationality"
+        "dtNationalite": "Nationality",
+        "btnContrats": "Contracts & deadlines →",
+        "alerteEcheances": "⚠️ {n} deadline(s) require action",
+        "alerteLink": "Open"
       },
       "form": {
         "nom": "Last name",
@@ -465,6 +477,351 @@
         "montantNet": "Net amount",
         "devise": "Currency",
         "salaryEditHint": "To edit salary, use <b>New grid</b> (salary history)."
+      }
+    },
+    "contrats": {
+      "upload": { "file": "File" },
+      "creerContrat": {
+        "title": "Register a contract (deadline tracking)",
+        "subtitle": "Creates the structured contract record (separate from PDFs on the Documents tab). You can attach the signed contract afterwards.",
+        "typeLabel": "Contract type",
+        "typeCdi": "Permanent (CDI)",
+        "typeCdd": "Fixed-term (CDD)",
+        "dateDebut": "Start date",
+        "dateFin": "End date (CDD)",
+        "motifCdd": "CDD reason",
+        "motifPlaceholder": "e.g. replacement, temporary increase…",
+        "intitulePoste": "Job title (optional)",
+        "toastOk": "Contract created.",
+        "zodDateDebut": "Start date is required.",
+        "zodDateFinCdd": "End date is required for a CDD.",
+        "zodMotifCdd": "Reason is required for a CDD.",
+        "zodDateFinAfterDebut": "End date must be after the start date."
+      },
+      "pageTitle": "Contracts & HR deadlines",
+      "pageSubtitle": "Track contracts, regulatory obligations, and required actions.",
+      "kpi": {
+        "cdd30": "Fixed-term contracts expiring < 30d",
+        "pe15": "Probation periods ending < 15d",
+        "visites": "Medical visits due",
+        "titres": "Residence permits to renew",
+        "formations": "Mandatory training expiring / soon"
+      },
+      "badge": { "alert": "Alert", "watch": "Watch" },
+      "tabs": {
+        "contrats": "Fixed-term & contracts",
+        "echeances": "Deadlines",
+        "visites": "Medical visits",
+        "titres": "Residence permits",
+        "formations": "Mandatory training"
+      },
+      "filters": {
+        "all": "All",
+        "typeContrat": "Contract type",
+        "service": "Department",
+        "servicePlaceholder": "Department name…",
+        "expire": "Expiring within",
+        "statut": "Status",
+        "typeEcheance": "Deadline type",
+        "du": "From",
+        "au": "To"
+      },
+      "th": {
+        "salarie": "Employee",
+        "service": "Department",
+        "type": "Type",
+        "debut": "Start",
+        "fin": "End",
+        "renouv": "Renewal no.",
+        "jours": "Days left",
+        "decision": "Decision",
+        "actions": "Actions",
+        "titre": "Title",
+        "date": "Date",
+        "statut": "Status",
+        "urgence": "Urgency"
+      },
+      "actions": {
+        "renouveler": "Renew",
+        "decision": "Final decision",
+        "voir": "View contract",
+        "upload": "Upload signed contract",
+        "traiter": "Handle",
+        "annuler": "Cancel"
+      },
+      "promptAnnulerMotif": "Cancellation reason (required):",
+      "annulerOk": "Deadline cancelled.",
+      "echeances": { "new": "+ New deadline" },
+      "uploadTitle": "Upload signed contract",
+      "uploadHint": "PDF recommended (server max 10MB).",
+      "uploadOk": "Signed contract saved.",
+      "visites": {
+        "planifier": "+ Schedule visit",
+        "th": {
+          "type": "Visit type",
+          "plan": "Planned date",
+          "real": "Completed date",
+          "resultat": "Result",
+          "next": "Next visit"
+        },
+        "actionResultat": "Record result"
+      },
+      "titres": {
+        "new": "+ Record permit",
+        "th": {
+          "typeDoc": "Document type",
+          "numero": "Document no.",
+          "pays": "Country",
+          "exp": "Expiry",
+          "statut": "Renewal status",
+          "actions": "Actions"
+        },
+        "actionUpload": "Upload scan",
+        "actionStatut": "Update renewal"
+      },
+      "formations": {
+        "new": "+ Record training",
+        "th": {
+          "intitule": "Training",
+          "org": "Provider",
+          "real": "Completion date",
+          "exp": "Expiry"
+        },
+        "actionCert": "Upload certificate",
+        "actionRenouv": "Renew"
+      },
+      "renouvellement": {
+        "title": "Renew fixed-term contract",
+        "subtitle": "Employee: {nom} — next renewal no. {n}",
+        "dateFin": "New end date",
+        "motif": "Reason (optional)",
+        "commentaire": "Comment (optional)",
+        "hintMax": "Check the maximum allowed renewals in your configuration.",
+        "toastOk": "Renewal saved.",
+        "zodDate": "Date required",
+        "zodAfterToday": "Date must be strictly after today.",
+        "zodAfterOld": "New end date must be after the previous end date."
+      },
+      "decisionFin": {
+        "title": "End-of-fixed-term decision",
+        "subtitle": "Employee: {nom}",
+        "decisionLabel": "Decision",
+        "decision": {
+          "RENOUVELLEMENT": "Renew",
+          "CDI": "Convert to permanent",
+          "NON_RENOUVELE": "Do not renew"
+        },
+        "dateDecision": "Decision date",
+        "commentaire": "Comment",
+        "warnNon": "The employee will be notified. This action is irreversible.",
+        "toastOk": "Decision saved.",
+        "zodDateDecision": "Date required",
+        "zodCommentNon": "Comment required if you do not renew."
+      },
+      "echeanceModal": {
+        "title": "New deadline",
+        "subtitle": "Create a manual deadline.",
+        "salarie": "Employee",
+        "salarieSearch": "Search (name, employee no…)",
+        "salariePlaceholder": "Select…",
+        "type": "Deadline type",
+        "date": "Deadline date",
+        "titre": "Title",
+        "description": "Description",
+        "priorite": "Priority",
+        "prio": { "haute": "High", "normale": "Normal", "basse": "Low" },
+        "responsable": "Owner (HR/ADMIN)",
+        "responsableNone": "— None —",
+        "toastOk": "Deadline created.",
+        "zodSalarie": "Please select an employee.",
+        "zodTitre": "Title is too short.",
+        "zodDate": "Date required.",
+        "types": {
+          "FIN_CDD": "End of fixed-term",
+          "FIN_PERIODE_ESSAI": "End of probation",
+          "RENOUVELLEMENT_CDD": "Fixed-term renewal",
+          "VISITE_MEDICALE": "Medical visit",
+          "TITRE_SEJOUR": "Residence permit",
+          "FORMATION_OBLIGATOIRE": "Mandatory training",
+          "AVENANT_CONTRAT": "Contract amendment",
+          "AUTRE": "Other"
+        }
+      },
+      "traiterEcheance": {
+        "title": "Handle deadline",
+        "subtitle": "Provide handling date and a comment.",
+        "zodDate": "Handling date is required.",
+        "zodCommentaire": "Comment is too short (minimum 2 characters).",
+        "readonly": { "type": "Type", "date": "Date" },
+        "dateTraitement": "Handling date",
+        "commentaire": "Comment",
+        "preuve": "Supporting document (PDF or image, optional)",
+        "toastOk": "Deadline handled."
+      },
+      "resultatVisite": {
+        "title": "Medical visit result",
+        "subtitle": "Updates the visit record.",
+        "resultat": "Result",
+        "restrictions": "Restrictions / adjustments",
+        "cr": "Medical report (PDF, optional)",
+        "toastOk": "Result saved.",
+        "resultats": {
+          "APTE": "FIT",
+          "APTE_AMENAGEMENT": "FIT with adjustments",
+          "INAPTE": "UNFIT",
+          "EN_ATTENTE": "PENDING"
+        },
+        "zodRestrictions": "Please specify restrictions."
+      },
+      "planifierVisite": {
+        "title": "Schedule a visit",
+        "subtitle": "Creates a planned visit (initial result: EN_ATTENTE).",
+        "salarie": "Employee",
+        "salariePlaceholder": "Select…",
+        "typeVisite": "Visit type",
+        "datePlanifiee": "Planned date",
+        "medecin": "Doctor (optional)",
+        "centre": "Medical center (optional)",
+        "periodicite": "Frequency (months)",
+        "toastOk": "Visit scheduled.",
+        "zodSalarie": "Select an employee.",
+        "zodType": "Type required.",
+        "zodDate": "Date required."
+      },
+      "titreModal": {
+        "title": "Record a residence permit",
+        "subtitle": "Creates a new permit record (and related deadline server-side).",
+        "salarie": "Employee",
+        "salariePlaceholder": "Select…",
+        "typeDocument": "Document type",
+        "numero": "Document number",
+        "pays": "Issuing country",
+        "autorite": "Issuing authority",
+        "dateEmission": "Issue date",
+        "dateExpiration": "Expiry date",
+        "scan": "Scan (PDF or image, optional)",
+        "toastOk": "Permit saved.",
+        "zodSalarie": "Select an employee.",
+        "zodType": "Type required.",
+        "zodDateExp": "Expiry date required."
+      },
+      "statutTitre": {
+        "title": "Renewal status",
+        "subtitle": "Permit — {nom}",
+        "statut": "Status",
+        "toastOk": "Status updated.",
+        "options": {
+          "NON_ENGAGE": "Not started",
+          "EN_COURS": "In progress",
+          "DEPOSE": "Submitted",
+          "OBTENU": "Granted",
+          "REFUSE": "Rejected"
+        }
+      },
+      "formationModal": {
+        "title": "Record training",
+        "subtitle": "Adds a mandatory training record.",
+        "salarie": "Employee",
+        "salariePlaceholder": "Select…",
+        "intitule": "Title",
+        "typeFormation": "Type",
+        "organisme": "Provider",
+        "dateRealisation": "Completion date",
+        "dateExpiration": "Expiry date",
+        "periodicite": "Frequency (months)",
+        "numeroCertificat": "Certificate no.",
+        "cout": "Cost (optional)",
+        "certificat": "Certificate (PDF or image, optional)",
+        "toastOk": "Training saved.",
+        "zodSalarie": "Select an employee.",
+        "zodIntitule": "Title required.",
+        "zodType": "Type required.",
+        "zodDateExp": "Expiry date required."
+      },
+      "renouvelerFormation": {
+        "title": "Renew training",
+        "titleCert": "Add / update certificate",
+        "subtitle": "Employee: {nom}",
+        "intitule": "Title",
+        "typeFormation": "Type",
+        "organisme": "Provider",
+        "dateRealisation": "Completion date",
+        "dateExpiration": "Expiry date",
+        "periodicite": "Frequency (months)",
+        "numeroCertificat": "Certificate no.",
+        "cout": "Cost (optional)",
+        "certificat": "Certificate (PDF or image)",
+        "toastOk": "Renewal saved.",
+        "toastOkCert": "Certificate saved.",
+        "zodIntitule": "Title required.",
+        "zodType": "Type required.",
+        "zodDateExp": "Expiry date required.",
+        "zodCert": "Please select a certificate file."
+      },
+      "salariePage": {
+        "breadcrumbLeaf": "Contracts & deadlines",
+        "title": "Contracts & deadlines — {prenom} {nom}",
+        "backSalarie": "← Back to employee record",
+        "contratActif": "Active contract",
+        "noContrat": "No active contract found.",
+        "noContratExplain": "PDFs uploaded under “Contracts (PDF)” on the employee Documents tab are stored separately: they do not automatically create this view (dates, contract type, deadlines). Register a contract below to enable tracking and alerts here.",
+        "dossierPdfTitle": "PDFs already archived on the file (Documents)",
+        "creerContratBtn": "+ Register a contract",
+        "fields": {
+          "type": "Type:",
+          "debut": "Start:",
+          "fin": "End:",
+          "pe": "Probation end:",
+          "jours": "Days left:",
+          "decision": "Decision:"
+        },
+        "actions": {
+          "renouveler": "Renew",
+          "decision": "Final decision",
+          "upload": "Upload signed contract",
+          "voirContrat": "View signed contract"
+        },
+        "uploadTitle": "Upload signed contract",
+        "histTitle": "Contract history",
+        "histEmpty": "No history.",
+        "histMeta": "Decision: {decision} · Renewal no. {n}",
+        "medicalTitle": "Medical follow-up",
+        "medicalPlan": "+ Schedule visit",
+        "medicalEmpty": "No visits recorded.",
+        "medical.lastReal": "Last completed date:",
+        "medical.result": "Last result:",
+        "medical.next": "Next planned visit:",
+        "medicalPast": "Past visits",
+        "medicalResultBtn": "Record result",
+        "titresTitle": "Permits & administrative documents",
+        "titres": {
+          "add": "+ Record permit",
+          "col": {
+            "type": "Document type",
+            "numero": "Document no.",
+            "pays": "Country",
+            "exp": "Expiry",
+            "statut": "Renewal status",
+            "actions": "Actions"
+          },
+          "actionUpload": "Upload scan",
+          "actionStatut": "Update renewal"
+        },
+        "formationsTitle": "Regulatory training",
+        "formations": {
+          "add": "+ Record training",
+          "col": {
+            "intitule": "Training",
+            "type": "Type",
+            "org": "Provider",
+            "real": "Completion date",
+            "exp": "Expiry",
+            "statut": "Status",
+            "actions": "Actions"
+          },
+          "actionCert": "Upload certificate",
+          "actionRenouv": "Renew"
+        }
       }
     },
     "conges": {
@@ -764,6 +1121,55 @@
     "passwordMismatch": "Passwords do not match"
   },
   "Admin": {
+    "templates": {
+      "title": "Template library",
+      "subtitle": "Create templates (DOCX/HTML), manage versions and upload revisions.",
+      "new": "New template",
+      "createTitle": "Create a template",
+      "code": "Code",
+      "label": "Label",
+      "labelPh": "e.g. Mission order",
+      "category": "Category",
+      "format": "Format",
+      "status": "Status",
+      "thCode": "Code",
+      "thLabel": "Label",
+      "thCategory": "Category",
+      "thFormat": "Format",
+      "thStatus": "Status",
+      "edit": "Edit",
+      "revisions": "Revisions",
+      "editTitle": "Edit {code}",
+      "editHint": "Enable/disable the template and update its label.",
+      "revisionsTitle": "Revisions — {code}",
+      "revisionsHint": "Upload a DOCX/HTML file to create a new version.",
+      "upload": "Upload a revision",
+      "thVersion": "Version",
+      "thMime": "MIME",
+      "thCreatedAt": "Created at"
+    },
+    "workflows": {
+      "title": "Workflows & approvals",
+      "subtitle": "Enable/disable processes and configure 1–2 levels by amount.",
+      "thProcess": "Process",
+      "thEnabled": "Enabled",
+      "thRules": "Rules",
+      "enabledYes": "Yes",
+      "enabledNo": "No",
+      "edit": "Configure",
+      "editTitle": "Configuration — {key}",
+      "editHint": "Tip: leave Min/Max empty for a default rule.",
+      "enabledLabel": "Workflow enabled",
+      "rulesTitle": "Amount rules (EUR)",
+      "addRule": "Add rule",
+      "rulesEmpty": "No rules. Add a default rule (no min/max).",
+      "min": "Min (EUR)",
+      "max": "Max (EUR)",
+      "levels": "Levels",
+      "role1": "Level 1 role",
+      "role2": "Level 2 role",
+      "remove": "Remove"
+    },
     "users": {
       "title": "Users",
       "subtitle": "Organisation accounts (ADMIN role required).",

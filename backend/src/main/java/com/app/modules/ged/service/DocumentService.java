@@ -141,6 +141,13 @@ public class DocumentService {
         return minioStorageService.presignedGetUrl(d.getFichierUrl(), gedProperties.getPresignExpirySeconds());
     }
 
+    @Transactional(readOnly = true)
+    public String getObjectName(UUID id, UUID orgId, UUID userId) {
+        Document d = loadOwned(id, orgId);
+        assertCanAccess(d, orgId, userId);
+        return d.getFichierUrl();
+    }
+
     @Transactional
     public DocumentResponse modifier(UUID id, DocumentUpdateRequest req, UUID orgId, UUID userId) {
         Document d = loadOwned(id, orgId);

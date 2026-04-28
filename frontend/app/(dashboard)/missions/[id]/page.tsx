@@ -24,6 +24,8 @@ import {
   uploadRapportMission,
   validerFrais,
 } from "@/services/missions.service";
+import { generateFromTemplate } from "@/services/template.service";
+import { getPresignedUrl } from "@/services/documents.service";
 
 function statutVariant(s: string): "muted" | "info" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
@@ -129,6 +131,17 @@ export default function MissionDetailPage() {
     onSuccess: () => {
       toast.success(tc("successSaved"));
       qc.invalidateQueries({ queryKey: ["missions", id] });
+    },
+  });
+
+  const mutGenerateOrdre = useMutation({
+    mutationFn: () => generateFromTemplate("MISSION_ORDRE", { subjectType: "Mission", subjectId: id, outputFormat: "PDF" }),
+    onSuccess: async (gd) => {
+      toast.success(tc("successCreated"));
+      if (gd.outputDocumentId) {
+        const { url } = await getPresignedUrl(gd.outputDocumentId);
+        window.open(url, "_blank", "noopener,noreferrer");
+      }
     },
   });
 
@@ -271,6 +284,9 @@ export default function MissionDetailPage() {
                 {t("downloadOrdre")}
               </a>
             ) : null}
+            <Button type="button" variant="outline" size="sm" disabled={mutGenerateOrdre.isPending} onClick={() => mutGenerateOrdre.mutate()}>
+              {t("generateOrdrePdf")}
+            </Button>
             <Label className="inline-flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{t("uploadOrdre")}</span>
               <input
@@ -359,7 +375,28 @@ export default function MissionDetailPage() {
             <Input type="file" onChange={(e) => setJust(e.target.files?.[0] ?? null)} />
           </div>
           <div className="md:col-span-3 flex justify-end">
-            <Button type="button" disabled={mutAddFrais.isPending} onClick={() => mutAddFrais.mutate()}>
+            <Button
+              type="button"
+              disabled={mutAddFrais.isPending}
+              onClick={() => {
+                const desc = String(frais.description ?? "").trim();
+                const date = String(frais.dateFrais ?? "").trim();
+                const montant = Number(frais.montant);
+                if (!desc) {
+                  toast.error("La description est obligatoire.");
+                  return;
+                }
+                if (!date) {
+                  toast.error("La date du frais est obligatoire.");
+                  return;
+                }
+                if (!Number.isFinite(montant) || montant <= 0) {
+                  toast.error("Le montant doit être supérieur à 0.");
+                  return;
+                }
+                mutAddFrais.mutate();
+              }}
+            >
               + {t("addFrais")}
             </Button>
           </div>
@@ -401,14 +438,22 @@ export default function MissionDetailPage() {
                         <a className="text-sm text-indigo-700 hover:underline" href={r.justificatifUrl} target="_blank" rel="noreferrer">
                           {t("openJust")}
                         </a>
-                      ) : null}
+                      ) : (
+                        <span className="text-xs font-medium text-amber-700 dark:text-amber-400">Justificatif requis</span>
+                      )}
                       {r.statut === "SOUMIS" && canValidateFrais ? (
                         <Button type="button" size="sm" variant="outline" onClick={() => mutValiderFrais.mutate({ fraisId: r.id })}>
                           {t("valider")}
                         </Button>
                       ) : null}
                       {r.statut === "VALIDE" && canRembourser ? (
-                        <Button type="button" size="sm" onClick={() => mutRembourserFrais.mutate({ fraisId: r.id })}>
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={!r.justificatifUrl || mutRembourserFrais.isPending}
+                          title={!r.justificatifUrl ? "Un justificatif est requis." : undefined}
+                          onClick={() => mutRembourserFrais.mutate({ fraisId: r.id })}
+                        >
                           {t("rembourser")}
                         </Button>
                       ) : null}

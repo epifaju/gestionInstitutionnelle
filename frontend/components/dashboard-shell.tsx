@@ -4,9 +4,9 @@ import { useAuthStore, type UserInfo } from "@/lib/store";
 import { decodeJwtPayload } from "@/lib/jwt";
 import { api, get } from "@/lib/api";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Building2, LogOut, Menu, X, Languages, Settings } from "lucide-react";
+import { Building2, FileText, LogOut, Menu, X, Languages, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppLocale } from "@/lib/locale-context";
@@ -14,6 +14,8 @@ import type { AppLocale } from "@/lib/locale-context";
 import { setLocaleCookie } from "@/lib/locale-cookie";
 import { NotificationBell } from "@/components/ui/NotificationBell";
 import { useAppTheme } from "@/lib/theme-context";
+import { useQuery } from "@tanstack/react-query";
+import { getEcheancesDashboard } from "@/services/contrat.service";
 
 function syncTokenFromCookie() {
   if (typeof document === "undefined") return;
@@ -93,7 +95,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, user, setAuth, logout, router, setTheme]);
+  }, [accessToken, user, setAuth, logout, router, setTheme, setLocale]);
 
   async function handleLogout() {
     try {
@@ -160,6 +162,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const showFinance = isAdmin || isFin;
   const showRhSalaries = isAdmin || isRh;
+  const showRhContrats = isAdmin || isRh;
   const showPaie = isAdmin || isRh || isFin;
   const showMyPaie = isEmploye;
   const showBudget = isAdmin || isFin || isRh;
@@ -178,6 +181,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const rhItems: NavItem[] = [
     ...(showRhSalaries ? [{ href: "/rh/salaries", label: tRhSal("title") }] : []),
+    ...(showRhContrats ? [{ href: "/rh/contrats", label: t("rhContrats") }] : []),
     { href: "/rh/conges", label: tRhCong("title") },
     ...(showMyPaie ? [{ href: "/rh/me/paie", label: t("myPaie") }] : []),
     ...(showPaie ? [{ href: "/rh/paie", label: tRhPaie("title") }] : []),
@@ -194,6 +198,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     ...(isAdmin
       ? [
           { href: "/dashboard/admin/users", label: t("adminUsers") },
+          { href: "/dashboard/admin/workflows", label: t("adminWorkflows") },
+          { href: "/dashboard/admin/templates", label: t("adminTemplates") },
           { href: "/dashboard/admin/audit", label: t("adminAudit") },
         ]
       : []),
@@ -203,6 +209,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     `rounded-md px-3 py-2 text-sm font-medium ${
       pathname === href || pathname.startsWith(href + "/") ? "bg-indigo-50 text-indigo-800" : "text-muted-foreground hover:bg-muted hover:text-foreground"
     }`;
+
+  const { data: rhDash } = useQuery({
+    queryKey: ["rh", "contrats", "dashboard", "nav-badge"],
+    queryFn: () => getEcheancesDashboard(),
+    enabled: !!accessToken && showRhContrats,
+    staleTime: 60_000,
+  });
+
+  const rhUrgentBadge = useMemo(() => {
+    if (!rhDash) return 0;
+    return Number(rhDash.critiques ?? 0) + Number(rhDash.urgentes ?? 0);
+  }, [rhDash]);
 
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
     <>
@@ -226,11 +244,28 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       {rhItems.length > 0 ? (
         <>
           <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("sectionRh")}</p>
-          {rhItems.map((item) => (
-            <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
-              {item.label}
-            </Link>
-          ))}
+          {rhItems.map((item) =>
+            item.href === "/rh/contrats" ? (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={onNavigate}
+                className={`${linkClass(item.href)} flex items-center justify-between gap-2`}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <FileText className="h-4 w-4 opacity-70" />
+                  {item.label}
+                </span>
+                {rhUrgentBadge > 0 ? (
+                  <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">{rhUrgentBadge}</span>
+                ) : null}
+              </Link>
+            ) : (
+              <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
+                {item.label}
+              </Link>
+            )
+          )}
         </>
       ) : null}
 

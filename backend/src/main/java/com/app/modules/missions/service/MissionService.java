@@ -20,13 +20,17 @@ import com.app.shared.exception.BusinessException;
 import com.app.shared.storage.MinioStorageService;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -42,6 +46,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class MissionService {
 
+    private static final Logger log = LoggerFactory.getLogger(MissionService.class);
+
     private static final long MAX_FILE = 10_485_760L;
 
     private final MissionRepository missionRepository;
@@ -50,6 +56,14 @@ public class MissionService {
     private final MinioStorageService minioStorageService;
     private final TauxChangeService tauxChangeService;
     private final FactureService factureService;
+
+    @Transactional(readOnly = true)
+    public FraisResponse getFrais(UUID missionId, UUID fraisId, UUID orgId) {
+        loadOwned(missionId, orgId);
+        FraisMission f = fraisMissionRepository.findByIdAndMission_Id(fraisId, missionId)
+                .orElseThrow(() -> BusinessException.notFound("FRAIS_ABSENT"));
+        return toFraisResponse(f);
+    }
 
     @Transactional(readOnly = true)
     public Page<MissionResponse> list(UUID orgId, String statut, UUID salarieId, LocalDate debut, LocalDate fin, Pageable pageable) {
@@ -133,6 +147,8 @@ public class MissionService {
             );
             try {
                 factureService.creer(fr, null, orgId, approbateurId);
+            } catch (BusinessException be) {
+                throw be;
             } catch (Exception e) {
                 throw BusinessException.badRequest("MISSION_AVANCE_FACTURE_ERREUR");
             }
@@ -233,8 +249,12 @@ public class MissionService {
                 .orElseThrow(() -> BusinessException.notFound("FRAIS_ABSENT"));
         Mission m = loadOwned(missionId, orgId);
         if (f.getStatut() != StatutFrais.VALIDE) throw BusinessException.badRequest("FRAIS_STATUT_INVALIDE");
-        f.setStatut(StatutFrais.REMBOURSE);
-        fraisMissionRepository.save(f);
+        // Bloquer proprement si pas de justificatif pour le frais remboursé.
+        // (Le module Finance exige un justificatif au-delà du seuil; ici on empêche la création de facture inutilement.)
+        if (f.getJustificatifUrl() == null || f.getJustificatifUrl().isBlank()) {
+            throw BusinessException.badRequest("JUSTIFICATIF_REQUIS");
+        }
+        MultipartFile just = toMultipartFromMinio(f.getJustificatifUrl());
 
         // Create invoice line as expense trace for reimbursement
         BigDecimal montant = f.getMontant();
@@ -249,12 +269,79 @@ public class MissionService {
                 "Remboursement frais mission: " + m.getTitre() + " — " + f.getTypeFrais()
         );
         try {
-            factureService.creer(fr, null, orgId, actorId);
+            // On réutilise le justificatif du frais comme justificatif de la facture (si le seuil Finance l'exige).
+            factureService.creer(fr, just, orgId, actorId);
+        } catch (BusinessException be) {
+            throw be;
         } catch (Exception e) {
-            throw BusinessException.badRequest("MISSION_REMBOURSEMENT_FACTURE_ERREUR");
+            log.error("Erreur création facture remboursement missionId={} fraisId={} orgId={} actorId={}",
+                    missionId, fraisId, orgId, actorId, e);
+            throw new BusinessException(
+                    "MISSION_REMBOURSEMENT_FACTURE_ERREUR",
+                    HttpStatus.BAD_REQUEST,
+                    "Impossible de créer la facture de remboursement. Vérifiez la configuration du module Finance puis réessayez."
+            );
         }
 
+        // Ne marquer le frais remboursé qu'après création de la facture.
+        f.setStatut(StatutFrais.REMBOURSE);
+        fraisMissionRepository.save(f);
         return toFraisResponse(f);
+    }
+
+    private MultipartFile toMultipartFromMinio(String objectName) {
+        try {
+            MinioStorageService.Download dl = minioStorageService.download(objectName);
+            try (InputStream in = dl.stream()) {
+                byte[] bytes = in.readAllBytes();
+                String filename = objectName.replaceAll("^.*/", "");
+                String ct = (dl.contentType() != null && !dl.contentType().isBlank()) ? dl.contentType() : "application/octet-stream";
+                return new MultipartFile() {
+                    @Override
+                    public String getName() {
+                        return "justificatif";
+                    }
+
+                    @Override
+                    public String getOriginalFilename() {
+                        return filename;
+                    }
+
+                    @Override
+                    public String getContentType() {
+                        return ct;
+                    }
+
+                    @Override
+                    public boolean isEmpty() {
+                        return bytes.length == 0;
+                    }
+
+                    @Override
+                    public long getSize() {
+                        return bytes.length;
+                    }
+
+                    @Override
+                    public byte[] getBytes() {
+                        return bytes;
+                    }
+
+                    @Override
+                    public InputStream getInputStream() {
+                        return new ByteArrayInputStream(bytes);
+                    }
+
+                    @Override
+                    public void transferTo(java.io.File dest) throws java.io.IOException, IllegalStateException {
+                        java.nio.file.Files.write(dest.toPath(), bytes);
+                    }
+                };
+            }
+        } catch (Exception e) {
+            log.warn("Impossible de télécharger le justificatif MinIO objectName={}", objectName, e);
+            throw new BusinessException("JUSTIFICATIF_REQUIS", HttpStatus.BAD_REQUEST, "Le justificatif est requis (fichier inaccessible).");
+        }
     }
 
     @Transactional(readOnly = true)

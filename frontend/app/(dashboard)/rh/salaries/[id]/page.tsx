@@ -7,13 +7,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale, useTranslations } from "next-intl";
 import { intlLocaleTag } from "@/lib/intl-locale";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { SalarieForm, type SalarieFormValues } from "@/components/forms/SalarieForm";
 import { CongeForm } from "@/components/forms/CongeForm";
 import { useAuthStore } from "@/lib/store";
+import { cn } from "@/lib/utils";
 import type { CongeRequest, MarquerPayeRequest, SalarieRequest } from "@/lib/types/rh";
 import {
   ajouterGrilleSalariale,
@@ -27,6 +28,7 @@ import {
 } from "@/services/salarie.service";
 import { listConges, rejeterConge, soumettreConge, validerConge } from "@/services/conge.service";
 import { getPaieAnnuelle, marquerPaye } from "@/services/paie.service";
+import { getEcheances } from "@/services/contrat.service";
 
 function statutVariant(s: string): "success" | "warning" | "muted" | "default" {
   if (s === "ACTIF") return "success";
@@ -95,6 +97,12 @@ export default function SalarieDetailPage() {
     queryKey: ["rh", "docs", id],
     queryFn: () => listDocuments(id),
     enabled: tab === "docs",
+  });
+
+  const { data: echeancesAction } = useQuery({
+    queryKey: ["rh", "contrats", "echeances-action", id],
+    queryFn: () => getEcheances({ page: 0, size: 50, salarieId: id, statut: "ACTION_REQUISE" }),
+    enabled: isRhOrAdmin,
   });
 
   const mutValider = useMutation({
@@ -197,8 +205,28 @@ export default function SalarieDetailPage() {
             {salarie.matricule} · {salarie.service}
           </p>
         </div>
-        <Badge variant={statutVariant(salarie.statut)}>{salarie.statut}</Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant={statutVariant(salarie.statut)}>{salarie.statut}</Badge>
+          {isRhOrAdmin ? (
+            <Link href={`/rh/contrats/salaries/${id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              {tdt("btnContrats")}
+            </Link>
+          ) : null}
+        </div>
       </div>
+
+      {isRhOrAdmin && (echeancesAction?.content?.length ?? 0) > 0 ? (
+        <Card className="border-red-200 bg-red-50/60 p-4 dark:border-red-900/40 dark:bg-red-950/20">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-sm font-semibold text-red-900 dark:text-red-100">
+              {tdt("alerteEcheances", { n: echeancesAction?.content.length ?? 0 })}
+            </p>
+            <Link href={`/rh/contrats/salaries/${id}`} className={cn(buttonVariants({ variant: "destructive", size: "sm" }))}>
+              {tdt("alerteLink")}
+            </Link>
+          </div>
+        </Card>
+      ) : null}
 
       <div className="flex flex-wrap gap-2 border-b border-border pb-2">
         {(["infos", "conges", "paie", "docs"] as const).map((tabKey) => (
@@ -416,6 +444,7 @@ export default function SalarieDetailPage() {
       {tab === "docs" && (
         <Card className="p-4">
           <h2 className="mb-3 font-semibold text-foreground">{ts("contractsPdf")}</h2>
+          <p className="mb-3 text-sm text-muted-foreground">{ts("contractsPdfStructuredHint")}</p>
           <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted p-8 text-center text-sm text-muted-foreground hover:bg-muted/80">
             <input
               type="file"

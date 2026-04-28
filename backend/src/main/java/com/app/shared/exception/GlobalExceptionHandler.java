@@ -20,6 +20,10 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+    // Codes BusinessException utilisés par le module RH Contrats/Échéances :
+    // ECHEANCE_DEJA_EXISTANTE, ECHEANCE_DATE_INVALIDE, ECHEANCE_RENOUVELLEMENT_IMPOSSIBLE,
+    // CONTRAT_STATUT_INVALIDE, DOCUMENT_REQUIS, SALARIE_NON_TROUVE
+
     private final Environment environment;
 
     public GlobalExceptionHandler(Environment environment) {

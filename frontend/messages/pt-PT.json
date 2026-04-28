@@ -68,6 +68,7 @@
   },
   "Nav": {
     "dashboard": "Painel",
+    "rhContrats": "Contratos & prazos RH",
     "finance": "Finanças",
     "recettes": "Receitas",
     "paiements": "Pagamentos",
@@ -83,6 +84,8 @@
     "rapports": "Relatórios",
     "settings": "Definições",
     "adminUsers": "Utilizadores",
+    "adminWorkflows": "Workflows",
+    "adminTemplates": "Modelos",
     "adminAudit": "Auditoria",
     "sectionFinance": "Finanças",
     "sectionRh": "RH"
@@ -117,6 +120,7 @@
     "details": "Detalhes",
     "resume": "Resumo",
     "downloadOrdre": "Transferir ordem de missão",
+    "generateOrdrePdf": "Gerar ordem (PDF)",
     "uploadOrdre": "Carregar ordem (PDF)",
     "uploadRapport": "Carregar relatório (PDF)",
     "avanceVersee": "Adiantamento pago",
@@ -165,7 +169,11 @@
     "footerParc": "Valor do parque (fora de serviço)",
     "footerConges": "Ausências sinalizadas",
     "employeeSubtitle": "Vista limitada: as suas ausências em curso (sem agregados financeiros nem RH).",
-    "employeeCongesOnly": "Ausências em curso"
+    "employeeCongesOnly": "Ausências em curso",
+    "rhUrgentTitle": "Prazos RH urgentes",
+    "rhUrgentSeeAll": "Ver todos os prazos →",
+    "rhUrgentTreat": "Tratar",
+    "rhUrgentEmpty": "Sem prazos urgentes."
   },
   "Notifications": {
     "title": "Notificações",
@@ -411,6 +419,7 @@
       "thMois": "Mês",
       "thMontant": "Montante",
       "contractsPdf": "Contratos (PDF)",
+      "contractsPdfStructuredHint": "Estes PDF ficam apenas como arquivo na ficha. Para prazos (fim de CDD, período experimental, etc.), registe também um contrato em « Contratos & prazos ».",
       "uploadPdfHint": "Arraste e largue ou clique para enviar um PDF (máx. 10 MB)",
       "validateDossier": "Validar o processo",
       "newGrille": "Nova grelha salarial",
@@ -438,7 +447,10 @@
         "dtPoste": "Cargo",
         "dtContrat": "Contrato",
         "dtEmbauche": "Admissão",
-        "dtNationalite": "Nacionalidade"
+        "dtNationalite": "Nacionalidade",
+        "btnContrats": "Contratos & prazos →",
+        "alerteEcheances": "⚠️ {n} prazo(s) requer(em) ação",
+        "alerteLink": "Abrir"
       },
       "form": {
         "nom": "Nome",
@@ -455,6 +467,351 @@
         "montantNet": "Montante líquido",
         "devise": "Moeda",
         "salaryEditHint": "Para alterar o salário, utilize <b>Nova grelha</b> (histórico salarial)."
+      }
+    },
+    "contrats": {
+      "upload": { "file": "Ficheiro" },
+      "creerContrat": {
+        "title": "Registar contrato (acompanhamento de prazos)",
+        "subtitle": "Cria o registo estruturado do contrato (separado dos PDF no separador Documentos). Pode anexar o contrato assinado depois.",
+        "typeLabel": "Tipo de contrato",
+        "typeCdi": "CDI",
+        "typeCdd": "CDD",
+        "dateDebut": "Data de início",
+        "dateFin": "Data de fim (CDD)",
+        "motifCdd": "Motivo do CDD",
+        "motifPlaceholder": "Ex.: substituição, acréscimo temporário…",
+        "intitulePoste": "Designação do cargo (opcional)",
+        "toastOk": "Contrato criado.",
+        "zodDateDebut": "Data de início obrigatória.",
+        "zodDateFinCdd": "Data de fim obrigatória para CDD.",
+        "zodMotifCdd": "Motivo obrigatório para CDD.",
+        "zodDateFinAfterDebut": "A data de fim deve ser posterior à data de início."
+      },
+      "pageTitle": "Contratos & prazos RH",
+      "pageSubtitle": "Acompanhamento de contratos, obrigações legais e ações necessárias.",
+      "kpi": {
+        "cdd30": "CDD a expirar < 30d",
+        "pe15": "Períodos experimental < 15d",
+        "visites": "Visitas médicas em falta",
+        "titres": "Títulos de estadia a renovar",
+        "formations": "Formações a expirar / próximas"
+      },
+      "badge": { "alert": "Alerta", "watch": "Atenção" },
+      "tabs": {
+        "contrats": "CDD & contratos",
+        "echeances": "Prazos",
+        "visites": "Visitas médicas",
+        "titres": "Títulos de estadia",
+        "formations": "Formações obrigatórias"
+      },
+      "filters": {
+        "all": "Todos",
+        "typeContrat": "Tipo de contrato",
+        "service": "Serviço",
+        "servicePlaceholder": "Nome do serviço…",
+        "expire": "A expirar em",
+        "statut": "Estado",
+        "typeEcheance": "Tipo de prazo",
+        "du": "De",
+        "au": "Até"
+      },
+      "th": {
+        "salarie": "Colaborador",
+        "service": "Serviço",
+        "type": "Tipo",
+        "debut": "Início",
+        "fin": "Fim",
+        "renouv": "Renovação n°",
+        "jours": "Dias restantes",
+        "decision": "Decisão",
+        "actions": "Ações",
+        "titre": "Título",
+        "date": "Data",
+        "statut": "Estado",
+        "urgence": "Urgência"
+      },
+      "actions": {
+        "renouveler": "Renovar",
+        "decision": "Decisão final",
+        "voir": "Ver contrato",
+        "upload": "Carregar contrato assinado",
+        "traiter": "Tratar",
+        "annuler": "Anular"
+      },
+      "promptAnnulerMotif": "Motivo de anulação (obrigatório):",
+      "annulerOk": "Prazo anulado.",
+      "echeances": { "new": "+ Novo prazo" },
+      "uploadTitle": "Carregar contrato assinado",
+      "uploadHint": "PDF recomendado (máx. 10 MB no servidor).",
+      "uploadOk": "Contrato assinado guardado.",
+      "visites": {
+        "planifier": "+ Agendar visita",
+        "th": {
+          "type": "Tipo de visita",
+          "plan": "Data planeado",
+          "real": "Data realizado",
+          "resultat": "Resultado",
+          "next": "Próxima visita"
+        },
+        "actionResultat": "Registar resultado"
+      },
+      "titres": {
+        "new": "+ Registar título",
+        "th": {
+          "typeDoc": "Tipo de documento",
+          "numero": "N° documento",
+          "pays": "País",
+          "exp": "Validade",
+          "statut": "Estado de renovação",
+          "actions": "Ações"
+        },
+        "actionUpload": "Carregar digitalização",
+        "actionStatut": "Atualizar renovação"
+      },
+      "formations": {
+        "new": "+ Registar formação",
+        "th": {
+          "intitule": "Formação",
+          "org": "Organismo",
+          "real": "Data de realização",
+          "exp": "Validade"
+        },
+        "actionCert": "Carregar certificado",
+        "actionRenouv": "Renovar"
+      },
+      "renouvellement": {
+        "title": "Renovação de CDD",
+        "subtitle": "Colaborador: {nom} — próxima renovação: n°{n}",
+        "dateFin": "Nova data de fim",
+        "motif": "Motivo (opcional)",
+        "commentaire": "Comentário (opcional)",
+        "hintMax": "Verifique o número máximo de renovações permitidas na configuração.",
+        "toastOk": "Renovação guardada.",
+        "zodDate": "Data obrigatória",
+        "zodAfterToday": "A data deve ser estritamente posterior a hoje.",
+        "zodAfterOld": "A nova data deve ser posterior à data de fim anterior."
+      },
+      "decisionFin": {
+        "title": "Decisão de fim de CDD",
+        "subtitle": "Colaborador: {nom}",
+        "decisionLabel": "Decisão",
+        "decision": {
+          "RENOUVELLEMENT": "Renovar",
+          "CDI": "Transformar em CDI",
+          "NON_RENOUVELE": "Não renovar"
+        },
+        "dateDecision": "Data da decisão",
+        "commentaire": "Comentário",
+        "warnNon": "O colaborador será notificado. Esta ação é irreversível.",
+        "toastOk": "Decisão guardada.",
+        "zodDateDecision": "Data obrigatória",
+        "zodCommentNon": "Comentário obrigatório se não renovar."
+      },
+      "echeanceModal": {
+        "title": "Novo prazo",
+        "subtitle": "Crie um prazo manual.",
+        "salarie": "Colaborador",
+        "salarieSearch": "Pesquisar (nome, n°…)",
+        "salariePlaceholder": "Selecionar…",
+        "type": "Tipo de prazo",
+        "date": "Data do prazo",
+        "titre": "Título",
+        "description": "Descrição",
+        "priorite": "Prioridade",
+        "prio": { "haute": "Alta", "normale": "Normal", "basse": "Baixa" },
+        "responsable": "Responsável (RH/ADMIN)",
+        "responsableNone": "— Nenhum —",
+        "toastOk": "Prazo criado.",
+        "zodSalarie": "Selecione um colaborador.",
+        "zodTitre": "Título demasiado curto.",
+        "zodDate": "Data obrigatória.",
+        "types": {
+          "FIN_CDD": "Fim de CDD",
+          "FIN_PERIODE_ESSAI": "Fim do período experimental",
+          "RENOUVELLEMENT_CDD": "Renovação CDD",
+          "VISITE_MEDICALE": "Visita médica",
+          "TITRE_SEJOUR": "Título de estadia",
+          "FORMATION_OBLIGATOIRE": "Formação obrigatória",
+          "AVENANT_CONTRAT": "Aditivo contratual",
+          "AUTRE": "Outro"
+        }
+      },
+      "traiterEcheance": {
+        "title": "Tratar prazo",
+        "subtitle": "Indique a data de tratamento e um comentário.",
+        "zodDate": "Data de tratamento obrigatória.",
+        "zodCommentaire": "Comentário demasiado curto (mínimo 2 caracteres).",
+        "readonly": { "type": "Tipo", "date": "Data" },
+        "dateTraitement": "Data de tratamento",
+        "commentaire": "Comentário",
+        "preuve": "Comprovativo (PDF ou imagem, opcional)",
+        "toastOk": "Prazo tratado."
+      },
+      "resultatVisite": {
+        "title": "Resultado da visita médica",
+        "subtitle": "Atualiza o registo da visita.",
+        "resultat": "Resultado",
+        "restrictions": "Restrições / adaptações",
+        "cr": "Relatório médico (PDF, opcional)",
+        "toastOk": "Resultado guardado.",
+        "resultats": {
+          "APTE": "APTO",
+          "APTE_AMENAGEMENT": "APTO c/ adaptações",
+          "INAPTE": "INAPTO",
+          "EN_ATTENTE": "PENDENTE"
+        },
+        "zodRestrictions": "Indique as restrições."
+      },
+      "planifierVisite": {
+        "title": "Agendar visita",
+        "subtitle": "Cria uma visita planeado (resultado inicial: EN_ATTENTE).",
+        "salarie": "Colaborador",
+        "salariePlaceholder": "Selecionar…",
+        "typeVisite": "Tipo de visita",
+        "datePlanifiee": "Data planeado",
+        "medecin": "Médico (opcional)",
+        "centre": "Centro médico (opcional)",
+        "periodicite": "Periodicidade (meses)",
+        "toastOk": "Visita agendada.",
+        "zodSalarie": "Selecione um colaborador.",
+        "zodType": "Tipo obrigatório.",
+        "zodDate": "Data obrigatória."
+      },
+      "titreModal": {
+        "title": "Registar título de estadia",
+        "subtitle": "Cria um novo título (e o prazo associado no servidor).",
+        "salarie": "Colaborador",
+        "salariePlaceholder": "Selecionar…",
+        "typeDocument": "Tipo de documento",
+        "numero": "Número do documento",
+        "pays": "País emissor",
+        "autorite": "Autoridade emissora",
+        "dateEmission": "Data de emissão",
+        "dateExpiration": "Data de validade",
+        "scan": "Digitalização (PDF ou imagem, opcional)",
+        "toastOk": "Título guardado.",
+        "zodSalarie": "Selecione um colaborador.",
+        "zodType": "Tipo obrigatório.",
+        "zodDateExp": "Data de validade obrigatória."
+      },
+      "statutTitre": {
+        "title": "Estado de renovação",
+        "subtitle": "Título — {nom}",
+        "statut": "Estado",
+        "toastOk": "Estado atualizado.",
+        "options": {
+          "NON_ENGAGE": "Não iniciado",
+          "EN_COURS": "Em curso",
+          "DEPOSE": "Submetido",
+          "OBTENU": "Obtido",
+          "REFUSE": "Recusado"
+        }
+      },
+      "formationModal": {
+        "title": "Registar formação",
+        "subtitle": "Adiciona uma formação obrigatória.",
+        "salarie": "Colaborador",
+        "salariePlaceholder": "Selecionar…",
+        "intitule": "Designação",
+        "typeFormation": "Tipo",
+        "organismo": "Organismo",
+        "dateRealisation": "Data de realização",
+        "dateExpiration": "Data de validade",
+        "periodicite": "Periodicidade (meses)",
+        "numeroCertificat": "N° certificado",
+        "cout": "Custo (opcional)",
+        "certificat": "Certificado (PDF ou imagem, opcional)",
+        "toastOk": "Formação guardada.",
+        "zodSalarie": "Selecione um colaborador.",
+        "zodIntitule": "Designação obrigatória.",
+        "zodType": "Tipo obrigatório.",
+        "zodDateExp": "Data de validade obrigatória."
+      },
+      "renouvelerFormation": {
+        "title": "Renovar formação",
+        "titleCert": "Adicionar / atualizar certificado",
+        "subtitle": "Colaborador: {nom}",
+        "intitule": "Designação",
+        "typeFormation": "Tipo",
+        "organisme": "Organismo",
+        "dateRealisation": "Data de realização",
+        "dateExpiration": "Data de validade",
+        "periodicite": "Periodicidade (meses)",
+        "numeroCertificat": "N° certificado",
+        "cout": "Custo (opcional)",
+        "certificat": "Certificado (PDF ou imagem)",
+        "toastOk": "Renovação guardada.",
+        "toastOkCert": "Certificado guardado.",
+        "zodIntitule": "Designação obrigatória.",
+        "zodType": "Tipo obrigatório.",
+        "zodDateExp": "Data de validade obrigatória.",
+        "zodCert": "Selecione um certificado."
+      },
+      "salariePage": {
+        "breadcrumbLeaf": "Contratos & prazos",
+        "title": "Contratos & prazos — {prenom} {nom}",
+        "backSalarie": "← Voltar à ficha do colaborador",
+        "contratActif": "Contrato ativo",
+        "noContrat": "Nenhum contrato ativo encontrado.",
+        "noContratExplain": "Os PDF carregados em « Contratos (PDF) » no separador Documentos da ficha ficam armazenados à parte: não criam automaticamente este ecrã (datas, tipo CDI/CDD, prazos). Registe um contrato abaixo para ativar o acompanhamento e alertas aqui.",
+        "dossierPdfTitle": "PDF já arquivados na ficha (Documentos)",
+        "creerContratBtn": "+ Registar contrato",
+        "fields": {
+          "type": "Tipo:",
+          "debut": "Início:",
+          "fin": "Fim:",
+          "pe": "Fim período experimental:",
+          "jours": "Dias restantes:",
+          "decision": "Decisão:"
+        },
+        "actions": {
+          "renouveler": "Renovar",
+          "decision": "Decisão final",
+          "upload": "Carregar contrato assinado",
+          "voirContrat": "Ver contrato assinado"
+        },
+        "uploadTitle": "Carregar contrato assinado",
+        "histTitle": "Histórico de contratos",
+        "histEmpty": "Sem histórico.",
+        "histMeta": "Decisão: {decision} · Renovação n°{n}",
+        "medicalTitle": "Seguimento médico",
+        "medicalPlan": "+ Agendar visita",
+        "medicalEmpty": "Sem visitas registadas.",
+        "medical.lastReal": "Última data realizada:",
+        "medical.result": "Último resultado:",
+        "medical.next": "Próxima visita prevista:",
+        "medicalPast": "Visitas anteriores",
+        "medicalResultBtn": "Registar resultado",
+        "titresTitle": "Títulos & documentos administrativos",
+        "titres": {
+          "add": "+ Registar título",
+          "col": {
+            "type": "Tipo de documento",
+            "numero": "N° documento",
+            "pays": "País",
+            "exp": "Validade",
+            "statut": "Estado de renovação",
+            "actions": "Ações"
+          },
+          "actionUpload": "Carregar digitalização",
+          "actionStatut": "Atualizar renovação"
+        },
+        "formationsTitle": "Formações regulamentares",
+        "formations": {
+          "add": "+ Registar formação",
+          "col": {
+            "intitule": "Formação",
+            "type": "Tipo",
+            "org": "Organismo",
+            "real": "Data de realização",
+            "exp": "Validade",
+            "statut": "Estado",
+            "actions": "Ações"
+          },
+          "actionCert": "Carregar certificado",
+          "actionRenouv": "Renovar"
+        }
       }
     },
     "conges": {
@@ -764,6 +1121,33 @@
     "passwordMismatch": "As palavras-passe não coincidem"
   },
   "Admin": {
+    "templates": {
+      "title": "Biblioteca de modelos",
+      "subtitle": "Criar modelos (DOCX/HTML), gerir versões e carregar revisões.",
+      "new": "Novo modelo",
+      "createTitle": "Criar um modelo",
+      "code": "Código",
+      "label": "Nome",
+      "labelPh": "Ex: Ordem de missão",
+      "category": "Categoria",
+      "format": "Formato",
+      "status": "Estado",
+      "thCode": "Código",
+      "thLabel": "Nome",
+      "thCategory": "Categoria",
+      "thFormat": "Formato",
+      "thStatus": "Estado",
+      "edit": "Editar",
+      "revisions": "Revisões",
+      "editTitle": "Editar {code}",
+      "editHint": "Ative/desative o modelo e altere o nome.",
+      "revisionsTitle": "Revisões — {code}",
+      "revisionsHint": "Carregue um ficheiro DOCX/HTML para criar uma nova versão.",
+      "upload": "Carregar revisão",
+      "thVersion": "Versão",
+      "thMime": "MIME",
+      "thCreatedAt": "Criado em"
+    },
     "users": {
       "title": "Utilizadores",
       "subtitle": "Contas da organização (perfil ADMIN obrigatório).",

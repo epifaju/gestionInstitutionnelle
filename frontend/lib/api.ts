@@ -28,6 +28,16 @@ function translateApiCode(code: string): string | null {
     if (l === "pt-PT") return "Por favor selecione um colaborador.";
     return "Veuillez sélectionner un salarié.";
   }
+  if (code === "MISSION_REMBOURSEMENT_FACTURE_ERREUR") {
+    if (l === "en") return "Unable to create the reimbursement invoice. Please check Finance settings and try again.";
+    if (l === "pt-PT") return "Não foi possível criar a fatura de reembolso. Verifique as definições de Finanças e tente novamente.";
+    return "Impossible de créer la facture de remboursement. Vérifiez la configuration Finance puis réessayez.";
+  }
+  if (code === "JUSTIFICATIF_REQUIS") {
+    if (l === "en") return "A supporting document is required.";
+    if (l === "pt-PT") return "É necessário um comprovativo.";
+    return "Un justificatif est requis.";
+  }
   return null;
 }
 
@@ -123,6 +133,11 @@ api.interceptors.response.use(
         // Certaines erreurs sont attendues et gérées par l'UI (ex: "pas de budget pour l'année")
         // → on évite un toast générique inutile.
         if (code === "BUDGET_ABSENT") {
+          return Promise.reject(error);
+        }
+
+        /** Pas de ligne dans contrats_salaries actif — cas normal sur la fiche Contrats & échéances. */
+        if (code === "CONTRAT_ABSENT") {
           return Promise.reject(error);
         }
 

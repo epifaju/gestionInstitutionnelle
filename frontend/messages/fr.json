@@ -78,6 +78,7 @@
   },
   "Nav": {
     "dashboard": "Tableau de bord",
+    "rhContrats": "Contrats & Échéances",
     "finance": "Finance",
     "recettes": "Recettes",
     "paiements": "Paiements",
@@ -93,6 +94,8 @@
     "rapports": "Rapports",
     "settings": "Paramètres",
     "adminUsers": "Utilisateurs",
+    "adminWorkflows": "Workflows",
+    "adminTemplates": "Modèles",
     "adminAudit": "Audit",
     "sectionFinance": "Finance",
     "sectionRh": "RH"
@@ -127,6 +130,7 @@
     "details": "Détails",
     "resume": "Résumé",
     "downloadOrdre": "Télécharger l’ordre de mission",
+    "generateOrdrePdf": "Générer l’ordre (PDF)",
     "uploadOrdre": "Uploader ordre (PDF)",
     "uploadRapport": "Uploader rapport (PDF)",
     "avanceVersee": "Avance versée",
@@ -175,7 +179,11 @@
     "footerParc": "Valeur du parc (hors service)",
     "footerConges": "Congés signalés",
     "employeeSubtitle": "Vue limitée : vos congés en cours (pas d’agrégats financiers ni RH).",
-    "employeeCongesOnly": "Congés en cours"
+    "employeeCongesOnly": "Congés en cours",
+    "rhUrgentTitle": "Échéances RH urgentes",
+    "rhUrgentSeeAll": "Voir toutes les échéances →",
+    "rhUrgentTreat": "Traiter",
+    "rhUrgentEmpty": "Aucune échéance urgente."
   },
   "Notifications": {
     "title": "Notifications",
@@ -421,6 +429,7 @@
       "thMois": "Mois",
       "thMontant": "Montant",
       "contractsPdf": "Contrats (PDF)",
+      "contractsPdfStructuredHint": "Ces PDF sont une archive sur la fiche. Pour le suivi des échéances (fin de CDD, période d’essai, etc.), enregistrez aussi un contrat via « Contrats & Échéances ».",
       "uploadPdfHint": "Glisser-déposer ou cliquer pour envoyer un PDF (max 10 Mo)",
       "validateDossier": "Valider le dossier",
       "newGrille": "Nouvelle grille",
@@ -448,7 +457,10 @@
         "dtPoste": "Poste",
         "dtContrat": "Contrat",
         "dtEmbauche": "Embauche",
-        "dtNationalite": "Nationalité"
+        "dtNationalite": "Nationalité",
+        "btnContrats": "Contrats & Échéances →",
+        "alerteEcheances": "⚠️ {n} échéance(s) nécessite(nt) une action",
+        "alerteLink": "Ouvrir"
       },
       "form": {
         "nom": "Nom",
@@ -465,6 +477,365 @@
         "montantNet": "Montant net",
         "devise": "Devise",
         "salaryEditHint": "Pour modifier le salaire, utilisez <b>Nouvelle grille</b> (historique salarial)."
+      }
+    },
+    "contrats": {
+      "upload": {
+        "file": "Fichier"
+      },
+      "creerContrat": {
+        "title": "Enregistrer un contrat (suivi échéances)",
+        "subtitle": "Crée la fiche contrat structurée (distincte des PDF de l’onglet Documents). Vous pourrez y attacher le contrat signé ensuite.",
+        "typeLabel": "Type de contrat",
+        "typeCdi": "CDI",
+        "typeCdd": "CDD",
+        "dateDebut": "Date de début",
+        "dateFin": "Date de fin (CDD)",
+        "motifCdd": "Motif du CDD",
+        "motifPlaceholder": "Ex. remplacement, accroissement temporaire…",
+        "intitulePoste": "Intitulé du poste (optionnel)",
+        "toastOk": "Contrat créé.",
+        "zodDateDebut": "Date de début requise.",
+        "zodDateFinCdd": "Date de fin requise pour un CDD.",
+        "zodMotifCdd": "Motif obligatoire pour un CDD.",
+        "zodDateFinAfterDebut": "La date de fin doit être postérieure à la date de début."
+      },
+      "pageTitle": "Contrats & Échéances RH",
+      "pageSubtitle": "Suivi des contrats, obligations réglementaires et actions à mener.",
+      "kpi": {
+        "cdd30": "CDD expirant < 30j",
+        "pe15": "Périodes d'essai < 15j",
+        "visites": "Visites médicales dues",
+        "titres": "Titres séjour à renouveler",
+        "formations": "Formations expirées/proches"
+      },
+      "badge": {
+        "alert": "Alerte",
+        "watch": "Surveiller"
+      },
+      "tabs": {
+        "contrats": "CDD & Contrats",
+        "echeances": "Échéances",
+        "visites": "Visites médicales",
+        "titres": "Titres de séjour",
+        "formations": "Formations obligatoires"
+      },
+      "filters": {
+        "all": "Tous",
+        "typeContrat": "Type de contrat",
+        "service": "Service",
+        "servicePlaceholder": "Nom du service…",
+        "expire": "Expirant dans",
+        "statut": "Statut",
+        "typeEcheance": "Type d'échéance",
+        "du": "Du",
+        "au": "Au"
+      },
+      "th": {
+        "salarie": "Salarié",
+        "service": "Service",
+        "type": "Type",
+        "debut": "Début",
+        "fin": "Fin",
+        "renouv": "Renouvellement n°",
+        "jours": "Jours restants",
+        "decision": "Décision",
+        "actions": "Actions",
+        "titre": "Titre",
+        "date": "Date",
+        "statut": "Statut",
+        "urgence": "Urgence"
+      },
+      "actions": {
+        "renouveler": "Renouveler",
+        "decision": "Décision finale",
+        "voir": "Voir contrat",
+        "upload": "Upload contrat signé",
+        "traiter": "Traiter",
+        "annuler": "Annuler"
+      },
+      "promptAnnulerMotif": "Motif d'annulation (obligatoire) :",
+      "annulerOk": "Échéance annulée.",
+      "echeances": {
+        "new": "+ Nouvelle échéance"
+      },
+      "uploadTitle": "Upload du contrat signé",
+      "uploadHint": "PDF recommandé (max 10 Mo côté serveur).",
+      "uploadOk": "Contrat signé enregistré.",
+      "visites": {
+        "planifier": "+ Planifier visite",
+        "th": {
+          "type": "Type visite",
+          "plan": "Date planifiée",
+          "real": "Date réalisée",
+          "resultat": "Résultat",
+          "next": "Prochaine visite"
+        },
+        "actionResultat": "Enregistrer résultat"
+      },
+      "titres": {
+        "new": "+ Enregistrer titre",
+        "th": {
+          "typeDoc": "Type document",
+          "numero": "N° document",
+          "pays": "Pays",
+          "exp": "Expiration",
+          "statut": "Statut renouvellement",
+          "actions": "Actions"
+        },
+        "actionUpload": "Upload scan",
+        "actionStatut": "Mettre à jour renouvellement"
+      },
+      "formations": {
+        "new": "+ Enregistrer formation",
+        "th": {
+          "intitule": "Formation",
+          "org": "Organisme",
+          "real": "Date réalisation",
+          "exp": "Expiration"
+        },
+        "actionCert": "Upload certificat",
+        "actionRenouv": "Renouveler"
+      },
+      "renouvellement": {
+        "title": "Renouvellement de CDD",
+        "subtitle": "Salarié : {nom} — prochain renouvellement : n°{n}",
+        "dateFin": "Nouvelle date de fin",
+        "motif": "Motif (optionnel)",
+        "commentaire": "Commentaire (optionnel)",
+        "hintMax": "Vérifiez le nombre maximal de renouvellements autorisés par votre configuration.",
+        "toastOk": "Renouvellement enregistré.",
+        "zodDate": "Date requise",
+        "zodAfterToday": "La date doit être strictement postérieure à aujourd'hui.",
+        "zodAfterOld": "La nouvelle date doit être postérieure à l'ancienne date de fin."
+      },
+      "decisionFin": {
+        "title": "Décision de fin de CDD",
+        "subtitle": "Salarié : {nom}",
+        "decisionLabel": "Décision",
+        "decision": {
+          "RENOUVELLEMENT": "Renouveler",
+          "CDI": "Transformer en CDI",
+          "NON_RENOUVELE": "Ne pas renouveler"
+        },
+        "dateDecision": "Date de décision",
+        "commentaire": "Commentaire",
+        "warnNon": "Le salarié sera notifié. Cette action est irréversible.",
+        "toastOk": "Décision enregistrée.",
+        "zodDateDecision": "Date requise",
+        "zodCommentNon": "Commentaire obligatoire si vous ne renouvelez pas."
+      },
+      "echeanceModal": {
+        "title": "Nouvelle échéance",
+        "subtitle": "Créez une échéance manuelle (hors génération automatique).",
+        "salarie": "Salarié",
+        "salarieSearch": "Rechercher (nom, prénom, matricule…)",
+        "salariePlaceholder": "Sélectionner…",
+        "type": "Type d'échéance",
+        "date": "Date d'échéance",
+        "titre": "Titre",
+        "description": "Description",
+        "priorite": "Priorité",
+        "prio": {
+          "haute": "Haute",
+          "normale": "Normale",
+          "basse": "Basse"
+        },
+        "responsable": "Responsable (RH/ADMIN)",
+        "responsableNone": "— Aucun —",
+        "toastOk": "Échéance créée.",
+        "zodSalarie": "Veuillez sélectionner un salarié.",
+        "zodTitre": "Titre trop court.",
+        "zodDate": "Date requise.",
+        "types": {
+          "FIN_CDD": "Fin de CDD",
+          "FIN_PERIODE_ESSAI": "Fin de période d'essai",
+          "RENOUVELLEMENT_CDD": "Renouvellement CDD",
+          "VISITE_MEDICALE": "Visite médicale",
+          "TITRE_SEJOUR": "Titre de séjour",
+          "FORMATION_OBLIGATOIRE": "Formation obligatoire",
+          "AVENANT_CONTRAT": "Avenant contrat",
+          "AUTRE": "Autre"
+        }
+      },
+      "traiterEcheance": {
+        "title": "Traiter l'échéance",
+        "subtitle": "Indiquez la date de traitement et un commentaire.",
+        "zodDate": "Date de traitement requise.",
+        "zodCommentaire": "Commentaire trop court (2 caractères minimum).",
+        "readonly": {
+          "type": "Type",
+          "date": "Date"
+        },
+        "dateTraitement": "Date de traitement",
+        "commentaire": "Commentaire",
+        "preuve": "Pièce justificative (PDF ou image, optionnel)",
+        "toastOk": "Échéance traitée."
+      },
+      "resultatVisite": {
+        "title": "Résultat de visite médicale",
+        "subtitle": "Met à jour le dossier de visite.",
+        "resultat": "Résultat",
+        "restrictions": "Restrictions / aménagements",
+        "cr": "Compte rendu médical (PDF, optionnel)",
+        "toastOk": "Résultat enregistré.",
+        "resultats": {
+          "APTE": "APTE",
+          "APTE_AMENAGEMENT": "APTE avec aménagement",
+          "INAPTE": "INAPTE",
+          "EN_ATTENTE": "EN ATTENTE"
+        },
+        "zodRestrictions": "Précisez les restrictions."
+      },
+      "planifierVisite": {
+        "title": "Planifier une visite",
+        "subtitle": "Crée une visite planifiée (résultat initial : EN_ATTENTE).",
+        "salarie": "Salarié",
+        "salariePlaceholder": "Sélectionner…",
+        "typeVisite": "Type de visite",
+        "datePlanifiee": "Date planifiée",
+        "medecin": "Médecin (optionnel)",
+        "centre": "Centre médical (optionnel)",
+        "periodicite": "Périodicité (mois)",
+        "toastOk": "Visite planifiée.",
+        "zodSalarie": "Sélectionnez un salarié.",
+        "zodType": "Type requis.",
+        "zodDate": "Date requise."
+      },
+      "titreModal": {
+        "title": "Enregistrer un titre de séjour",
+        "subtitle": "Crée un nouveau titre (et l'échéance associée côté serveur).",
+        "salarie": "Salarié",
+        "salariePlaceholder": "Sélectionner…",
+        "typeDocument": "Type de document",
+        "numero": "Numéro de document",
+        "pays": "Pays émetteur",
+        "autorite": "Autorité émettrice",
+        "dateEmission": "Date d'émission",
+        "dateExpiration": "Date d'expiration",
+        "scan": "Scan (PDF ou image, optionnel)",
+        "toastOk": "Titre enregistré.",
+        "zodSalarie": "Sélectionnez un salarié.",
+        "zodType": "Type requis.",
+        "zodDateExp": "Date d'expiration requise."
+      },
+      "statutTitre": {
+        "title": "Statut de renouvellement",
+        "subtitle": "Titre — {nom}",
+        "statut": "Statut",
+        "toastOk": "Statut mis à jour.",
+        "options": {
+          "NON_ENGAGE": "Non engagé",
+          "EN_COURS": "En cours",
+          "DEPOSE": "Déposé",
+          "OBTENU": "Obtenu",
+          "REFUSE": "Refusé"
+        }
+      },
+      "formationModal": {
+        "title": "Enregistrer une formation",
+        "subtitle": "Ajoute une formation obligatoire.",
+        "salarie": "Salarié",
+        "salariePlaceholder": "Sélectionner…",
+        "intitule": "Intitulé",
+        "typeFormation": "Type",
+        "organisme": "Organisme",
+        "dateRealisation": "Date de réalisation",
+        "dateExpiration": "Date d'expiration",
+        "periodicite": "Périodicité (mois)",
+        "numeroCertificat": "N° certificat",
+        "cout": "Coût (optionnel)",
+        "certificat": "Certificat (PDF ou image, optionnel)",
+        "toastOk": "Formation enregistrée.",
+        "zodSalarie": "Sélectionnez un salarié.",
+        "zodIntitule": "Intitulé requis.",
+        "zodType": "Type requis.",
+        "zodDateExp": "Date d'expiration requise."
+      },
+      "renouvelerFormation": {
+        "title": "Renouveler une formation",
+        "titleCert": "Ajouter / mettre à jour le certificat",
+        "subtitle": "Salarié : {nom}",
+        "intitule": "Intitulé",
+        "typeFormation": "Type",
+        "organisme": "Organisme",
+        "dateRealisation": "Date de réalisation",
+        "dateExpiration": "Date d'expiration",
+        "periodicite": "Périodicité (mois)",
+        "numeroCertificat": "N° certificat",
+        "cout": "Coût (optionnel)",
+        "certificat": "Certificat (PDF ou image)",
+        "toastOk": "Renouvellement enregistré.",
+        "toastOkCert": "Certificat enregistré.",
+        "zodIntitule": "Intitulé requis.",
+        "zodType": "Type requis.",
+        "zodDateExp": "Date d'expiration requise.",
+        "zodCert": "Veuillez sélectionner un certificat."
+      },
+      "salariePage": {
+        "breadcrumbLeaf": "Contrats & Échéances",
+        "title": "Contrats & Échéances — {prenom} {nom}",
+        "backSalarie": "← Retour à la fiche salarié",
+        "contratActif": "Contrat actif",
+        "noContrat": "Aucun contrat actif trouvé.",
+        "noContratExplain": "Les PDF déposés sous « Contrats (PDF) » dans l’onglet Documents de la fiche salarié sont stockés à part : ils ne créent pas automatiquement ce suivi (dates, type CDI/CDD, échéances). Enregistrez un contrat ci-dessous pour activer l’affichage ici et les alertes.",
+        "dossierPdfTitle": "PDF déjà archivés sur la fiche (Documents)",
+        "creerContratBtn": "+ Enregistrer un contrat",
+        "fields": {
+          "type": "Type :",
+          "debut": "Début :",
+          "fin": "Fin :",
+          "pe": "Fin période d'essai :",
+          "jours": "Jours restants :",
+          "decision": "Décision :"
+        },
+        "actions": {
+          "renouveler": "Renouveler",
+          "decision": "Décision finale",
+          "upload": "Upload contrat signé",
+          "voirContrat": "Voir contrat signé"
+        },
+        "uploadTitle": "Upload du contrat signé",
+        "histTitle": "Historique des contrats",
+        "histEmpty": "Aucun historique.",
+        "histMeta": "Décision : {decision} · Renouvellement n°{n}",
+        "medicalTitle": "Suivi médical",
+        "medicalPlan": "+ Planifier visite",
+        "medicalEmpty": "Aucune visite enregistrée.",
+        "medical.lastReal": "Dernière date réalisée :",
+        "medical.result": "Dernier résultat :",
+        "medical.next": "Prochaine visite prévue :",
+        "medicalPast": "Visites passées",
+        "medicalResultBtn": "Enregistrer résultat",
+        "titresTitle": "Titres & documents administratifs",
+        "titres": {
+          "add": "+ Enregistrer titre",
+          "col": {
+            "type": "Type document",
+            "numero": "N° document",
+            "pays": "Pays",
+            "exp": "Expiration",
+            "statut": "Statut renouvellement",
+            "actions": "Actions"
+          },
+          "actionUpload": "Upload scan",
+          "actionStatut": "Mettre à jour renouvellement"
+        },
+        "formationsTitle": "Formations réglementaires",
+        "formations": {
+          "add": "+ Enregistrer formation",
+          "col": {
+            "intitule": "Formation",
+            "type": "Type",
+            "org": "Organisme",
+            "real": "Date réalisation",
+            "exp": "Expiration",
+            "statut": "Statut",
+            "actions": "Actions"
+          },
+          "actionCert": "Upload certificat",
+          "actionRenouv": "Renouveler"
+        }
       }
     },
     "conges": {
@@ -764,6 +1135,55 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas"
   },
   "Admin": {
+    "templates": {
+      "title": "Bibliothèque de modèles",
+      "subtitle": "Créer des modèles (DOCX/HTML), gérer les versions et uploader les révisions.",
+      "new": "Nouveau modèle",
+      "createTitle": "Créer un modèle",
+      "code": "Code",
+      "label": "Libellé",
+      "labelPh": "Ex: Ordre de mission",
+      "category": "Catégorie",
+      "format": "Format",
+      "status": "Statut",
+      "thCode": "Code",
+      "thLabel": "Libellé",
+      "thCategory": "Catégorie",
+      "thFormat": "Format",
+      "thStatus": "Statut",
+      "edit": "Modifier",
+      "revisions": "Révisions",
+      "editTitle": "Modifier {code}",
+      "editHint": "Activez/désactivez le modèle et ajustez son libellé.",
+      "revisionsTitle": "Révisions — {code}",
+      "revisionsHint": "Uploadez un fichier DOCX/HTML pour créer une nouvelle version.",
+      "upload": "Uploader une révision",
+      "thVersion": "Version",
+      "thMime": "MIME",
+      "thCreatedAt": "Créé le"
+    },
+    "workflows": {
+      "title": "Workflows & validations",
+      "subtitle": "Activez/désactivez les circuits et configurez 1–2 niveaux par montant.",
+      "thProcess": "Process",
+      "thEnabled": "Actif",
+      "thRules": "Règles",
+      "enabledYes": "Oui",
+      "enabledNo": "Non",
+      "edit": "Configurer",
+      "editTitle": "Configuration — {key}",
+      "editHint": "Astuce: laissez Min/Max vides pour une règle par défaut.",
+      "enabledLabel": "Workflow activé",
+      "rulesTitle": "Règles par montant (EUR)",
+      "addRule": "Ajouter une règle",
+      "rulesEmpty": "Aucune règle. Ajoutez une règle par défaut (sans min/max).",
+      "min": "Min (EUR)",
+      "max": "Max (EUR)",
+      "levels": "Niveaux",
+      "role1": "Rôle niveau 1",
+      "role2": "Rôle niveau 2",
+      "remove": "Retirer"
+    },
     "users": {
       "title": "Utilisateurs",
       "subtitle": "Comptes de l’organisation (rôle ADMIN requis).",

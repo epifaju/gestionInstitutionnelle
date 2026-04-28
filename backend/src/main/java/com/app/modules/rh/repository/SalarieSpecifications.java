@@ -2,8 +2,10 @@ package com.app.modules.rh.repository;
 
 import com.app.modules.rh.entity.Salarie;
 import com.app.modules.rh.entity.StatutSalarie;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -30,18 +32,30 @@ public final class SalarieSpecifications {
         };
     }
 
+    /**
+     * Recherche insensible à la casse sur chaque champ (nom, prénom, matricule, email).
+     * L’ancienne version concaténait tout en une chaîne : certains dialectes / NULL JDBC rendaient
+     * le prédicat fragile ; une saisie partielle (ex. prénom seul) est plus naturelle avec des OR.
+     */
     public static Specification<Salarie> searchOptional(String search) {
         return (root, q, cb) -> {
             if (search == null || search.isBlank()) {
                 return cb.conjunction();
             }
-            String pattern = "%" + search.trim().toLowerCase() + "%";
-            var n = cb.coalesce(root.get("nom"), "");
-            var p = cb.coalesce(root.get("prenom"), "");
-            var m = cb.coalesce(root.get("matricule"), "");
-            var step = cb.concat(cb.concat(cb.concat(n, cb.literal(" ")), p), cb.literal(" "));
-            var full = cb.concat(step, m);
-            return cb.like(cb.lower(full), pattern);
+            String term = search.trim();
+            if (term.isEmpty()) {
+                return cb.conjunction();
+            }
+            String pattern = "%" + escapeLike(term.toLowerCase(Locale.ROOT)) + "%";
+            Predicate nom = cb.like(cb.lower(cb.coalesce(root.get("nom"), cb.literal(""))), pattern, '\\');
+            Predicate prenom = cb.like(cb.lower(cb.coalesce(root.get("prenom"), cb.literal(""))), pattern, '\\');
+            Predicate matricule = cb.like(cb.lower(cb.coalesce(root.get("matricule"), cb.literal(""))), pattern, '\\');
+            Predicate email = cb.like(cb.lower(cb.coalesce(root.get("email"), cb.literal(""))), pattern, '\\');
+            return cb.or(nom, prenom, matricule, email);
         };
+    }
+
+    private static String escapeLike(String lowercasedTerm) {
+        return lowercasedTerm.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
     }
 }
