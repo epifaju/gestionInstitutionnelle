@@ -78,6 +78,7 @@
     "myPaie": "O meu salário",
     "notifications": "Notificações",
     "documents": "Documentos",
+    "courriers": "Cartas",
     "missions": "Missões",
     "budget": "Orçamento",
     "inventaire": "Inventário",
@@ -89,6 +90,34 @@
     "adminAudit": "Auditoria",
     "sectionFinance": "Finanças",
     "sectionRh": "RH"
+  },
+  "Templates": {
+    "generate": {
+      "trigger": "Gerar um documento…",
+      "title": "Gerar um documento",
+      "subtitle": "Escolha um modelo ativo e o formato de saída.",
+      "search": "Pesquisar",
+      "searchPh": "Código ou nome…",
+      "templates": "Modelos disponíveis",
+      "empty": "Não há modelos ativos disponíveis para este ecrã.",
+      "missingRevision": "Este modelo ainda não tem uma revisão carregada. Carregue uma revisão na biblioteca de modelos.",
+      "noRevisionBadge": "sem revisão",
+      "output": "Formato de saída",
+      "pdf": "PDF",
+      "docx": "DOCX",
+      "html": "HTML",
+      "generate": "Gerar"
+    }
+  },
+  "Courriers": {
+    "title": "Cartas",
+    "subtitle": "Geração e histórico de cartas.",
+    "refresh": "Atualizar",
+    "searchPh": "Filtrar…",
+    "empty": "Ainda não existem cartas geradas.",
+    "thCreatedAt": "Criado em",
+    "thFormat": "Formato",
+    "thId": "ID"
   },
   "Missions": {
     "title": "Missões",

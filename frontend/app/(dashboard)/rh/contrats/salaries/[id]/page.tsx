@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { DataTable } from "@/components/tables/DataTable";
+import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
 import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { getSalarie, listDocuments } from "@/services/salarie.service";
@@ -255,6 +256,7 @@ export default function RhContratsSalariePage() {
           ) : null}
           {contratCard && (isRh || isAdmin) ? (
             <div className="flex flex-wrap gap-2">
+              <GenerateDocumentDialog subjectType="CONTRAT" subjectId={contratCard.id} />
               {isRh && contratCard.typeContrat === "CDD" && contratCard.decisionFin === "EN_ATTENTE" ? (
                 <Button
                   type="button"

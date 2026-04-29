@@ -2,9 +2,11 @@ package com.app.modules.templates.service;
 
 import com.app.shared.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.docx4j.Docx4J;
 import org.docx4j.openpackaging.exceptions.Docx4JException;
 import org.docx4j.openpackaging.packages.WordprocessingMLPackage;
+import org.docx4j.openpackaging.parts.WordprocessingML.StyleDefinitionsPart;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -16,6 +18,7 @@ import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TemplateRenderService {
 
     private static final Pattern TOKEN = Pattern.compile("\\{\\{\\s*([a-zA-Z0-9_.-]+)\\s*}}");
@@ -37,6 +40,13 @@ public class TemplateRenderService {
             ));
             // Transform tokens inside document to ${key} for variableReplace.
             // For now we also accept users authoring ${key} directly.
+            // Some DOCX fixtures (or external generators) may miss styles.xml; VariablePrepare assumes it exists.
+            if (pkg.getMainDocumentPart().getStyleDefinitionsPart() == null) {
+                StyleDefinitionsPart sdp = new StyleDefinitionsPart();
+                sdp.unmarshalDefaultStyles();
+                pkg.getMainDocumentPart().addTargetPart(sdp);
+            }
+
             org.docx4j.model.datastorage.migration.VariablePrepare.prepare(pkg);
             pkg.getMainDocumentPart().variableReplace(vars);
 
@@ -44,6 +54,7 @@ public class TemplateRenderService {
             pkg.save(out);
             return out.toByteArray();
         } catch (Exception e) {
+            log.error("DOCX render failed ({} bytes, {} vars).", docxBytes != null ? docxBytes.length : 0, values != null ? values.size() : 0, e);
             throw new BusinessException("TEMPLATE_DOCX_RENDER_ERROR", org.springframework.http.HttpStatus.BAD_REQUEST,
                     "Impossible de rendre le modèle DOCX.");
         }

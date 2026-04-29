@@ -31,7 +31,7 @@ public class AuditLog {
     @Column(name = "utilisateur_id")
     private UUID utilisateurId;
 
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 80)
     private String action;
 
     @Column(nullable = false, length = 100)

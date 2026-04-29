@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:pStyle w:val="Title"/></w:pPr>
+      <w:r><w:t>COURRIER</w:t></w:r>
+    </w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">Référence : CR-${courrier.subjectId}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Organisation : ${courrier.organisationId}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">Objet : ________________________________</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Destinataire : __________________________</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p>
+      <w:r><w:t xml:space="preserve">Madame, Monsieur,</w:t></w:r>
+    </w:p>
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">[Votre contenu ici]</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Veuillez agréer, Madame, Monsieur, l’expression de nos salutations distinguées.</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Signature : ____________________________</w:t></w:r></w:p>
+
+    <w:sectPr/>
+  </w:body>
+</w:document>
+

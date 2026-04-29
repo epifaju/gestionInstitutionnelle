@@ -233,6 +233,13 @@ public class ContratService {
     }
 
     @Transactional(readOnly = true)
+    public ContratResponse getById(UUID contratId, UUID orgId) {
+        ContratSalarie c = contratRepository.findByIdAndOrganisationId(contratId, orgId)
+                .orElseThrow(() -> BusinessException.notFound("CONTRAT_ABSENT"));
+        return toResponse(c);
+    }
+
+    @Transactional(readOnly = true)
     public ContratResponse getContratActif(UUID salarieId, UUID orgId) {
         ContratSalarie c = contratRepository.findBySalarieIdAndActifTrue(salarieId)
                 .filter(x -> orgId.equals(x.getOrganisationId()))

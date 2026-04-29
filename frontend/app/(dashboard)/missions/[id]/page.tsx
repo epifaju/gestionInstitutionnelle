@@ -26,6 +26,7 @@ import {
 } from "@/services/missions.service";
 import { generateFromTemplate } from "@/services/template.service";
 import { getPresignedUrl } from "@/services/documents.service";
+import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
 
 function statutVariant(s: string): "muted" | "info" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
@@ -135,7 +136,14 @@ export default function MissionDetailPage() {
   });
 
   const mutGenerateOrdre = useMutation({
-    mutationFn: () => generateFromTemplate("MISSION_ORDRE", { subjectType: "Mission", subjectId: id, outputFormat: "PDF" }),
+    // Backward compatibility: some instances created the code as ORDRE_MISSION
+    mutationFn: async () => {
+      try {
+        return await generateFromTemplate("MISSION_ORDRE", { subjectType: "Mission", subjectId: id, outputFormat: "PDF" });
+      } catch {
+        return await generateFromTemplate("ORDRE_MISSION", { subjectType: "Mission", subjectId: id, outputFormat: "PDF" });
+      }
+    },
     onSuccess: async (gd) => {
       toast.success(tc("successCreated"));
       if (gd.outputDocumentId) {
@@ -287,6 +295,7 @@ export default function MissionDetailPage() {
             <Button type="button" variant="outline" size="sm" disabled={mutGenerateOrdre.isPending} onClick={() => mutGenerateOrdre.mutate()}>
               {t("generateOrdrePdf")}
             </Button>
+            <GenerateDocumentDialog subjectType="MISSION" subjectId={id} />
             <Label className="inline-flex items-center gap-2">
               <span className="text-xs text-muted-foreground">{t("uploadOrdre")}</span>
               <input

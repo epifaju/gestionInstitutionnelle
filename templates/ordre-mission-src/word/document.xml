@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+
+    <w:p>
+      <w:pPr><w:pStyle w:val="Title"/></w:pPr>
+      <w:r><w:t>ORDRE DE MISSION</w:t></w:r>
+    </w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">Référence : OM-${mission.id}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Date d’émission : __________________</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">1) Informations générales</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Salarié : ${mission.salarieNomComplet}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Objet / Titre : ${mission.titre}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Destination : ${mission.destination}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Période : du ${mission.dateDepart} au ${mission.dateRetour} (${mission.nbJours} jour(s))</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Statut mission : ${mission.statut}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">2) Conditions financières (résumé)</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Total frais validés : ${mission.totalFraisValides} EUR</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">- Solde à régler : ${mission.soldeARegler} EUR</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">3) Autorisations</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Je soussigné(e), __________________________, autorise le déplacement ci-dessus.</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">Signature RH / Administration : __________________________   Date : __________</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Signature Salarié : __________________________             Date : __________</w:t></w:r></w:p>
+
+    <w:sectPr/>
+  </w:body>
+</w:document>
+

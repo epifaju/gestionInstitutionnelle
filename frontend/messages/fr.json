@@ -88,6 +88,7 @@
     "myPaie": "Ma paie",
     "notifications": "Notifications",
     "documents": "Documents",
+    "courriers": "Courriers",
     "missions": "Missions",
     "budget": "Budget",
     "inventaire": "Inventaire",
@@ -99,6 +100,34 @@
     "adminAudit": "Audit",
     "sectionFinance": "Finance",
     "sectionRh": "RH"
+  },
+  "Templates": {
+    "generate": {
+      "trigger": "Générer un document…",
+      "title": "Générer un document",
+      "subtitle": "Choisissez un modèle actif et le format de sortie.",
+      "search": "Rechercher",
+      "searchPh": "Code ou libellé…",
+      "templates": "Modèles disponibles",
+      "empty": "Aucun modèle actif disponible pour cet écran.",
+      "missingRevision": "Ce modèle n’a pas encore de révision uploadée. Ajoutez une révision dans la bibliothèque des modèles.",
+      "noRevisionBadge": "sans révision",
+      "output": "Format de sortie",
+      "pdf": "PDF",
+      "docx": "DOCX",
+      "html": "HTML",
+      "generate": "Générer"
+    }
+  },
+  "Courriers": {
+    "title": "Courriers",
+    "subtitle": "Génération et historique des courriers.",
+    "refresh": "Rafraîchir",
+    "searchPh": "Filtrer…",
+    "empty": "Aucun courrier généré pour le moment.",
+    "thCreatedAt": "Créé le",
+    "thFormat": "Format",
+    "thId": "ID"
   },
   "Missions": {
     "title": "Missions",

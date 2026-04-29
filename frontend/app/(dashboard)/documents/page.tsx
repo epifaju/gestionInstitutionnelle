@@ -15,6 +15,8 @@ import { useDropzone } from "react-dropzone";
 import { LayoutGrid, List } from "lucide-react";
 import type { DocumentUploadRequest } from "@/lib/types/ged";
 import { useTranslations } from "next-intl";
+import { useAuthStore } from "@/lib/store";
+import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
 
 function fmtSize(bytes: number) {
   if (!Number.isFinite(bytes)) return "—";
@@ -27,6 +29,7 @@ export default function DocumentsPage() {
   const t = useTranslations("Documents");
   const tc = useTranslations("Common");
   const qc = useQueryClient();
+  const orgId = useAuthStore((s) => s.user?.organisationId) ?? "";
   const [page, setPage] = useState(0);
   const [query, setQuery] = useState("");
   const [type, setType] = useState("");
@@ -120,6 +123,7 @@ export default function DocumentsPage() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex gap-2">
+          {orgId ? <GenerateDocumentDialog subjectType="COURRIER" subjectId={orgId} /> : null}
           <Button type="button" variant="outline" onClick={() => setView((v) => (v === "grid" ? "list" : "grid"))}>
             {view === "grid" ? <List className="mr-2 h-4 w-4" /> : <LayoutGrid className="mr-2 h-4 w-4" />}
             {view === "grid" ? t("viewList") : t("viewGrid")}

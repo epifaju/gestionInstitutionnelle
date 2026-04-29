@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:pStyle w:val="Title"/></w:pPr>
+      <w:r><w:t>CONTRAT DE TRAVAIL</w:t></w:r>
+    </w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">Référence : CT-${contrat.id}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Type : ${contrat.typeContrat}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Numéro : ${contrat.numeroContrat}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">1) Parties</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Salarié : ${salarie.nomComplet}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Matricule : ${salarie.matricule}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Service : ${salarie.service}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">2) Poste</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Intitulé du poste : ${contrat.intitulePoste}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Convention collective : ${contrat.conventionCollective}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">3) Durée &amp; dates</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Date de début : ${contrat.dateDebutContrat}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Date de fin (si applicable) : ${contrat.dateFinContrat}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Fin période d’essai : ${contrat.dateFinPeriodeEssai}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">4) Dispositions CDD (si applicable)</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Motif CDD : ${contrat.motifCdd}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Renouvellement n° : ${contrat.renouvellementNumero}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Décision de fin : ${contrat.decisionFin}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Date décision : ${contrat.dateDecision}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Commentaire : ${contrat.commentaireDecision}</w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
+
+    <w:p><w:r><w:t xml:space="preserve">Signatures</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Employeur : __________________________   Date : __________</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Salarié : ____________________________   Date : __________</w:t></w:r></w:p>
+
+    <w:sectPr/>
+  </w:body>
+</w:document>
+

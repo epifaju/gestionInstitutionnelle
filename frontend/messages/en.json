@@ -88,6 +88,7 @@
     "myPaie": "My pay",
     "notifications": "Notifications",
     "documents": "Documents",
+    "courriers": "Letters",
     "missions": "Missions",
     "budget": "Budget",
     "inventaire": "Inventory",
@@ -99,6 +100,34 @@
     "adminAudit": "Audit",
     "sectionFinance": "Finance",
     "sectionRh": "HR"
+  },
+  "Templates": {
+    "generate": {
+      "trigger": "Generate a document…",
+      "title": "Generate a document",
+      "subtitle": "Pick an active template and an output format.",
+      "search": "Search",
+      "searchPh": "Code or label…",
+      "templates": "Available templates",
+      "empty": "No active template is available for this screen.",
+      "missingRevision": "This template has no uploaded revision yet. Upload a revision in the template library.",
+      "noRevisionBadge": "no revision",
+      "output": "Output format",
+      "pdf": "PDF",
+      "docx": "DOCX",
+      "html": "HTML",
+      "generate": "Generate"
+    }
+  },
+  "Courriers": {
+    "title": "Letters",
+    "subtitle": "Generate and browse letter history.",
+    "refresh": "Refresh",
+    "searchPh": "Filter…",
+    "empty": "No generated letter yet.",
+    "thCreatedAt": "Created at",
+    "thFormat": "Format",
+    "thId": "ID"
   },
   "Missions": {
     "title": "Missions",

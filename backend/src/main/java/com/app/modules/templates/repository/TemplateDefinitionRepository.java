@@ -15,5 +15,9 @@ public interface TemplateDefinitionRepository extends JpaRepository<TemplateDefi
 
     List<TemplateDefinition> findByOrganisationIdAndCategoryAndFormatAndStatus(
             UUID organisationId, TemplateCategory category, TemplateFormat format, TemplateStatus status);
+
+    List<TemplateDefinition> findByOrganisationIdAndCategoryAndStatus(
+            UUID organisationId, TemplateCategory category, TemplateStatus status
+    );
 }
 
