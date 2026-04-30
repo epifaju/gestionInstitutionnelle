@@ -58,6 +58,7 @@ public class AuthService {
             "Si cet email correspond à un compte actif, vous pouvez réinitialiser votre mot de passe avec le jeton reçu.";
 
     private static final String REFRESH_COOKIE = "refreshToken";
+    private static final String ACCESS_COOKIE = "access_token";
     /** Path large enough pour /auth/refresh et /auth/logout (cookie HttpOnly). */
     private static final String AUTH_COOKIE_PATH = "/api/v1/auth";
     private static final long REFRESH_MAX_AGE_SECONDS = 604800L;
@@ -106,6 +107,7 @@ public class AuthService {
         refreshTokenRepository.save(entity);
 
         appendRefreshCookie(response, rawRefresh);
+        appendAccessCookie(response, accessToken, jwtService.getAccessTokenExpiresInSeconds());
 
         CustomUserDetails details = new CustomUserDetails(utilisateur);
         UserInfo userInfo = UserInfo.from(details);
@@ -148,6 +150,7 @@ public class AuthService {
         refreshTokenRepository.save(next);
 
         appendRefreshCookie(response, newRaw);
+        appendAccessCookie(response, accessToken, jwtService.getAccessTokenExpiresInSeconds());
         return new RefreshResponse(accessToken, jwtService.getAccessTokenExpiresInSeconds());
     }
 
@@ -164,6 +167,7 @@ public class AuthService {
                     });
         }
         clearRefreshCookie(response);
+        clearAccessCookie(response);
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -246,8 +250,26 @@ public class AuthService {
                 u.getRole().name()
         );
         long expiresInSeconds = jwtService.getAccessTokenExpiresInSeconds();
+        appendAccessCookie(responseFromSecurityContextIfAny(), newAccessToken, expiresInSeconds);
 
         return new UpdateProfileResponse(UserInfo.from(details), newAccessToken, expiresInSeconds);
+    }
+
+    /**
+     * UpdateProfile is invoked from controller without HttpServletResponse today.
+     * To avoid breaking signature, we best-effort set the cookie only when a response is available
+     * (e.g. called in a web context with a bound response). If not available, UI still receives token in body.
+     */
+    private HttpServletResponse responseFromSecurityContextIfAny() {
+        try {
+            var attrs = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+            if (attrs instanceof org.springframework.web.context.request.ServletRequestAttributes sra) {
+                return sra.getResponse();
+            }
+        } catch (Exception ignored) {
+            // ignore
+        }
+        return null;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -440,6 +462,31 @@ public class AuthService {
                 .secure(refreshCookieSecure)
                 .sameSite("Strict")
                 .path(AUTH_COOKIE_PATH)
+                .maxAge(0)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private void appendAccessCookie(HttpServletResponse response, String accessToken, long maxAgeSeconds) {
+        if (response == null) return;
+        long ttl = Math.max(1, maxAgeSeconds);
+        ResponseCookie cookie = ResponseCookie.from(ACCESS_COOKIE, accessToken)
+                .httpOnly(true)
+                .secure(refreshCookieSecure)
+                .sameSite("Lax")
+                .path("/")
+                .maxAge(Duration.ofSeconds(ttl))
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
+
+    private void clearAccessCookie(HttpServletResponse response) {
+        if (response == null) return;
+        ResponseCookie cookie = ResponseCookie.from(ACCESS_COOKIE, "")
+                .httpOnly(true)
+                .secure(refreshCookieSecure)
+                .sameSite("Lax")
+                .path("/")
                 .maxAge(0)
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

@@ -1,7 +1,6 @@
 "use client";
 
 import { create } from "zustand";
-import { clearAccessTokenCookie, setAccessTokenCookie } from "./auth-cookie";
 import { clearLocaleCookie } from "./locale-cookie";
 
 export type UserInfo = {
@@ -24,8 +23,8 @@ export type UserPreferences = {
 type AuthState = {
   user: UserInfo | null;
   accessToken: string | null;
-  setAuth: (user: UserInfo, token: string, expiresInSeconds?: number) => void;
-  updateToken: (token: string, expiresInSeconds?: number) => void;
+  setAuth: (user: UserInfo, token: string) => void;
+  updateToken: (token: string) => void;
   logout: () => void;
   isAuthenticated: () => boolean;
   hasRole: (role: string) => boolean;
@@ -35,12 +34,10 @@ type AuthState = {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   accessToken: null,
-  setAuth: (user, token, expiresInSeconds = 900) => {
-    setAccessTokenCookie(token, expiresInSeconds);
+  setAuth: (user, token) => {
     set({ user, accessToken: token });
   },
-  updateToken: (token, expiresInSeconds = 900) => {
-    setAccessTokenCookie(token, expiresInSeconds);
+  updateToken: (token) => {
     set({ accessToken: token });
   },
   logout: () => {
@@ -57,7 +54,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       /* ignore */
     }
-    clearAccessTokenCookie();
     set({ user: null, accessToken: null });
   },
   isAuthenticated: () => !!get().accessToken,

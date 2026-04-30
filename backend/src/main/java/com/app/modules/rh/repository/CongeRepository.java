@@ -13,8 +13,14 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface CongeRepository extends JpaRepository<CongeAbsence, UUID>, JpaSpecificationExecutor<CongeAbsence> {
+
+    long countByOrganisationIdAndStatut(UUID organisationId, StatutConge statut);
+
+    Page<CongeAbsence> findByOrganisationIdAndStatutOrderByCreatedAtAsc(UUID organisationId, StatutConge statut, Pageable pageable);
 
     @Query(
             """

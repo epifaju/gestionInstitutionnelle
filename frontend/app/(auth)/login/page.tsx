@@ -67,7 +67,7 @@ export default function LoginPage() {
     setError(null);
     try {
       const data = await post<LoginResponse>("auth/login", values);
-      setAuth(data.user, data.accessToken, data.expiresIn);
+      setAuth(data.user, data.accessToken);
       // Applique la langue préférée après login
       if (typeof window !== "undefined" && data.user.langue) {
         const { setLocaleCookie } = await import("@/lib/locale-cookie");

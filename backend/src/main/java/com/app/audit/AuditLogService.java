@@ -3,6 +3,8 @@ package com.app.audit;
 import com.app.audit.entity.AuditLog;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,18 @@ import java.util.UUID;
 public class AuditLogService {
 
     private static final int MAX_USER_AGENT_LEN = 2000;
+    private static final java.util.Set<String> SENSITIVE_KEYS =
+            java.util.Set.of(
+                    "password",
+                    "passwordHash",
+                    "newPassword",
+                    "token",
+                    "accessToken",
+                    "refreshToken",
+                    "secret",
+                    "secretKey",
+                    "apiKey",
+                    "authorization");
 
     private final AuditLogRepository auditLogRepository;
     private final ObjectMapper objectMapper;
@@ -70,6 +84,33 @@ public class AuditLogService {
         if (o == null) {
             return null;
         }
-        return objectMapper.valueToTree(o);
+        JsonNode node = objectMapper.valueToTree(o);
+        scrubSensitive(node);
+        return node;
+    }
+
+    /**
+     * Best-effort scrubbing for known sensitive keys before persisting audit logs.
+     * This reduces blast radius if audit logs are exported or leaked.
+     */
+    private static void scrubSensitive(JsonNode node) {
+        if (node == null) return;
+        if (node instanceof ObjectNode obj) {
+            var it = obj.fieldNames();
+            java.util.List<String> names = new java.util.ArrayList<>();
+            it.forEachRemaining(names::add);
+            for (String name : names) {
+                JsonNode child = obj.get(name);
+                if (name != null && SENSITIVE_KEYS.contains(name)) {
+                    obj.put(name, "[REDACTED]");
+                } else {
+                    scrubSensitive(child);
+                }
+            }
+        } else if (node instanceof ArrayNode arr) {
+            for (JsonNode child : arr) {
+                scrubSensitive(child);
+            }
+        }
     }
 }

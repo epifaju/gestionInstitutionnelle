@@ -1,6 +1,7 @@
 package com.app.modules.inventaire.repository;
 
 import com.app.modules.inventaire.entity.BienMateriel;
+import com.app.modules.inventaire.entity.EtatBien;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -19,4 +20,8 @@ public interface BienMaterielRepository extends JpaRepository<BienMateriel, UUID
 
     @EntityGraph(attributePaths = "responsable")
     Optional<BienMateriel> findByIdAndOrganisationId(UUID id, UUID organisationId);
+
+    long countByOrganisationIdAndEtat(UUID organisationId, EtatBien etat);
+
+    java.util.List<BienMateriel> findTop5ByOrganisationIdAndEtatOrderByUpdatedAtDesc(UUID organisationId, EtatBien etat);
 }

@@ -12,4 +12,9 @@ import java.util.UUID;
 public interface FactureRepository extends JpaRepository<Facture, UUID>, JpaSpecificationExecutor<Facture> {
 
     List<Facture> findByStatutAndDateFactureBefore(StatutFacture statut, LocalDate before);
+
+    List<Facture> findTop5ByOrganisationIdAndStatutOrderByDateFactureAsc(UUID organisationId, StatutFacture statut);
+
+    List<Facture> findTop5ByOrganisationIdAndStatutAndDateFactureBeforeOrderByDateFactureAsc(
+            UUID organisationId, StatutFacture statut, LocalDate before);
 }

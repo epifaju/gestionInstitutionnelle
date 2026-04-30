@@ -16,9 +16,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import type { PaieResponse } from "@/lib/types/rh";
 import type { MarquerPayeRequest } from "@/lib/types/rh";
+import type { SalarieResponse } from "@/lib/types/rh";
 import { useAuthStore } from "@/lib/store";
 import { annulerPaie, getPayslipPresignedUrlForSalarie, listPaieOrganisation, marquerPaye } from "@/services/paie.service";
+import { listSalaries } from "@/services/salarie.service";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ExportButton } from "@/components/exports/ExportButton";
+import { exportEtatPaieExcel, exportEtatPaiePdf } from "@/services/export-conformite.service";
 
 function fmtMoney(v: string | number, devise: string, localeTag: string) {
   const n = typeof v === "string" ? parseFloat(v) : v;
@@ -45,6 +50,24 @@ export default function PaieOrganisationPage() {
   });
   const [cancelId, setCancelId] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportMois, setExportMois] = useState(() => {
+    const d = new Date();
+    const m = d.getMonth(); // previous month (0..11), 0 means January -> use 12
+    return m === 0 ? 12 : m;
+  });
+  const [exportService, setExportService] = useState<string>("__ALL__");
+
+  const { data: servicesData } = useQuery({
+    queryKey: ["rh", "salaries", "services", "paie-export-dialog"],
+    queryFn: async () => {
+      const page = await listSalaries({ page: 0, size: 200 });
+      const services = Array.from(new Set((page.content as SalarieResponse[]).map((s) => s.service).filter(Boolean)));
+      return services.sort((a, b) => a.localeCompare(b));
+    },
+    staleTime: 60_000,
+    enabled: !!user && canMark,
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["rh", "paie-org", annee, page],
@@ -181,6 +204,12 @@ export default function PaieOrganisationPage() {
           <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button type="button" variant="secondary" onClick={() => setExportOpen(true)}>
+            📄 État de paie PDF
+          </Button>
+          <Button type="button" variant="outline" onClick={() => setExportOpen(true)}>
+            📊 État de paie Excel
+          </Button>
           <label className="text-sm text-muted-foreground" htmlFor="annee-paie">
             {tc("year")}
           </label>
@@ -196,6 +225,64 @@ export default function PaieOrganisationPage() {
           />
         </div>
       </div>
+
+      <Dialog open={exportOpen} onOpenChange={setExportOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Exports — État de paie</DialogTitle>
+            <DialogDescription>Sélectionnez la période et le service.</DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <div className="space-y-1">
+              <Label>Année</Label>
+              <Input type="number" value={annee} onChange={(e) => setAnnee(Number(e.target.value) || new Date().getFullYear())} />
+            </div>
+            <div className="space-y-1">
+              <Label>Mois</Label>
+              <Input type="number" min={1} max={12} value={exportMois} onChange={(e) => setExportMois(Number(e.target.value) || 1)} />
+            </div>
+            <div className="space-y-1">
+              <Label>Service</Label>
+              <select
+                className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                value={exportService}
+                onChange={(e) => setExportService(e.target.value)}
+              >
+                <option value="__ALL__">Tous les services</option>
+                {(servicesData ?? []).map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <ExportButton
+              label="Exporter PDF"
+              variant="pdf"
+              onExport={() =>
+                exportEtatPaiePdf({ annee, mois: exportMois, service: exportService === "__ALL__" ? null : exportService })
+              }
+            />
+            <ExportButton
+              label="Exporter Excel"
+              variant="excel"
+              onExport={() =>
+                exportEtatPaieExcel({ annee, mois: exportMois, service: exportService === "__ALL__" ? null : exportService })
+              }
+            />
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setExportOpen(false)}>
+              {tc("close")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="rounded-lg border border-border bg-card text-card-foreground">
         <Table>

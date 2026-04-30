@@ -91,7 +91,9 @@ export async function traiterEcheance(id: string, data: TraiterEcheanceRequest, 
     "data.json"
   );
   if (preuve) fd.append("preuve", preuve);
-  const res = await api.post<{ success: boolean; data: EcheanceResponse }>(`${BASE}/echeances/${id}/traiter`, fd);
+  const res = await api.post<{ success: boolean; data: EcheanceResponse }>(`${BASE}/echeances/${id}/traiter`, fd, {
+    headers: { "Content-Type": undefined },
+  });
   return res.data.data;
 }
 
@@ -117,7 +119,9 @@ export async function enregistrerResultatVisite(
   fd.append("resultat", resultat);
   if (restrictions != null && restrictions !== "") fd.append("restrictions", restrictions);
   if (compteRendu) fd.append("compteRendu", compteRendu);
-  const res = await api.post<{ success: boolean; data: VisiteMedicaleResponse }>(`${BASE}/visites/${id}/resultat`, fd);
+  const res = await api.post<{ success: boolean; data: VisiteMedicaleResponse }>(`${BASE}/visites/${id}/resultat`, fd, {
+    headers: { "Content-Type": undefined },
+  });
   return res.data.data;
 }
 
@@ -129,7 +133,9 @@ export async function enregistrerTitreSejour(salarieId: string, data: TitreSejou
   const fd = new FormData();
   fd.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }), "data.json");
   if (document) fd.append("document", document);
-  const res = await api.post<{ success: boolean; data: TitreSejourResponse }>(`${BASE}/salaries/${salarieId}/titres-sejour`, fd);
+  const res = await api.post<{ success: boolean; data: TitreSejourResponse }>(`${BASE}/salaries/${salarieId}/titres-sejour`, fd, {
+    headers: { "Content-Type": undefined },
+  });
   return res.data.data;
 }
 
@@ -149,7 +155,9 @@ export async function enregistrerFormation(salarieId: string, data: FormationObl
   const fd = new FormData();
   fd.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }), "data.json");
   if (certificat) fd.append("certificat", certificat);
-  const res = await api.post<{ success: boolean; data: FormationObligatoireResponse }>(`${BASE}/salaries/${salarieId}/formations`, fd);
+  const res = await api.post<{ success: boolean; data: FormationObligatoireResponse }>(`${BASE}/salaries/${salarieId}/formations`, fd, {
+    headers: { "Content-Type": undefined },
+  });
   return res.data.data;
 }
 
@@ -158,6 +166,8 @@ export async function renouvelerFormation(id: string, data: FormationObligatoire
   const fd = new FormData();
   fd.append("data", new Blob([JSON.stringify(data)], { type: "application/json" }), "data.json");
   if (certificat) fd.append("certificat", certificat);
-  const res = await api.post<{ success: boolean; data: FormationObligatoireResponse }>(`${BASE}/formations/${id}/renouveler`, fd);
+  const res = await api.post<{ success: boolean; data: FormationObligatoireResponse }>(`${BASE}/formations/${id}/renouveler`, fd, {
+    headers: { "Content-Type": undefined },
+  });
   return res.data.data;
 }

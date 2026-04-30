@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/lib/store";
@@ -62,8 +63,18 @@ export default function RapportsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{t("subtitleLong")}</p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-foreground">{t("title")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("subtitleLong")}</p>
+          </div>
+          <Link href="/rapports/conformite">
+            <Button type="button" variant="secondary">
+              📋 Exports conformité →
+            </Button>
+          </Link>
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">Notes de frais, états de paie, budget, journal d’audit</p>
       </div>
 
       {canFinance && (

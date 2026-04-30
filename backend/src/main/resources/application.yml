@@ -99,6 +99,8 @@ spring:
 app:
   error:
     expose-stack-trace: false
+  security:
+    refresh-cookie-secure: true
 
 management:
   endpoints:

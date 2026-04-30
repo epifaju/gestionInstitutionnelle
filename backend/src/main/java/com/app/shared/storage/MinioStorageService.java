@@ -58,13 +58,9 @@ public class MinioStorageService {
     }
 
     public String presignedGetUrl(String objectName) throws Exception {
-        return publicMinioClient.getPresignedObjectUrl(
-                GetPresignedObjectUrlArgs.builder()
-                        .method(Method.GET)
-                        .bucket(minioProperties.getBucket())
-                        .object(objectName)
-                        .expiry(7, TimeUnit.DAYS)
-                        .build());
+        // Security default: short-lived URL to reduce accidental leakage impact.
+        // Call presignedGetUrl(objectName, expirySeconds) explicitly for longer TTL when justified.
+        return presignedGetUrl(objectName, 3600);
     }
 
     public String presignedGetUrl(String objectName, int expirySeconds) throws Exception {

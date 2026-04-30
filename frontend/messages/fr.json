@@ -93,6 +93,7 @@
     "budget": "Budget",
     "inventaire": "Inventaire",
     "rapports": "Rapports",
+    "rapportsConformite": "Exports conformité",
     "settings": "Paramètres",
     "adminUsers": "Utilisateurs",
     "adminWorkflows": "Workflows",
@@ -831,9 +832,11 @@
         "medicalTitle": "Suivi médical",
         "medicalPlan": "+ Planifier visite",
         "medicalEmpty": "Aucune visite enregistrée.",
-        "medical.lastReal": "Dernière date réalisée :",
-        "medical.result": "Dernier résultat :",
-        "medical.next": "Prochaine visite prévue :",
+        "medical": {
+          "lastReal": "Dernière date réalisée :",
+          "result": "Dernier résultat :",
+          "next": "Prochaine visite prévue :"
+        },
         "medicalPast": "Visites passées",
         "medicalResultBtn": "Enregistrer résultat",
         "titresTitle": "Titres & documents administratifs",

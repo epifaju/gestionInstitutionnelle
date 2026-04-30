@@ -93,6 +93,7 @@
     "budget": "Budget",
     "inventaire": "Inventory",
     "rapports": "Reports",
+    "rapportsConformite": "Compliance exports",
     "settings": "Settings",
     "adminUsers": "Users",
     "adminWorkflows": "Workflows",
@@ -817,9 +818,11 @@
         "medicalTitle": "Medical follow-up",
         "medicalPlan": "+ Schedule visit",
         "medicalEmpty": "No visits recorded.",
-        "medical.lastReal": "Last completed date:",
-        "medical.result": "Last result:",
-        "medical.next": "Next planned visit:",
+        "medical": {
+          "lastReal": "Last completed date:",
+          "result": "Last result:",
+          "next": "Next planned visit:"
+        },
         "medicalPast": "Past visits",
         "medicalResultBtn": "Record result",
         "titresTitle": "Permits & administrative documents",

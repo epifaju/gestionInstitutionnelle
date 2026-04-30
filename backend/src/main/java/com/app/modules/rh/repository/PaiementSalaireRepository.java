@@ -30,4 +30,7 @@ public interface PaiementSalaireRepository extends JpaRepository<PaiementSalaire
                         UUID organisationId, int annee, Pageable pageable);
 
         List<PaiementSalaire> findByStatutAndAnneeAndMois(StatutPaie statut, int annee, int mois);
+
+        List<PaiementSalaire> findTop5ByOrganisationIdAndStatutAndAnneeAndMoisOrderBySalarie_NomAscSalarie_PrenomAsc(
+                        UUID organisationId, StatutPaie statut, int annee, int mois);
 }

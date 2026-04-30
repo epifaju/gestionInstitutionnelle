@@ -25,6 +25,9 @@ import { useAuthStore } from "@/lib/store";
 import { intlLocaleTag } from "@/lib/intl-locale";
 import { creerBudget, getBudget, modifierLigneBudget, validerBudget } from "@/services/budget.service";
 import { listCategories } from "@/services/finance.service";
+import { ExportButton } from "@/components/exports/ExportButton";
+import { exportBudgetExcel, exportBudgetPdf } from "@/services/export-conformite.service";
+import { FileSpreadsheet, FileText } from "lucide-react";
 
 function n(s: string | number) {
   const x = typeof s === "number" ? s : parseFloat(String(s));
@@ -196,6 +199,18 @@ export default function BudgetPage() {
           <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <ExportButton
+            label="Export PDF"
+            icon={<FileText className="mr-2 h-4 w-4" />}
+            variant="pdf"
+            onExport={() => exportBudgetPdf(annee)}
+          />
+          <ExportButton
+            label="Export Excel"
+            icon={<FileSpreadsheet className="mr-2 h-4 w-4" />}
+            variant="excel"
+            onExport={() => exportBudgetExcel(annee)}
+          />
           <Label className="sr-only" htmlFor="annee">
             {tc("year")}
           </Label>

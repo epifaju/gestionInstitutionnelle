@@ -83,6 +83,7 @@
     "budget": "Orçamento",
     "inventaire": "Inventário",
     "rapports": "Relatórios",
+    "rapportsConformite": "Exportações conformidade",
     "settings": "Definições",
     "adminUsers": "Utilizadores",
     "adminWorkflows": "Workflows",
@@ -807,9 +808,11 @@
         "medicalTitle": "Seguimento médico",
         "medicalPlan": "+ Agendar visita",
         "medicalEmpty": "Sem visitas registadas.",
-        "medical.lastReal": "Última data realizada:",
-        "medical.result": "Último resultado:",
-        "medical.next": "Próxima visita prevista:",
+        "medical": {
+          "lastReal": "Última data realizada:",
+          "result": "Último resultado:",
+          "next": "Próxima visita prevista:"
+        },
         "medicalPast": "Visitas anteriores",
         "medicalResultBtn": "Registar resultado",
         "titresTitle": "Títulos & documentos administrativos",

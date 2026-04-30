@@ -1,12 +1,11 @@
 "use client";
 
 import { useAuthStore, type UserInfo } from "@/lib/store";
-import { decodeJwtPayload } from "@/lib/jwt";
 import { api, get } from "@/lib/api";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Building2, FileText, LogOut, Menu, X, Languages, Settings } from "lucide-react";
+import { Building2, CheckCircle, FileText, LogOut, Menu, X, Languages, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppLocale } from "@/lib/locale-context";
@@ -16,20 +15,7 @@ import { NotificationBell } from "@/components/ui/NotificationBell";
 import { useAppTheme } from "@/lib/theme-context";
 import { useQuery } from "@tanstack/react-query";
 import { getEcheancesDashboard } from "@/services/contrat.service";
-
-function syncTokenFromCookie() {
-  if (typeof document === "undefined") return;
-  const m = document.cookie.match(/(?:^|; )access_token=([^;]*)/);
-  if (!m?.[1]) return;
-  const raw = decodeURIComponent(m[1]);
-  if (!raw) return;
-  const current = useAuthStore.getState().accessToken;
-  if (current === raw) return;
-  const payload = decodeJwtPayload(raw);
-  const exp = payload?.exp;
-  const maxAge = exp ? Math.max(0, exp - Math.floor(Date.now() / 1000)) : 900;
-  useAuthStore.getState().updateToken(raw, maxAge);
-}
+import { todoDashboardService } from "@/services/todo-dashboard.service";
 
 type NavItem = { href: string; label: string };
 
@@ -58,8 +44,23 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [languageOpen, setLanguageOpen] = useState(false);
 
   useEffect(() => {
-    syncTokenFromCookie();
-  }, []);
+    if (accessToken) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const r = await api.post<{ success: boolean; data?: { accessToken: string; expiresIn: number } }>("auth/refresh");
+        const token = r.data?.data?.accessToken ?? null;
+        if (!cancelled && token) {
+          useAuthStore.getState().updateToken(token);
+        }
+      } catch {
+        // ignore: user will be redirected by later auth checks
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -69,7 +70,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       try {
         const me = await get<UserInfo>("auth/me");
         if (!cancelled) {
-          setAuth(me, accessToken, 900);
+          setAuth(me, accessToken);
           // IMPORTANT: la langue est un paramètre global (cookie/localStorage),
           // donc on la resynchronise explicitement à chaque login en fonction de l'utilisateur.
           const rawLang = me.langue ?? null;
@@ -195,13 +196,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     { href: "/missions", label: t("missions") },
     ...(showBudget ? [{ href: "/budget", label: t("budget") }] : []),
     ...(showInv ? [{ href: "/inventaire", label: t("inventaire") }] : []),
-    ...(showRapports ? [{ href: "/rapports", label: t("rapports") }] : []),
+    ...(showRapports
+      ? [
+          { href: "/rapports", label: t("rapports") },
+          { href: "/rapports/conformite", label: t("rapportsConformite") },
+        ]
+      : []),
     ...(isAdmin
       ? [
           { href: "/dashboard/admin/users", label: t("adminUsers") },
           { href: "/dashboard/admin/workflows", label: t("adminWorkflows") },
           { href: "/dashboard/admin/templates", label: t("adminTemplates") },
-          { href: "/dashboard/admin/audit", label: t("adminAudit") },
+          { href: "/admin/audit", label: t("adminAudit") },
         ]
       : []),
   ];
@@ -218,6 +224,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     staleTime: 60_000,
   });
 
+  const { data: comptages } = useQuery({
+    queryKey: ["sidebar-comptages"],
+    queryFn: () => todoDashboardService.getComptages(),
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
+    enabled: !!accessToken && user?.role !== "EMPLOYE",
+  });
+
+  const totalUrgentTodo = useMemo(() => Object.values(comptages ?? {}).reduce((a, b) => a + Number(b ?? 0), 0), [comptages]);
+
   const rhUrgentBadge = useMemo(() => {
     if (!rhDash) return 0;
     return Number(rhDash.critiques ?? 0) + Number(rhDash.urgentes ?? 0);
@@ -226,8 +242,27 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
     <>
       {!isEmploye ? (
-        <Link href="/dashboard" onClick={onNavigate} className={linkClass("/dashboard")}>
-          {t("dashboard")}
+        <Link href="/dashboard" onClick={onNavigate} className={`${linkClass("/dashboard")} flex items-center justify-between gap-2`}>
+          <span>{t("dashboard")}</span>
+          {totalUrgentTodo > 0 ? (
+            <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+              {totalUrgentTodo > 99 ? "99+" : totalUrgentTodo.toString()}
+            </span>
+          ) : null}
+        </Link>
+      ) : null}
+
+      {!isEmploye ? (
+        <Link href="/todo" onClick={onNavigate} className={`${linkClass("/todo")} flex items-center justify-between gap-2`}>
+          <span className="inline-flex items-center gap-2">
+            <CheckCircle className="h-4 w-4 opacity-70" />
+            À faire
+          </span>
+          {totalUrgentTodo > 0 ? (
+            <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
+              {totalUrgentTodo > 99 ? "99+" : totalUrgentTodo.toString()}
+            </span>
+          ) : null}
         </Link>
       ) : null}
 

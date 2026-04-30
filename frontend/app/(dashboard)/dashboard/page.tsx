@@ -27,6 +27,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { TodoDashboard } from "@/components/todo/TodoDashboard";
 import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { getDashboard } from "@/services/dashboard.service";
@@ -459,6 +460,13 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* ── Widget "À faire aujourd'hui" ── */}
+      {user?.role !== "EMPLOYE" && (
+        <section className="mt-8">
+          <TodoDashboard />
+        </section>
+      )}
 
       <p className="text-xs text-muted-foreground">
         {td("footerParc")} : {fmtEur(num(data.kpis.valeurParcMateriel))} — {td("footerConges")} :{" "}

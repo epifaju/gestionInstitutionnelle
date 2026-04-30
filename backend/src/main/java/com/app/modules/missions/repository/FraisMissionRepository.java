@@ -15,5 +15,9 @@ public interface FraisMissionRepository extends JpaRepository<FraisMission, UUID
     Optional<FraisMission> findByIdAndMission_Id(UUID id, UUID missionId);
 
     List<FraisMission> findByMission_IdAndStatut(UUID missionId, StatutFrais statut);
+
+    long countByMission_OrganisationIdAndStatut(UUID organisationId, StatutFrais statut);
+
+    List<FraisMission> findTop5ByMission_OrganisationIdAndStatutOrderByCreatedAtAsc(UUID organisationId, StatutFrais statut);
 }
 

@@ -73,7 +73,7 @@ export default function SettingsPage() {
         expiresInSeconds: number;
       }>("auth/me/profile", { prenom, nom, email }),
     onSuccess: (res) => {
-      setUser({ ...res.user }, res.accessToken, res.expiresInSeconds);
+      setUser({ ...res.user }, res.accessToken);
       toast.success(tc("successSaved"));
     },
   });

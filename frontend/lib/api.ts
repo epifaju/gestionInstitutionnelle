@@ -38,6 +38,21 @@ function translateApiCode(code: string): string | null {
     if (l === "pt-PT") return "É necessário um comprovativo.";
     return "Un justificatif est requis.";
   }
+  if (code === "EXPORT_DONNEES_ABSENTES") {
+    if (l === "en") return "No data found for the selected period/filters.";
+    if (l === "pt-PT") return "Nenhum dado encontrado para o período/filtros selecionados.";
+    return "Aucune donnée trouvée pour la période / les filtres sélectionnés.";
+  }
+  if (code === "EXPORT_PERIODE_INVALIDE") {
+    if (l === "en") return "Invalid period: start date must be before end date.";
+    if (l === "pt-PT") return "Período inválido: a data de início deve ser anterior à data de fim.";
+    return "Période invalide : la date de début doit être antérieure à la date de fin.";
+  }
+  if (code === "PERIODE_TROP_LARGE") {
+    if (l === "en") return "Period too large for this export.";
+    if (l === "pt-PT") return "Período demasiado longo para este export.";
+    return "Période trop large pour cet export.";
+  }
   return null;
 }
 
@@ -72,9 +87,8 @@ async function refreshAccessToken(): Promise<string | null> {
       }>("auth/refresh")
       .then((res) => {
         const token = res.data?.data?.accessToken;
-        const expiresIn = res.data?.data?.expiresIn ?? 900;
         if (token) {
-          useAuthStore.getState().updateToken(token, expiresIn);
+          useAuthStore.getState().updateToken(token);
         }
         return token ?? null;
       })

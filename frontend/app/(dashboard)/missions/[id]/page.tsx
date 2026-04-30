@@ -27,6 +27,8 @@ import {
 import { generateFromTemplate } from "@/services/template.service";
 import { getPresignedUrl } from "@/services/documents.service";
 import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
+import { exportNoteFrais, type ExportJobResponse } from "@/services/export-conformite.service";
+import { ExportProgressCard } from "@/components/exports/ExportProgressCard";
 
 function statutVariant(s: string): "muted" | "info" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
@@ -53,6 +55,7 @@ export default function MissionDetailPage() {
   const isAdmin = user?.role === "ADMIN";
   const isRh = user?.role === "RH";
   const isFin = user?.role === "FINANCIER";
+  const canExportNoteFrais = isAdmin || isFin || isRh;
 
   const { data: mission, isLoading } = useQuery({ queryKey: ["missions", id], queryFn: () => getMission(id) });
 
@@ -156,6 +159,8 @@ export default function MissionDetailPage() {
   const [approveOpen, setApproveOpen] = useState(false);
   const [avanceInput, setAvanceInput] = useState("0");
   const [avanceError, setAvanceError] = useState<string | null>(null);
+  const [noteJob, setNoteJob] = useState<ExportJobResponse | null>(null);
+  const [noteLoading, setNoteLoading] = useState(false);
 
   useEffect(() => {
     if (!approveOpen) return;
@@ -275,10 +280,37 @@ export default function MissionDetailPage() {
             {mission.destination} • {mission.dateDepart} → {mission.dateRetour} • {t("nbJours", { n: mission.nbJours })}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Badge variant={statutVariant(mission.statut)}>{mission.statut}</Badge>
+          {canExportNoteFrais ? (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={noteLoading}
+              onClick={async () => {
+                try {
+                  setNoteLoading(true);
+                  const res = await exportNoteFrais(id);
+                  setNoteJob(res);
+                  if (res.statut === "TERMINE" && res.fichierUrl) {
+                    window.open(res.fichierUrl, "_blank", "noopener,noreferrer");
+                  } else if (res.statut === "ERREUR") {
+                    toast.error(res.messageErreur ?? "Export en erreur.");
+                  }
+                } catch {
+                  toast.error(tc("errorGeneric"));
+                } finally {
+                  setNoteLoading(false);
+                }
+              }}
+            >
+              📄 Télécharger note de frais
+            </Button>
+          ) : null}
         </div>
       </div>
+
+      {noteJob && noteJob.id ? <ExportProgressCard job={noteJob} onRetry={async () => {}} /> : null}
 
       {actionBar}
 
