@@ -106,13 +106,25 @@ class SecurityIntegrationTest {
         HttpClient httpClient = HttpClient.newHttpClient();
         String base = "http://127.0.0.1:" + port;
 
-        HttpRequest rhReq =
+        // PRD §9 : FINANCIER peut lister les salariés (lecture pour export / filtre paie).
+        HttpRequest listReq =
                 HttpRequest.newBuilder()
                         .uri(URI.create(base + "/api/v1/rh/salaries"))
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                         .GET()
                         .build();
-        HttpResponse<String> rhRes = httpClient.send(rhReq, HttpResponse.BodyHandlers.ofString());
-        assertThat(rhRes.statusCode()).isEqualTo(403);
+        HttpResponse<String> listRes = httpClient.send(listReq, HttpResponse.BodyHandlers.ofString());
+        assertThat(listRes.statusCode()).isEqualTo(200);
+
+        // Mais n'a pas accès aux documents RH (RH/ADMIN uniquement) — GET sans corps pour
+        // éviter un 400 de validation avant @PreAuthorize.
+        HttpRequest docsReq =
+                HttpRequest.newBuilder()
+                        .uri(URI.create(base + "/api/v1/rh/salaries/00000000-0000-0000-0000-000000000001/documents"))
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
+                        .GET()
+                        .build();
+        HttpResponse<String> docsRes = httpClient.send(docsReq, HttpResponse.BodyHandlers.ofString());
+        assertThat(docsRes.statusCode()).isEqualTo(403);
     }
 }
