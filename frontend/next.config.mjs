@@ -1,14 +1,6 @@
 import createNextIntlPlugin from "next-intl/plugin";
-import nextPwa from "next-pwa";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
-const withPWA = nextPwa({
-  dest: "public",
-  register: true,
-  skipWaiting: true,
-  // PWA can be noisy/brittle in containerized dev; enable explicitly when needed.
-  disable: process.env.PWA_ENABLED !== "true",
-});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -22,4 +14,4 @@ const nextConfig = {
   },
 };
 
-export default withPWA(withNextIntl(nextConfig));
+export default withNextIntl(nextConfig);
