@@ -4,7 +4,6 @@ import com.app.modules.budget.entity.StatutBudget;
 import com.app.modules.budget.repository.BudgetAnnuelRepository;
 import com.app.modules.finance.entity.StatutFacture;
 import com.app.modules.finance.repository.FactureRepository;
-import com.app.modules.finance.service.FactureService;
 import com.app.modules.inventaire.entity.EtatBien;
 import com.app.modules.inventaire.repository.BienMaterielRepository;
 import com.app.modules.missions.entity.FraisMission;
@@ -809,14 +808,21 @@ public class TodoDashboardService {
 
     String humanizeDelay(LocalDateTime dt) {
         if (dt == null) return "";
-        long minutes = ChronoUnit.MINUTES.between(dt, LocalDateTime.now());
-        if (minutes < 60) return "il y a " + minutes + " minutes";
-        long hours = ChronoUnit.HOURS.between(dt, LocalDateTime.now());
-        if (hours < 24) return "il y a " + hours + " heures";
+        LocalDateTime now = LocalDateTime.now();
+        long seconds = ChronoUnit.SECONDS.between(dt, now);
+        if (seconds < 60) return "il y a quelques secondes";
+
+        long minutes = ChronoUnit.MINUTES.between(dt, now);
+        if (minutes < 60) return "il y a " + minutes + (minutes == 1 ? " minute" : " minutes");
+
+        long hours = ChronoUnit.HOURS.between(dt, now);
+        if (hours < 24) return "il y a " + hours + (hours == 1 ? " heure" : " heures");
+
         long days = ChronoUnit.DAYS.between(dt.toLocalDate(), LocalDate.now());
-        if (days < 14) return "il y a " + days + " jours";
+        if (days < 14) return "il y a " + days + (days == 1 ? " jour" : " jours");
+
         long weeks = days / 7;
-        return "il y a " + weeks + " semaines";
+        return "il y a " + weeks + (weeks == 1 ? " semaine" : " semaines");
     }
 }
 

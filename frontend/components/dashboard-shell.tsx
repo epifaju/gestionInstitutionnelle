@@ -1,39 +1,28 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useAuthStore, type UserInfo } from "@/lib/store";
 import { api, get } from "@/lib/api";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { Building2, CheckCircle, FileText, LogOut, Menu, X, Languages, Settings } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Building2, LogOut, Menu, X, Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import { useAppLocale } from "@/lib/locale-context";
 import type { AppLocale } from "@/lib/locale-context";
 import { setLocaleCookie } from "@/lib/locale-cookie";
-import { NotificationBell } from "@/components/ui/NotificationBell";
 import { useAppTheme } from "@/lib/theme-context";
-import { useQuery } from "@tanstack/react-query";
-import { getEcheancesDashboard } from "@/services/contrat.service";
-import { todoDashboardService } from "@/services/todo-dashboard.service";
+import { DashboardNav } from "@/components/dashboard/dashboard-nav";
 
-type NavItem = { href: string; label: string };
+const NotificationBell = dynamic(
+  () => import("@/components/ui/NotificationBell").then((m) => m.NotificationBell),
+  { ssr: false, loading: () => <span className="inline-block h-9 w-9" aria-hidden /> }
+);
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const t = useTranslations("Nav");
   const tc = useTranslations("Common");
   const ta = useTranslations("App");
-  const tf = useTranslations("Finance.factures");
-  const tp = useTranslations("Finance.paiements");
-  const tr = useTranslations("Finance.recettes");
-  const tt = useTranslations("Finance.tauxChange");
-  const tCat = useTranslations("Finance.categories");
-  const tRhSal = useTranslations("RH.salaries");
-  const tRhCong = useTranslations("RH.conges");
-  const tRhPaie = useTranslations("RH.paie");
-  const tRhPaieSettings = useTranslations("RH.paieSettings");
   const router = useRouter();
-  const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const accessToken = useAuthStore((s) => s.accessToken);
   const setAuth = useAuthStore((s) => s.setAuth);
@@ -68,23 +57,30 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const me = await get<UserInfo>("auth/me");
-        if (!cancelled) {
-          setAuth(me, accessToken);
-          // IMPORTANT: la langue est un paramètre global (cookie/localStorage),
-          // donc on la resynchronise explicitement à chaque login en fonction de l'utilisateur.
-          const rawLang = me.langue ?? null;
-          const l = rawLang === "pt_pt" ? "pt-PT" : rawLang;
-          if (l === "fr" || l === "en" || l === "pt-PT") {
-            setLocaleCookie(l);
-            setLocale(l);
-          }
-          try {
-            const prefs = await get<{ theme: "system" | "light" | "dark" }>("auth/me/preferences");
-            if (!cancelled && prefs?.theme) setTheme(prefs.theme);
-          } catch {
-            /* ignore: keep current theme */
-          }
+        const [meResult, prefsResult] = await Promise.allSettled([
+          get<UserInfo>("auth/me"),
+          get<{ theme: "system" | "light" | "dark" }>("auth/me/preferences"),
+        ]);
+
+        if (cancelled) return;
+
+        if (meResult.status === "rejected") {
+          logout();
+          router.replace("/login");
+          return;
+        }
+
+        const me = meResult.value;
+        setAuth(me, accessToken);
+        const rawLang = me.langue ?? null;
+        const l = rawLang === "pt_pt" ? "pt-PT" : rawLang;
+        if (l === "fr" || l === "en" || l === "pt-PT") {
+          setLocaleCookie(l);
+          setLocale(l);
+        }
+
+        if (prefsResult.status === "fulfilled" && prefsResult.value?.theme) {
+          setTheme(prefsResult.value.theme);
         }
       } catch {
         if (!cancelled) {
@@ -133,7 +129,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       </Button>
 
       {languageOpen ? (
-        <div className={compact ? "mb-2 flex flex-col gap-1" : "mb-2 flex flex-col gap-1"}>
+        <div className="mb-2 flex flex-col gap-1">
           {(["fr", "en", "pt-PT"] as AppLocale[]).map((l) => (
             <Button
               key={l}
@@ -154,176 +150,6 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     </div>
   );
 
-  const role = user?.role;
-  const isAdmin = role === "ADMIN";
-  const isFin = role === "FINANCIER";
-  const isRh = role === "RH";
-  const isLog = role === "LOGISTIQUE";
-  const isEmploye = role === "EMPLOYE";
-
-  const showFinance = isAdmin || isFin;
-  const showRhSalaries = isAdmin || isRh;
-  const showRhContrats = isAdmin || isRh;
-  const showPaie = isAdmin || isRh || isFin;
-  const showMyPaie = isEmploye;
-  const showBudget = isAdmin || isFin || isRh;
-  const showInv = isAdmin || isLog;
-  const showRapports = isAdmin || isFin || isRh || isLog;
-
-  const financeItems: NavItem[] = showFinance
-    ? [
-        { href: "/finance/factures", label: tf("title") },
-        { href: "/finance/paiements", label: tp("title") },
-        { href: "/finance/recettes", label: tr("title") },
-        { href: "/finance/taux-change", label: tt("title") },
-        ...(isAdmin ? [{ href: "/finance/categories", label: tCat("title") }] : []),
-      ]
-    : [];
-
-  const rhItems: NavItem[] = [
-    ...(showRhSalaries ? [{ href: "/rh/salaries", label: tRhSal("title") }] : []),
-    ...(showRhContrats ? [{ href: "/rh/contrats", label: t("rhContrats") }] : []),
-    { href: "/rh/conges", label: tRhCong("title") },
-    ...(showMyPaie ? [{ href: "/rh/me/paie", label: t("myPaie") }] : []),
-    ...(showPaie ? [{ href: "/rh/paie", label: tRhPaie("title") }] : []),
-    ...(isAdmin || isRh ? [{ href: "/rh/paie/parametres", label: tRhPaieSettings("title") }] : []),
-  ];
-
-  const restItems: NavItem[] = [
-    { href: "/notifications", label: t("notifications") },
-    { href: "/documents", label: t("documents") },
-    { href: "/courriers", label: t("courriers") },
-    { href: "/missions", label: t("missions") },
-    ...(showBudget ? [{ href: "/budget", label: t("budget") }] : []),
-    ...(showInv ? [{ href: "/inventaire", label: t("inventaire") }] : []),
-    ...(showRapports
-      ? [
-          { href: "/rapports", label: t("rapports") },
-          { href: "/rapports/conformite", label: t("rapportsConformite") },
-        ]
-      : []),
-    ...(isAdmin
-      ? [
-          { href: "/dashboard/admin/users", label: t("adminUsers") },
-          { href: "/dashboard/admin/workflows", label: t("adminWorkflows") },
-          { href: "/dashboard/admin/templates", label: t("adminTemplates") },
-          { href: "/admin/audit", label: t("adminAudit") },
-        ]
-      : []),
-  ];
-
-  const linkClass = (href: string) =>
-    `rounded-md px-3 py-2 text-sm font-medium ${
-      pathname === href || pathname.startsWith(href + "/") ? "bg-indigo-50 text-indigo-800" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-    }`;
-
-  const { data: rhDash } = useQuery({
-    queryKey: ["rh", "contrats", "dashboard", "nav-badge"],
-    queryFn: () => getEcheancesDashboard(),
-    enabled: !!accessToken && showRhContrats,
-    staleTime: 60_000,
-  });
-
-  const { data: comptages } = useQuery({
-    queryKey: ["sidebar-comptages"],
-    queryFn: () => todoDashboardService.getComptages(),
-    staleTime: 5 * 60 * 1000,
-    refetchInterval: 5 * 60 * 1000,
-    enabled: !!accessToken && user?.role !== "EMPLOYE",
-  });
-
-  const totalUrgentTodo = useMemo(() => Object.values(comptages ?? {}).reduce((a, b) => a + Number(b ?? 0), 0), [comptages]);
-
-  const rhUrgentBadge = useMemo(() => {
-    if (!rhDash) return 0;
-    return Number(rhDash.critiques ?? 0) + Number(rhDash.urgentes ?? 0);
-  }, [rhDash]);
-
-  const NavLinks = ({ onNavigate }: { onNavigate?: () => void }) => (
-    <>
-      {!isEmploye ? (
-        <Link href="/dashboard" onClick={onNavigate} className={`${linkClass("/dashboard")} flex items-center justify-between gap-2`}>
-          <span>{t("dashboard")}</span>
-          {totalUrgentTodo > 0 ? (
-            <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
-              {totalUrgentTodo > 99 ? "99+" : totalUrgentTodo.toString()}
-            </span>
-          ) : null}
-        </Link>
-      ) : null}
-
-      {!isEmploye ? (
-        <Link href="/todo" onClick={onNavigate} className={`${linkClass("/todo")} flex items-center justify-between gap-2`}>
-          <span className="inline-flex items-center gap-2">
-            <CheckCircle className="h-4 w-4 opacity-70" />
-            À faire
-          </span>
-          {totalUrgentTodo > 0 ? (
-            <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">
-              {totalUrgentTodo > 99 ? "99+" : totalUrgentTodo.toString()}
-            </span>
-          ) : null}
-        </Link>
-      ) : null}
-
-      {financeItems.length > 0 ? (
-        <>
-          <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("sectionFinance")}</p>
-          {financeItems.map((item) => (
-            <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
-              {item.label}
-            </Link>
-          ))}
-        </>
-      ) : null}
-
-      {rhItems.length > 0 ? (
-        <>
-          <p className="px-3 pt-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("sectionRh")}</p>
-          {rhItems.map((item) =>
-            item.href === "/rh/contrats" ? (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onNavigate}
-                className={`${linkClass(item.href)} flex items-center justify-between gap-2`}
-              >
-                <span className="inline-flex items-center gap-2">
-                  <FileText className="h-4 w-4 opacity-70" />
-                  {item.label}
-                </span>
-                {rhUrgentBadge > 0 ? (
-                  <span className="rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white">{rhUrgentBadge}</span>
-                ) : null}
-              </Link>
-            ) : (
-              <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
-                {item.label}
-              </Link>
-            )
-          )}
-        </>
-      ) : null}
-
-      {restItems.map((item) => (
-        <Link key={item.href} href={item.href} onClick={onNavigate} className={linkClass(item.href)}>
-          {item.label}
-        </Link>
-      ))}
-
-      <Link
-        href="/dashboard/settings"
-        onClick={onNavigate}
-        className={`mt-1 flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium ${
-          pathname.startsWith("/dashboard/settings") ? "bg-indigo-50 text-indigo-800" : "text-muted-foreground hover:bg-muted hover:text-foreground"
-        }`}
-      >
-        <Settings className="h-4 w-4 shrink-0 opacity-70" />
-        {t("settings")}
-      </Link>
-    </>
-  );
-
   return (
     <div className="flex min-h-screen bg-background">
       <aside className="hidden w-64 flex-col border-r border-border bg-card p-4 text-card-foreground md:flex">
@@ -335,7 +161,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav className="flex flex-1 flex-col gap-0.5">
-          <NavLinks />
+          <DashboardNav />
         </nav>
         <div className="mt-auto border-t border-border pt-4">
           <LanguagePicker />
@@ -364,7 +190,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
               </Button>
             </div>
             <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto">
-              <NavLinks onNavigate={() => setMobileOpen(false)} />
+              <DashboardNav onNavigate={() => setMobileOpen(false)} />
             </nav>
             <div className="mt-auto border-t border-border pt-4">
               <LanguagePicker compact />

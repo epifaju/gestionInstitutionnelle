@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DataTable, type ServerPagination } from "@/components/tables/DataTable";
+import { LazyDataTable as DataTable, type ServerPagination } from "@/components/tables/LazyDataTable";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DecisionFinModal } from "@/app/(dashboard)/rh/contrats/DecisionFinModal";

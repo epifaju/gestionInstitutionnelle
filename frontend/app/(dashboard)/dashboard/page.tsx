@@ -12,22 +12,13 @@ import {
   TrendingDown,
   Users,
 } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import dynamic from "next/dynamic";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { TodoDashboard } from "@/components/todo/TodoDashboard";
+import { LazyDashboardEvolutionChart } from "@/components/charts/lazy";
 import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { getDashboard } from "@/services/dashboard.service";
@@ -35,6 +26,11 @@ import { getEcheancesDashboard } from "@/services/contrat.service";
 import { tauxDuJour } from "@/services/devises.service";
 import { getExpiringSoon } from "@/services/documents.service";
 import Link from "next/link";
+
+const TodoDashboard = dynamic(
+  () => import("@/components/todo/TodoDashboard").then((m) => m.TodoDashboard),
+  { ssr: false, loading: () => <Skeleton className="h-48 w-full" /> }
+);
 
 function num(s: string | number | undefined) {
   if (s === undefined || s === null) return 0;
@@ -265,17 +261,7 @@ export default function DashboardPage() {
           <CardTitle className="text-base">{td("chartTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="mois" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v) => fmtEur(typeof v === "number" ? v : Number(v))} />
-              <Legend />
-              <Bar dataKey="Dépenses" fill="#f43f5e" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Recettes" fill="#10b981" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <LazyDashboardEvolutionChart data={chartData} />
         </CardContent>
       </Card>
 

@@ -19,7 +19,7 @@ import { TitreSejourModal } from "@/app/(dashboard)/rh/contrats/TitreSejourModal
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DataTable } from "@/components/tables/DataTable";
+import { LazyDataTable as DataTable } from "@/components/tables/LazyDataTable";
 import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
 import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";

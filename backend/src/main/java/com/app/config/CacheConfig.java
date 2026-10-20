@@ -26,13 +26,17 @@ public class CacheConfig {
                 Caffeine.newBuilder().maximumSize(500).expireAfterWrite(2, TimeUnit.MINUTES);
         Caffeine<Object, Object> todoCounts =
                 Caffeine.newBuilder().maximumSize(500).expireAfterWrite(5, TimeUnit.MINUTES);
+        Caffeine<Object, Object> shortLived =
+                Caffeine.newBuilder().maximumSize(500).expireAfterWrite(2, TimeUnit.MINUTES);
 
         SimpleCacheManager mgr = new SimpleCacheManager();
         mgr.setCaches(List.of(
                 new CaffeineCache("fx_taux_du_jour", defaultCaffeine.build()),
                 new CaffeineCache("fx_tous_taux_du_jour", defaultCaffeine.build()),
                 new CaffeineCache("todo-dashboard", todoDashboard.build()),
-                new CaffeineCache("todo-dashboard-counts", todoCounts.build())
+                new CaffeineCache("todo-dashboard-counts", todoCounts.build()),
+                new CaffeineCache("rapports-dashboard", shortLived.build()),
+                new CaffeineCache("echeances-dashboard", shortLived.build())
         ));
         return mgr;
     }

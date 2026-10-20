@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeviseSelector } from "@/components/ui/DeviseSelector";
 import { historiqueTaux } from "@/services/devises.service";
-import { ResponsiveContainer, LineChart, Line, CartesianGrid, Tooltip, XAxis, YAxis } from "recharts";
+import { LazyDevisesHistoryChart } from "@/components/charts/lazy";
 
 type Pair = { base: string; cible: string };
 const PAIRS: Pair[] = [
@@ -74,15 +74,7 @@ export default function DevisesPage() {
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Chargement…</p>
           ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chart}>
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} domain={["auto", "auto"]} />
-                <Tooltip formatter={(v) => Number(v).toFixed(6)} />
-                <Line type="monotone" dataKey="taux" stroke="#4f46e5" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <LazyDevisesHistoryChart data={chart} />
           )}
         </CardContent>
       </Card>

@@ -196,12 +196,17 @@ public class PaieService {
         p.setModePaiement(req.modePaiement());
         p.setNotes(req.notes());
         paiementSalaireRepository.save(p);
+        // Le marquage PAYE ne doit pas être bloqué si le bulletin ne peut pas être généré
+        // (grille absente, config paie incomplète, MinIO, etc.) — le FINANCIER valide le versement.
         try {
             bulletinPaieService.generateForPaiementSalaire(p.getId(), orgId, userId);
         } catch (BusinessException e) {
-            throw e;
+            if (!"GRILLE_SALAIRE_ABSENTE".equals(e.getCode())) {
+                throw e;
+            }
+            // garder PAYE sans bulletin ; téléchargement après régularisation RH
         } catch (Exception e) {
-            throw BusinessException.badRequest("BULLETIN_GENERATION_ERREUR");
+            // config paie / PDF / MinIO : paiement confirmé, bulletin à régénérer plus tard
         }
         auditLogService.logRh(orgId, userId, "UPDATE", "PaiementSalaire", p.getId(), avant, snapshotPaie(p));
         return toResponse(p);

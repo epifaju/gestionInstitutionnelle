@@ -6,7 +6,8 @@ const withPWA = nextPwa({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: process.env.NODE_ENV === "development",
+  // PWA can be noisy/brittle in containerized dev; enable explicitly when needed.
+  disable: process.env.PWA_ENABLED !== "true",
 });
 
 /** @type {import('next').NextConfig} */

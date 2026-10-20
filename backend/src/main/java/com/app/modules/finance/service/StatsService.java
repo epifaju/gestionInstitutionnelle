@@ -2,6 +2,7 @@ package com.app.modules.finance.service;
 
 import com.app.modules.finance.dto.CategorieMontantDto;
 import com.app.modules.finance.dto.DeviseRepartitionDto;
+import com.app.modules.finance.dto.MoisMontantsDto;
 import com.app.modules.finance.dto.StatsResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,8 +12,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -188,5 +193,66 @@ public class StatsService {
                 repartition,
                 depensesParCategorie,
                 recettesParCategorie);
+    }
+
+    /**
+     * Totaux dépenses/recettes par mois sur une fenêtre glissante (2 requêtes agrégées,
+     * prédicats de plage plutôt que {@code EXTRACT}).
+     */
+    @Transactional(readOnly = true)
+    public List<MoisMontantsDto> getTotauxParMois(UUID orgId, YearMonth fromInclusive, YearMonth toInclusive) {
+        if (fromInclusive == null || toInclusive == null || toInclusive.isBefore(fromInclusive)) {
+            return List.of();
+        }
+        LocalDate start = fromInclusive.atDay(1);
+        LocalDate endExclusive = toInclusive.plusMonths(1).atDay(1);
+
+        Map<String, BigDecimal> depenses = new HashMap<>();
+        jdbcTemplate.query(
+                """
+                        SELECT to_char(date_facture, 'YYYY-MM') AS ym,
+                               COALESCE(SUM(montant_ttc * taux_change_eur), 0) AS m
+                        FROM factures
+                        WHERE organisation_id = ?
+                          AND date_facture >= ?
+                          AND date_facture < ?
+                          AND statut IN ('A_PAYER', 'PAYE')
+                        GROUP BY to_char(date_facture, 'YYYY-MM')
+                        """,
+                rs -> {
+                    depenses.put(rs.getString("ym"), rs.getBigDecimal("m"));
+                },
+                orgId,
+                start,
+                endExclusive);
+
+        Map<String, BigDecimal> recettes = new HashMap<>();
+        jdbcTemplate.query(
+                """
+                        SELECT to_char(date_recette, 'YYYY-MM') AS ym,
+                               COALESCE(SUM(montant * taux_change_eur), 0) AS m
+                        FROM recettes
+                        WHERE organisation_id = ?
+                          AND date_recette >= ?
+                          AND date_recette < ?
+                        GROUP BY to_char(date_recette, 'YYYY-MM')
+                        """,
+                rs -> {
+                    recettes.put(rs.getString("ym"), rs.getBigDecimal("m"));
+                },
+                orgId,
+                start,
+                endExclusive);
+
+        List<MoisMontantsDto> out = new ArrayList<>();
+        for (YearMonth ym = fromInclusive; !ym.isAfter(toInclusive); ym = ym.plusMonths(1)) {
+            String key = ym.toString();
+            out.add(
+                    new MoisMontantsDto(
+                            ym,
+                            depenses.getOrDefault(key, BigDecimal.ZERO),
+                            recettes.getOrDefault(key, BigDecimal.ZERO)));
+        }
+        return out;
     }
 }

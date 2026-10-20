@@ -53,6 +53,11 @@ function translateApiCode(code: string): string | null {
     if (l === "pt-PT") return "Período demasiado longo para este export.";
     return "Période trop large pour cet export.";
   }
+  if (code === "GRILLE_SALAIRE_ABSENTE") {
+    if (l === "en") return "No salary grid for this employee on the payment period. Ask HR to add a salary history entry, then retry.";
+    if (l === "pt-PT") return "Sem grelha salarial para este colaborador no período. Peça aos RH para adicionar o histórico salarial e tente novamente.";
+    return "Aucune grille salariale pour ce salarié sur la période. Demandez aux RH d’ajouter un historique salarial, puis réessayez.";
+  }
   return null;
 }
 

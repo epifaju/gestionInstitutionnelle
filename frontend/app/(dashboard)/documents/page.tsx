@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable } from "@/components/tables/DataTable";
+import { LazyDataTable as DataTable } from "@/components/tables/LazyDataTable";
 import type { ColumnDef } from "@tanstack/react-table";
 import type { DocumentResponse } from "@/lib/types/ged";
 import { searchDocuments, uploadDocument, deleteDocument, getPresignedUrl } from "@/services/documents.service";

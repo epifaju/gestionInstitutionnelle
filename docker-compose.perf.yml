@@ -1,0 +1,32 @@
+# Profil « perf » — frontend Next.js précompilé (standalone), sans bind-mount ni next dev.
+#
+# Usage (depuis la racine du repo) :
+#   docker compose -f docker-compose.yml -f docker-compose.perf.yml up --build
+#
+# Pour revenir au mode développement :
+#   docker compose up --build
+#
+# Prérequis Compose ≥ 2.24 (!reset / !override). Vérifier : docker compose version
+
+services:
+  frontend:
+    # Remplace entièrement le service « next dev » + volumes de docker-compose.yml
+    image: !reset null
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    working_dir: !reset null
+    volumes: !reset []
+    command: !reset null
+    environment: !override
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: /api
+      INTERNAL_API_URL: http://backend:8080/api
+      NEXT_TELEMETRY_DISABLED: "1"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  nginx:
+    volumes: !override
+      - ./nginx/nginx.perf.conf:/etc/nginx/nginx.conf:ro

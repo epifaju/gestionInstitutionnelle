@@ -65,6 +65,28 @@ public interface EcheanceRhRepository extends JpaRepository<EcheanceRh, UUID> {
             """)
     List<EcheanceRh> findEcheancesExpirees(@Param("today") LocalDate today);
 
+    /** Critiques : échéance dépassée, encore active, scopé organisation. */
+    @Query("""
+            SELECT COUNT(e) FROM EcheanceRh e
+            WHERE e.organisationId = :orgId
+              AND e.dateEcheance < :today
+              AND e.statut IN ('A_VENIR','EN_ALERTE','ACTION_REQUISE')
+            """)
+    long countExpireesByOrganisationId(@Param("orgId") UUID orgId, @Param("today") LocalDate today);
+
+    /** Actives dont la date tombe dans [fromInclusive, toInclusive]. */
+    @Query("""
+            SELECT COUNT(e) FROM EcheanceRh e
+            WHERE e.organisationId = :orgId
+              AND e.dateEcheance >= :fromInclusive
+              AND e.dateEcheance <= :toInclusive
+              AND e.statut NOT IN ('TRAITEE','ANNULEE','EXPIREE')
+            """)
+    long countActivesBetween(
+            @Param("orgId") UUID orgId,
+            @Param("fromInclusive") LocalDate fromInclusive,
+            @Param("toInclusive") LocalDate toInclusive);
+
     long countByOrganisationIdAndStatutIn(UUID orgId, List<StatutEcheance> statuts);
 
     long countByOrganisationIdAndTypeEcheanceAndStatutNotIn(UUID orgId, TypeEcheance type, List<StatutEcheance> statuts);

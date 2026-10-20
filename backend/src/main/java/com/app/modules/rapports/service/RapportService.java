@@ -3,6 +3,7 @@ package com.app.modules.rapports.service;
 import com.app.modules.auth.entity.Role;
 import com.app.modules.auth.repository.OrganisationRepository;
 import com.app.modules.finance.dto.CategorieMontantDto;
+import com.app.modules.finance.dto.MoisMontantsDto;
 import com.app.modules.finance.dto.StatsResponse;
 import com.app.modules.finance.service.StatsService;
 import com.app.modules.inventaire.service.InventaireService;
@@ -66,27 +67,28 @@ public class RapportService {
         List<DashboardResponse.AlerteBudgetItem> alertes = new ArrayList<>();
         List<DashboardResponse.TopFournisseurItem> top5 = new ArrayList<>();
 
-        if (!employe) {
-            StatsResponse cur = statsService.getStatsMensuelles(orgId, annee, mois);
-            totalDepenses = cur.totalDepenses();
-            totalRecettes = cur.totalRecettes();
-            solde = cur.solde();
+        YearMonth ymCourant = YearMonth.from(today);
+        YearMonth ymDebut = ymCourant.minusMonths(5);
 
-            YearMonth ym = YearMonth.from(today);
-            for (int i = 5; i >= 0; i--) {
-                YearMonth mm = ym.minusMonths(i);
-                StatsResponse st = statsService.getStatsMensuelles(orgId, mm.getYear(), mm.getMonthValue());
+        if (!employe) {
+            List<MoisMontantsDto> totaux = statsService.getTotauxParMois(orgId, ymDebut, ymCourant);
+            for (MoisMontantsDto m : totaux) {
                 evolution.add(
                         new DashboardResponse.EvolutionMois(
-                                mm.toString(), st.totalDepenses(), st.totalRecettes()));
+                                m.mois().toString(), m.depenses(), m.recettes()));
             }
+            MoisMontantsDto cur =
+                    totaux.isEmpty()
+                            ? new MoisMontantsDto(ymCourant, BigDecimal.ZERO, BigDecimal.ZERO)
+                            : totaux.get(totaux.size() - 1);
+            totalDepenses = cur.depenses();
+            totalRecettes = cur.recettes();
+            solde = totalRecettes.subtract(totalDepenses);
 
             alertes.addAll(loadAlertesBudget(orgId, annee, seuil));
             top5.addAll(loadTop5Fournisseurs(orgId, annee));
         } else {
-            YearMonth ym = YearMonth.from(today);
-            for (int i = 5; i >= 0; i--) {
-                YearMonth mm = ym.minusMonths(i);
+            for (YearMonth mm = ymDebut; !mm.isAfter(ymCourant); mm = mm.plusMonths(1)) {
                 evolution.add(
                         new DashboardResponse.EvolutionMois(
                                 mm.toString(), BigDecimal.ZERO, BigDecimal.ZERO));
@@ -144,12 +146,15 @@ public class RapportService {
     }
 
     private List<DashboardResponse.TopFournisseurItem> loadTop5Fournisseurs(UUID orgId, int annee) {
+        LocalDate debut = LocalDate.of(annee, 1, 1);
+        LocalDate finExclusive = LocalDate.of(annee + 1, 1, 1);
         return jdbcTemplate.query(
                 """
                         SELECT f.fournisseur, COALESCE(SUM(f.montant_ttc * f.taux_change_eur), 0) AS m
                         FROM factures f
                         WHERE f.organisation_id = ?
-                          AND EXTRACT(YEAR FROM f.date_facture) = ?
+                          AND f.date_facture >= ?
+                          AND f.date_facture < ?
                           AND f.statut IN ('A_PAYER', 'PAYE')
                         GROUP BY f.fournisseur
                         ORDER BY m DESC
@@ -158,7 +163,8 @@ public class RapportService {
                 (rs, row) ->
                         new DashboardResponse.TopFournisseurItem(rs.getString("fournisseur"), rs.getBigDecimal("m")),
                 orgId,
-                annee);
+                debut,
+                finExclusive);
     }
 
     private long countEffectifsActifs(UUID orgId) {

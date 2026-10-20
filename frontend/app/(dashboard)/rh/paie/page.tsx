@@ -38,6 +38,8 @@ export default function PaieOrganisationPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const canMark = user?.role === "RH" || user?.role === "FINANCIER" || user?.role === "ADMIN";
+  /** Liste salariés = RH/ADMIN only — ne pas appeler pour FINANCIER (sinon ACCES_REFUSE). */
+  const canListSalaries = user?.role === "RH" || user?.role === "ADMIN";
   const [annee, setAnnee] = useState(() => new Date().getFullYear());
   const [page, setPage] = useState(0);
   const [markOpen, setMarkOpen] = useState(false);
@@ -66,7 +68,7 @@ export default function PaieOrganisationPage() {
       return services.sort((a, b) => a.localeCompare(b));
     },
     staleTime: 60_000,
-    enabled: !!user && canMark,
+    enabled: !!user && canListSalaries,
   });
 
   const { data, isLoading } = useQuery({

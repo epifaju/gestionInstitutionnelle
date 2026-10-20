@@ -73,8 +73,20 @@ public class BulletinPaieService {
                 .findByOrganisationIdAndSalarie_Id(orgId, salarie.getId())
                 .orElse(null);
 
-        HistoriqueSalaire grille = grilleActiveAu(salarie.getId(), datePaiement);
-        if (grille == null) throw BusinessException.badRequest("GRILLE_SALAIRE_ABSENTE");
+        // Grille au mois de paie (pas à la date de virement, souvent postérieure).
+        LocalDate finMoisPaie = LocalDate.of(annee, mois, 1).withDayOfMonth(LocalDate.of(annee, mois, 1).lengthOfMonth());
+        HistoriqueSalaire grille = grilleActiveAu(salarie.getId(), finMoisPaie);
+        if (grille == null) {
+            grille = grilleActiveAu(salarie.getId(), datePaiement);
+        }
+        // Fallback : montant déjà figé sur la ligne de paiement (ex. jeux de données / paie simplifiée).
+        java.math.BigDecimal brut =
+                grille != null
+                        ? grille.getMontantBrut()
+                        : (p.getMontant() != null ? p.getMontant() : null);
+        if (brut == null) {
+            throw BusinessException.badRequest("GRILLE_SALAIRE_ABSENTE");
+        }
 
         var rubriques = payrollRubriqueRepository.listEffective(orgId, datePaiement);
         var cotisations = payrollCotisationRepository.listEffective(orgId, datePaiement);
@@ -83,7 +95,7 @@ public class BulletinPaieService {
 
         PayrollEngine.Result computed = PayrollEngine.compute(
                 datePaiement,
-                grille.getMontantBrut(),
+                brut,
                 p.getMontant(),
                 p.getDevise(),
                 profile,

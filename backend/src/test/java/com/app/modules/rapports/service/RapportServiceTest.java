@@ -3,6 +3,7 @@ package com.app.modules.rapports.service;
 import com.app.modules.auth.entity.Role;
 import com.app.modules.auth.entity.Organisation;
 import com.app.modules.auth.repository.OrganisationRepository;
+import com.app.modules.finance.dto.MoisMontantsDto;
 import com.app.modules.finance.dto.StatsResponse;
 import com.app.modules.finance.service.StatsService;
 import com.app.modules.inventaire.dto.StatsInventaireResponse;
@@ -17,6 +18,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,7 +26,6 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -78,6 +79,7 @@ class RapportServiceTest {
         assertThat(dash.alertesBudget()).isEmpty();
         assertThat(dash.top5Fournisseurs()).isEmpty();
         verify(statsService, never()).getStatsMensuelles(any(), anyInt(), anyInt());
+        verify(statsService, never()).getTotauxParMois(any(), any(), any());
         verify(inventaireService, never()).getStats(any());
     }
 
@@ -153,10 +155,17 @@ class RapportServiceTest {
                         List.of(),
                         List.of(),
                         List.of());
-        when(statsService.getStatsMensuelles(eq(orgId), anyInt(), anyInt())).thenReturn(st);
+        YearMonth ym = YearMonth.from(LocalDate.now());
+        when(statsService.getTotauxParMois(eq(orgId), any(YearMonth.class), any(YearMonth.class)))
+                .thenReturn(List.of(new MoisMontantsDto(ym, new BigDecimal("10"), new BigDecimal("20"))));
         when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), eq(orgId), anyInt(), any(BigDecimal.class)))
                 .thenReturn(List.of());
-        when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), eq(orgId), anyInt()))
+        when(jdbcTemplate.query(
+                        anyString(),
+                        any(org.springframework.jdbc.core.RowMapper.class),
+                        eq(orgId),
+                        any(LocalDate.class),
+                        any(LocalDate.class)))
                 .thenReturn(List.of());
         when(jdbcTemplate.queryForObject(anyString(), eq(Long.class), eq(orgId))).thenReturn(0L);
         when(jdbcTemplate.query(anyString(), any(org.springframework.jdbc.core.RowMapper.class), eq(orgId)))
@@ -165,9 +174,12 @@ class RapportServiceTest {
         StatsInventaireResponse inv = new StatsInventaireResponse(BigDecimal.ZERO, List.of(), List.of());
         when(inventaireService.getStats(orgId)).thenReturn(inv);
 
-        rapportService.getDashboard(orgId, userId, Role.ADMIN);
+        var dash = rapportService.getDashboard(orgId, userId, Role.ADMIN);
 
-        verify(statsService, atLeastOnce()).getStatsMensuelles(eq(orgId), anyInt(), anyInt());
+        assertThat(dash.kpis().totalDepenses()).isEqualByComparingTo("10");
+        assertThat(dash.kpis().totalRecettes()).isEqualByComparingTo("20");
+        verify(statsService).getTotauxParMois(eq(orgId), any(YearMonth.class), any(YearMonth.class));
+        verify(statsService, never()).getStatsMensuelles(any(), anyInt(), anyInt());
         verify(inventaireService).getStats(orgId);
     }
 }

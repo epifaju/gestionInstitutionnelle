@@ -129,9 +129,11 @@ public class EcheanceService {
         long totalActives = echeanceRepository.countByOrganisationIdAndStatutIn(orgId, actives);
 
         LocalDate today = LocalDate.now();
-        long critiques = echeanceRepository.findEcheancesExpirees(today).size();
+        long critiques = echeanceRepository.countExpireesByOrganisationId(orgId, today);
+        // URGENT = J0..J7 ; ATTENTION = J8..J30 (aligné urgenceFromDays)
+        long urgentes = echeanceRepository.countActivesBetween(orgId, today, today.plusDays(7));
+        long attention = echeanceRepository.countActivesBetween(orgId, today.plusDays(8), today.plusDays(30));
 
-        // approx counts by type
         List<StatutEcheance> closed = List.of(StatutEcheance.TRAITEE, StatutEcheance.ANNULEE, StatutEcheance.EXPIREE);
         long finCdd = echeanceRepository.countByOrganisationIdAndTypeEcheanceAndStatutNotIn(orgId, TypeEcheance.FIN_CDD, closed);
         long essai = echeanceRepository.countByOrganisationIdAndTypeEcheanceAndStatutNotIn(orgId, TypeEcheance.FIN_PERIODE_ESSAI, closed);
@@ -139,11 +141,8 @@ public class EcheanceService {
         long titres = echeanceRepository.countByOrganisationIdAndTypeEcheanceAndStatutNotIn(orgId, TypeEcheance.TITRE_SEJOUR, closed);
         long formations = echeanceRepository.countByOrganisationIdAndTypeEcheanceAndStatutNotIn(orgId, TypeEcheance.FORMATION_OBLIGATOIRE, closed);
 
-        // top 10
-        List<EcheanceResponse> top = echeanceRepository.findTopUrgentes(orgId, PageRequest.of(0, 10)).stream().map(this::toResponse).toList();
-
-        long urgentes = top.stream().filter(x -> "URGENT".equals(x.niveauUrgence())).count();
-        long attention = top.stream().filter(x -> "ATTENTION".equals(x.niveauUrgence())).count();
+        List<EcheanceResponse> top =
+                echeanceRepository.findTopUrgentes(orgId, PageRequest.of(0, 10)).stream().map(this::toResponse).toList();
 
         return new EcheanceDashboardResponse(
                 totalActives,

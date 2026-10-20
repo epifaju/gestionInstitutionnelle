@@ -1,12 +1,26 @@
 ## Gestion Institutionnelle — Production checklist
 
 ### Démarrage rapide (local via Docker)
-- **Pré-requis**: Docker + Docker Compose.
+- **Pré-requis**: Docker + Docker Compose (≥ 2.24 recommandé pour le profil perf).
 - **Configurer**: copier `.env.example` vers `.env` et renseigner au minimum `JWT_PRIVATE_KEY_B64` / `JWT_PUBLIC_KEY_B64`.
-- **Lancer**:
+- **Lancer (dev — `next dev`, hot reload)**:
 
 ```bash
 docker compose up --build
+```
+
+  Le frontend n’exécute `npm ci` qu’au premier démarrage (ou si `package-lock.json` a changé) ; le volume `frontend_node_modules` conserve les deps entre redémarrages. Nginx dev active gzip (JSON/JS/CSS).
+
+- **Profil perf (frontend précompilé, sans bind-mount)** — pour mesurer la latence de navigation réelle (~élimine 1–4 s de compile Webpack) :
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.perf.yml up --build
+```
+
+  Rebuild frontend uniquement après changement UI :
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.perf.yml up --build frontend
 ```
 
 ### Build sans Docker

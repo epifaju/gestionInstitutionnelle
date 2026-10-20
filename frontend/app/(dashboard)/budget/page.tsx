@@ -4,17 +4,8 @@ import axios from "axios";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import { Badge } from "@/components/ui/badge";
+import { LazyBudgetCompareChart } from "@/components/charts/lazy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -356,17 +347,14 @@ export default function BudgetPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="cat" tick={{ fontSize: 10 }} interval={0} angle={-25} textAnchor="end" height={80} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v) => fmtMoney(typeof v === "number" ? v : Number(v))} />
-                  <Legend />
-                  <Bar dataKey="planned" name={t("legendPrevu")} fill={tab === "DEPENSE" ? "#fda4af" : "#6ee7b7"} />
-                  <Bar dataKey="actual" name={t("legendRealise")} fill={tab === "DEPENSE" ? "#f43f5e" : "#10b981"} />
-                </BarChart>
-              </ResponsiveContainer>
+              <LazyBudgetCompareChart
+                data={chartData}
+                plannedLabel={t("legendPrevu")}
+                actualLabel={t("legendRealise")}
+                plannedFill={tab === "DEPENSE" ? "#fda4af" : "#6ee7b7"}
+                actualFill={tab === "DEPENSE" ? "#f43f5e" : "#10b981"}
+                formatValue={fmtMoney}
+              />
             </CardContent>
           </Card>
         </>

@@ -11,6 +11,7 @@ import com.app.modules.rh.entity.HistoriqueSalaire;
 import com.app.modules.rh.entity.PaiementSalaire;
 import com.app.modules.rh.entity.Salarie;
 import com.app.modules.rh.entity.StatutPaie;
+import com.app.modules.payroll.service.BulletinPaieService;
 import com.app.modules.rh.repository.HistoriqueSalaireRepository;
 import com.app.modules.rh.repository.PaiementSalaireRepository;
 import com.app.modules.rh.repository.SalarieRepository;
@@ -51,6 +52,7 @@ class PaieServiceTest {
     @Mock private HistoriqueSalaireRepository historiqueSalaireRepository;
     @Mock private PaiementSalaireRepository paiementSalaireRepository;
     @Mock private AuditLogService auditLogService;
+    @Mock private BulletinPaieService bulletinPaieService;
 
     @InjectMocks private PaieService paieService;
 
@@ -165,6 +167,36 @@ class PaieServiceTest {
         assertThatThrownBy(() -> paieService.marquerPaye(paiementId, new MarquerPayeRequest(LocalDate.now(), "VIREMENT", null), orgId))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("code", "PAIEMENT_STATUT_INVALIDE");
+    }
+
+    @Test
+    void marquerPaye_SiBulletinSansGrille_ConfirmeQuandMemePaye() throws Exception {
+        UUID paiementId = UUID.fromString("d0000000-0000-0000-0000-000000000002");
+        Salarie s = new Salarie();
+        s.setId(salarieId);
+        s.setNom("User");
+        s.setPrenom("Async");
+        s.setMatricule("ASYNC-120");
+        PaiementSalaire p = new PaiementSalaire();
+        p.setId(paiementId);
+        p.setOrganisationId(orgId);
+        p.setSalarie(s);
+        p.setStatut(StatutPaie.EN_ATTENTE);
+        p.setMontant(new BigDecimal("100.00"));
+        p.setDevise("EUR");
+        p.setMois(3);
+        p.setAnnee(2026);
+        when(paiementSalaireRepository.findById(paiementId)).thenReturn(Optional.of(p));
+        when(paiementSalaireRepository.save(any(PaiementSalaire.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(bulletinPaieService.generateForPaiementSalaire(eq(paiementId), eq(orgId), eq(userId)))
+                .thenThrow(BusinessException.badRequest("GRILLE_SALAIRE_ABSENTE"));
+
+        var res = paieService.marquerPaye(paiementId, new MarquerPayeRequest(LocalDate.of(2026, 10, 19), "VIREMENT", null), orgId);
+
+        assertThat(res.statut()).isEqualTo("PAYE");
+        assertThat(p.getStatut()).isEqualTo(StatutPaie.PAYE);
+        assertThat(p.getDatePaiement()).isEqualTo(LocalDate.of(2026, 10, 19));
+        verify(paiementSalaireRepository).save(p);
     }
 
     @Test

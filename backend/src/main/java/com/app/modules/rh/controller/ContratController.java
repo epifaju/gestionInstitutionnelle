@@ -13,6 +13,8 @@ import com.app.shared.dto.ApiResponse;
 import com.app.shared.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
@@ -147,6 +149,7 @@ public class ContratController {
 
     @GetMapping("/echeances/dashboard")
     @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
+    @Cacheable(value = "echeances-dashboard", key = "#user.organisationId.toString()")
     public ResponseEntity<ApiResponse<EcheanceDashboardResponse>> dashboard(
             @AuthenticationPrincipal CustomUserDetails user
     ) {
@@ -155,6 +158,7 @@ public class ContratController {
 
     @PostMapping(value = "/echeances/{id}/traiter", consumes = "multipart/form-data")
     @PreAuthorize("hasAnyRole('RH','ADMIN')")
+    @CacheEvict(value = "echeances-dashboard", key = "#user.organisationId.toString()")
     public ResponseEntity<ApiResponse<EcheanceResponse>> traiter(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable UUID id,
@@ -166,6 +170,7 @@ public class ContratController {
 
     @PostMapping("/echeances/{id}/annuler")
     @PreAuthorize("hasAnyRole('RH','ADMIN')")
+    @CacheEvict(value = "echeances-dashboard", key = "#user.organisationId.toString()")
     public ResponseEntity<ApiResponse<EcheanceResponse>> annuler(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable UUID id,

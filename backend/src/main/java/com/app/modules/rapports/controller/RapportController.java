@@ -6,6 +6,7 @@ import com.app.modules.rapports.dto.DashboardResponse;
 import com.app.modules.rapports.service.RapportService;
 import com.app.shared.dto.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,9 @@ public class RapportController {
 
         @GetMapping("/dashboard")
         @PreAuthorize("isAuthenticated()")
+        @Cacheable(
+                        value = "rapports-dashboard",
+                        key = "#user.organisationId.toString() + '_' + (#user.utilisateur != null && #user.utilisateur.role != null ? #user.utilisateur.role.name() : '') + '_' + (#user.utilisateur != null && #user.utilisateur.role != null && #user.utilisateur.role.name() == 'EMPLOYE' ? #user.id.toString() : 'ALL')")
         public ResponseEntity<ApiResponse<DashboardResponse>> dashboard(
                         @AuthenticationPrincipal CustomUserDetails user) {
                 return ResponseEntity.ok(
