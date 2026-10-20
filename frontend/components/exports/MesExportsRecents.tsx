@@ -2,11 +2,14 @@
 
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { FileSpreadsheet, FileText, ListChecks, Download } from "lucide-react";
 import { getMesJobs, type ExportJobResponse, type TypeExport } from "@/services/export-conformite.service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+
+const JOB_STATUTS = ["EN_ATTENTE", "EN_COURS", "TERMINE", "ERREUR", "EXPIRE"] as const;
 
 function iconFor(type: TypeExport) {
   if (type.endsWith("_EXCEL")) return <FileSpreadsheet className="h-4 w-4" />;
@@ -22,6 +25,7 @@ function badgeVariant(statut: ExportJobResponse["statut"]) {
 }
 
 export function MesExportsRecents() {
+  const t = useTranslations("ExportsConformite");
   const { data, isLoading } = useQuery({
     queryKey: ["exports", "mes-jobs", 0],
     queryFn: () => getMesJobs(0),
@@ -30,14 +34,20 @@ export function MesExportsRecents() {
 
   const jobs = useMemo(() => (data?.content ?? []).slice(0, 5), [data]);
 
+  function labelStatut(statut: string) {
+    return (JOB_STATUTS as readonly string[]).includes(statut)
+      ? t(`jobStatut.${statut as (typeof JOB_STATUTS)[number]}`)
+      : statut;
+  }
+
   return (
     <Card className="p-4">
       <div className="mb-3 flex items-center justify-between">
-        <p className="text-sm font-semibold">Mes exports récents</p>
+        <p className="text-sm font-semibold">{t("recent.title")}</p>
         <Badge variant="secondary">{jobs.length}</Badge>
       </div>
 
-      {isLoading ? <p className="text-sm text-muted-foreground">Chargement...</p> : null}
+      {isLoading ? <p className="text-sm text-muted-foreground">{t("recent.loading")}</p> : null}
 
       <div className="space-y-2">
         {jobs.map((j) => (
@@ -51,7 +61,7 @@ export function MesExportsRecents() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Badge variant={badgeVariant(j.statut)}>{j.statut === "EN_ATTENTE" ? "En attente" : j.statut === "EN_COURS" ? "En cours" : j.statut === "TERMINE" ? "Terminé" : j.statut === "ERREUR" ? "Erreur" : "Expiré"}</Badge>
+              <Badge variant={badgeVariant(j.statut)}>{labelStatut(j.statut)}</Badge>
               {j.statut === "TERMINE" && j.fichierUrl ? (
                 <Button
                   type="button"
@@ -66,9 +76,8 @@ export function MesExportsRecents() {
           </div>
         ))}
 
-        {jobs.length === 0 && !isLoading ? <p className="text-sm text-muted-foreground">Aucun export récent.</p> : null}
+        {jobs.length === 0 && !isLoading ? <p className="text-sm text-muted-foreground">{t("recent.empty")}</p> : null}
       </div>
     </Card>
   );
 }
-

@@ -306,6 +306,46 @@ class CongeServiceTest {
     }
 
     @Test
+    void getDroits_absent_creeDroitsSelonEmbauche() {
+        Salarie sal = new Salarie();
+        sal.setId(salarieId);
+        sal.setOrganisationId(orgId);
+        sal.setDateEmbauche(LocalDate.of(2026, 4, 30));
+        when(salarieRepository.findById(salarieId)).thenReturn(Optional.of(sal));
+        when(droitsCongesRepository.findBySalarie_IdAndAnnee(salarieId, 2026)).thenReturn(Optional.empty());
+        when(droitsCongesRepository.save(any(DroitsConges.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        var dto = congeService.getDroits(salarieId, 2026, orgId);
+
+        // Avr→Déc = 9 mois × 2,5 = 22,5
+        assertThat(dto.annee()).isEqualTo(2026);
+        assertThat(dto.joursDroit()).isEqualByComparingTo("22.5");
+        assertThat(dto.joursPris()).isEqualByComparingTo("0.0");
+        assertThat(dto.joursRestants()).isEqualByComparingTo("22.5");
+        verify(droitsCongesRepository).save(any(DroitsConges.class));
+    }
+
+    @Test
+    void getDroits_existant_neRecreePas() {
+        Salarie sal = new Salarie();
+        sal.setId(salarieId);
+        sal.setOrganisationId(orgId);
+        sal.setDateEmbauche(LocalDate.of(2020, 1, 1));
+        DroitsConges existing = new DroitsConges();
+        existing.setAnnee(2026);
+        existing.setJoursDroit(new BigDecimal("30.0"));
+        existing.setJoursPris(new BigDecimal("5.0"));
+        existing.setJoursRestants(new BigDecimal("25.0"));
+        when(salarieRepository.findById(salarieId)).thenReturn(Optional.of(sal));
+        when(droitsCongesRepository.findBySalarie_IdAndAnnee(salarieId, 2026)).thenReturn(Optional.of(existing));
+
+        var dto = congeService.getDroits(salarieId, 2026, orgId);
+
+        assertThat(dto.joursRestants()).isEqualByComparingTo("25.0");
+        verify(droitsCongesRepository, never()).save(any());
+    }
+
+    @Test
     void testAnnulerValide_DateDebutPassee_Refuse() {
         UUID congeId = UUID.fromString("f2000000-0000-0000-0000-000000000001");
         Salarie sal = new Salarie();

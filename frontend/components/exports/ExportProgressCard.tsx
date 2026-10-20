@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import { FileText, FileSpreadsheet, ListChecks, RefreshCw, Download } from "lucide-react";
 import type { ExportJobResponse, TypeExport } from "@/services/export-conformite.service";
 import { useExportJob } from "@/hooks/useExportJob";
@@ -38,9 +39,13 @@ export function ExportProgressCard({
   job: ExportJobResponse;
   onRetry?: () => void;
 }) {
+  const t = useTranslations("ExportsConformite.progress");
   const { job: live, telecharger, isErreur, isTermine, isLoading, refetch } = useExportJob(job.id);
   const j = live ?? job;
   const ttl = useMemo(() => hoursLeft(j.expireA ?? null), [j.expireA]);
+
+  const statusTitle =
+    j.statut === "TERMINE" ? t("ready") : j.statut === "ERREUR" ? t("error") : t("generating");
 
   return (
     <Card className="mt-3 p-4">
@@ -48,9 +53,7 @@ export function ExportProgressCard({
         <div className="flex items-center gap-2">
           <div className="rounded-md bg-muted p-2 text-muted-foreground">{iconFor(j.typeExport)}</div>
           <div>
-            <p className="text-sm font-medium">
-              {j.statut === "TERMINE" ? "Export prêt" : j.statut === "ERREUR" ? "Erreur d’export" : "Génération en cours..."}
-            </p>
+            <p className="text-sm font-medium">{statusTitle}</p>
             <p className="text-xs text-muted-foreground">
               {j.nomFichier ? j.nomFichier : j.typeExport}{" "}
               {j.tailleOctets ? <span className="ml-2">({formatBytes(j.tailleOctets)})</span> : null}
@@ -62,20 +65,20 @@ export function ExportProgressCard({
           {j.statut === "TERMINE" && j.fichierUrl ? (
             <Button type="button" variant="secondary" className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={telecharger}>
               <Download className="mr-2 h-4 w-4" />
-              Télécharger
+              {t("download")}
             </Button>
           ) : null}
 
           {j.statut === "ERREUR" ? (
             <Button type="button" variant="secondary" onClick={onRetry}>
               <RefreshCw className="mr-2 h-4 w-4" />
-              Réessayer
+              {t("retry")}
             </Button>
           ) : null}
 
           {(j.statut === "EN_ATTENTE" || j.statut === "EN_COURS") && !isLoading ? (
             <Button type="button" variant="ghost" onClick={() => refetch()}>
-              Actualiser
+              {t("refresh")}
             </Button>
           ) : null}
         </div>
@@ -86,19 +89,20 @@ export function ExportProgressCard({
           <Progress value={j.progression} />
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>{j.progression}%</span>
-            {ttl != null ? <span>Expire dans {ttl}h</span> : <span>Disponible 48h</span>}
+            {ttl != null ? <span>{t("expiresIn", { hours: ttl })}</span> : <span>{t("available48h")}</span>}
           </div>
         </div>
       ) : null}
 
       {isTermine ? (
-        <p className="mt-2 text-xs text-muted-foreground">Disponible 48h{ttl != null ? ` — expire dans ${ttl}h` : ""}.</p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          {ttl != null ? t("available48hExpire", { hours: ttl }) : t("available48h")}
+        </p>
       ) : null}
 
       {isErreur ? (
-        <p className="mt-2 text-sm text-red-600">{j.messageErreur ?? "Une erreur est survenue pendant la génération."}</p>
+        <p className="mt-2 text-sm text-red-600">{j.messageErreur ?? t("errorGeneric")}</p>
       ) : null}
     </Card>
   );
 }
-

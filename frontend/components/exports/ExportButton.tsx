@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Loader2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export function ExportButton({
   variant?: Variant;
   disabled?: boolean;
 }) {
+  const t = useTranslations("ExportsConformite.button");
   const [loading, setLoading] = useState(false);
   const [job, setJob] = useState<ExportJobResponse | null>(null);
   const [readyUrl, setReadyUrl] = useState<string | null>(null);
@@ -46,19 +48,24 @@ export function ExportButton({
         setReadyName(res.nomFichier ?? null);
       }
       if (res.statut === "ERREUR") {
-        toast.error(res.messageErreur ?? "Export en erreur.");
+        toast.error(res.messageErreur ?? t("errorJob"));
       }
     } catch (e) {
-      // Les erreurs HTTP (400/403/500...) sont déjà toastées par l'intercepteur global.
-      // Ici on ne garde que les erreurs "réseau" sans réponse.
       if (axios.isAxiosError(e) && e.response) return;
-      toast.error("Impossible de lancer l’export.");
+      toast.error(t("errorLaunch"));
     } finally {
       setLoading(false);
     }
   }
 
   const canDownload = !!readyUrl;
+  const buttonLabel = loading
+    ? t("preparing")
+    : canDownload
+      ? readyName
+        ? t("downloadNamed", { name: readyName })
+        : t("download")
+      : label;
 
   return (
     <div>
@@ -70,7 +77,7 @@ export function ExportButton({
           disabled={disabled || loading}
         >
           {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : canDownload ? <Download className="mr-2 h-4 w-4" /> : icon}
-          {loading ? "Préparation..." : canDownload ? `Télécharger${readyName ? ` (${readyName})` : ""}` : label}
+          {buttonLabel}
         </Button>
       </div>
 
@@ -80,4 +87,3 @@ export function ExportButton({
     </div>
   );
 }
-

@@ -20,6 +20,11 @@ export async function downloadExportCsv(entite: "factures" | "recettes" | "salai
   return res.data as Blob;
 }
 
+export async function downloadExportCsvInventaire() {
+  const res = await api.get("rapports/export-csv/inventaire", { responseType: "blob" });
+  return res.data as Blob;
+}
+
 function triggerDownload(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

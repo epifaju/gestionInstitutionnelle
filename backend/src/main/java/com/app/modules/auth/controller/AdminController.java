@@ -4,6 +4,8 @@ import com.app.audit.dto.AuditLogResponse;
 import com.app.modules.auth.dto.AdminUserCreateRequest;
 import com.app.modules.auth.dto.AdminUserResponse;
 import com.app.modules.auth.dto.AdminUserUpdateRequest;
+import com.app.modules.auth.dto.OrganisationSettingsResponse;
+import com.app.modules.auth.dto.OrganisationSettingsUpdateRequest;
 import com.app.modules.auth.security.CustomUserDetails;
 import com.app.modules.auth.service.AdminService;
 import com.app.shared.dto.ApiResponse;
@@ -57,6 +59,23 @@ public class AdminController {
             @Valid @RequestBody AdminUserUpdateRequest req) {
         return ResponseEntity.ok(
                 ApiResponse.ok(adminService.updateUser(id, req, user.getOrganisationId(), user.getId())));
+    }
+
+    @GetMapping("/organisation")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<OrganisationSettingsResponse>> getOrganisation(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(ApiResponse.ok(adminService.getOrganisationSettings(user.getOrganisationId())));
+    }
+
+    @PutMapping("/organisation")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ApiResponse<OrganisationSettingsResponse>> updateOrganisation(
+            @AuthenticationPrincipal CustomUserDetails user,
+            @Valid @RequestBody OrganisationSettingsUpdateRequest req) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(
+                        adminService.updateOrganisationSettings(req, user.getOrganisationId(), user.getId())));
     }
 
     @GetMapping("/audit-logs")

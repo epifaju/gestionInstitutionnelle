@@ -55,7 +55,8 @@ export default function PaieSalarieAnneePage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const canMark = user?.role === "RH" || user?.role === "FINANCIER" || user?.role === "ADMIN";
-  const canLoadSalarieFiche = user?.role === "RH" || user?.role === "ADMIN";
+  const canLoadSalarieFiche =
+    user?.role === "RH" || user?.role === "ADMIN" || user?.role === "FINANCIER";
 
   const [annee, setAnnee] = useState(anneeInit);
   const [page, setPage] = useState(0);
@@ -73,7 +74,6 @@ export default function PaieSalarieAnneePage() {
   const { data: salarie, isLoading: salarieLoading } = useQuery({
     queryKey: ["rh", "salaries", salarieId],
     queryFn: () => getSalarie(salarieId),
-    // getSalarie est RH/ADMIN (ou self) — FINANCIER s’appuie sur PaieResponse.
     enabled: !!salarieId && canLoadSalarieFiche,
   });
 

@@ -17,6 +17,7 @@ import type { DocumentUploadRequest } from "@/lib/types/ged";
 import { useTranslations } from "next-intl";
 import { useAuthStore } from "@/lib/store";
 import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentDialog";
+import { isDocumentTypeCode } from "@/lib/document-i18n";
 
 function fmtSize(bytes: number) {
   if (!Number.isFinite(bytes)) return "—";
@@ -95,7 +96,14 @@ export default function DocumentsPage() {
   const columns = useMemo<ColumnDef<DocumentResponse>[]>(
     () => [
       { accessorKey: "titre", header: t("thTitle") },
-      { accessorKey: "typeDocument", header: t("thType") },
+      {
+        accessorKey: "typeDocument",
+        header: t("thType"),
+        cell: ({ row }) => {
+          const code = row.original.typeDocument;
+          return isDocumentTypeCode(code) ? t(`types.${code}`) : code;
+        },
+      },
       {
         id: "tags",
         header: t("thTags"),

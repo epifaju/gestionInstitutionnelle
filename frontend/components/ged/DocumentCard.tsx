@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { isDocumentTypeCode } from "@/lib/document-i18n";
 
 function iconForMime(mime: string) {
   const m = (mime ?? "").toLowerCase();
@@ -44,6 +45,7 @@ export function DocumentCard({
   onDelete?: () => void;
 }) {
   const t = useTranslations("Documents.card");
+  const td = useTranslations("Documents");
   const { Icon, className } = iconForMime(doc.mimeType);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -70,7 +72,10 @@ export function DocumentCard({
             <p className="truncate font-semibold text-foreground">{doc.titre}</p>
             {doc.description ? <p className="line-clamp-2 text-sm text-muted-foreground">{doc.description}</p> : null}
             <p className="mt-1 text-xs text-muted-foreground">
-              {doc.typeDocument} · v{doc.version} · {(doc.tailleOctets / 1024).toFixed(0)} Ko
+              {isDocumentTypeCode(doc.typeDocument) ? td(`types.${doc.typeDocument}`) : doc.typeDocument}
+              {" · "}v{doc.version}
+              {" · "}
+              {t("sizeKb", { n: (doc.tailleOctets / 1024).toFixed(0) })}
             </p>
           </div>
         </div>

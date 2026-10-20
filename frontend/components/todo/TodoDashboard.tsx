@@ -2,30 +2,21 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 
 import { todoDashboardService } from "@/services/todo-dashboard.service";
 import { useAuthStore } from "@/lib/store";
+import { formatTodoRelative } from "@/lib/todo-i18n";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { TodoSection } from "@/components/todo/TodoSection";
 
-function relativeFromIso(iso: string) {
-  const d = iso ? new Date(iso) : null;
-  if (!d || Number.isNaN(d.getTime())) return "";
-  const ms = Date.now() - d.getTime();
-  const m = Math.floor(ms / 60_000);
-  if (m < 1) return "à l’instant";
-  if (m < 60) return `il y a ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `il y a ${h} h`;
-  const days = Math.floor(h / 24);
-  return `il y a ${days} j`;
-}
-
 export function TodoDashboard() {
+  const t = useTranslations("Todo");
+  const tc = useTranslations("Common");
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [allCollapsed, setAllCollapsed] = useState(false);
@@ -45,7 +36,10 @@ export function TodoDashboard() {
     queryClient.invalidateQueries({ queryKey: ["sidebar-comptages"] });
   }, [queryClient]);
 
-  const updatedRel = useMemo(() => (data?.generatedAt ? relativeFromIso(data.generatedAt) : ""), [data?.generatedAt]);
+  const updatedRel = useMemo(
+    () => (data?.generatedAt ? formatTodoRelative(t, data.generatedAt) : ""),
+    [data?.generatedAt, t]
+  );
 
   if (user?.role === "EMPLOYE") return null;
 
@@ -57,12 +51,12 @@ export function TodoDashboard() {
     return (
       <Card className="border-border">
         <CardHeader>
-          <CardTitle className="text-base">📋 À faire aujourd&apos;hui</CardTitle>
+          <CardTitle className="text-base">📋 {t("titleToday")}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">Impossible de charger les actions.</p>
+          <p className="text-sm text-muted-foreground">{t("loadError")}</p>
           <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>
-            Réessayer
+            {tc("retry")}
           </Button>
         </CardContent>
       </Card>
@@ -73,9 +67,9 @@ export function TodoDashboard() {
     return (
       <Card className="border-border">
         <CardHeader>
-          <CardTitle className="text-base">📋 À faire aujourd&apos;hui</CardTitle>
+          <CardTitle className="text-base">📋 {t("titleToday")}</CardTitle>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">✅ Tout est à jour — Aucune action requise aujourd&apos;hui</CardContent>
+        <CardContent className="text-sm text-muted-foreground">✅ {t("emptyToday")}</CardContent>
       </Card>
     );
   }
@@ -85,13 +79,15 @@ export function TodoDashboard() {
       <CardHeader className="space-y-2">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <CardTitle className="text-base">📋 À faire aujourd&apos;hui</CardTitle>
-            <p className="mt-1 text-xs text-muted-foreground">Mis à jour {updatedRel}.</p>
+            <CardTitle className="text-base">📋 {t("titleToday")}</CardTitle>
+            <p className="mt-1 text-xs text-muted-foreground">{t("updated", { rel: updatedRel })}</p>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{data.totalActionsGlobal} actions</span>
+            <span className="text-sm font-medium text-foreground">{t("summaryActions", { count: data.totalActionsGlobal })}</span>
             {data.totalActionsUrgentes > 0 ? (
-              <Badge className="bg-red-600 text-white hover:bg-red-600">{data.totalActionsUrgentes} urgentes</Badge>
+              <Badge className="bg-red-600 text-white hover:bg-red-600">
+                {t("urgentesBadge", { count: data.totalActionsUrgentes })}
+              </Badge>
             ) : null}
           </div>
         </div>
@@ -109,16 +105,16 @@ export function TodoDashboard() {
                 setTimeout(() => setRefreshing(false), 1000);
               }}
             >
-              🔄 Actualiser
+              🔄 {t("refresh")}
             </Button>
             <Button type="button" variant="ghost" size="sm" onClick={() => setAllCollapsed((v) => !v)}>
-              {allCollapsed ? "Tout afficher ▼" : "Tout masquer ▲"}
+              {allCollapsed ? t("expandAll") : t("collapseAll")}
             </Button>
           </div>
 
           {data.totalActionsGlobal > 10 ? (
             <Link href="/todo" className="text-sm font-medium text-indigo-700 hover:underline">
-              Voir tout →
+              {t("seeAll")}
             </Link>
           ) : null}
         </div>
@@ -132,4 +128,3 @@ export function TodoDashboard() {
     </Card>
   );
 }
-

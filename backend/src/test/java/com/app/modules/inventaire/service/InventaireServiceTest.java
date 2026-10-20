@@ -11,6 +11,9 @@ import com.app.modules.inventaire.entity.MouvementBien;
 import com.app.modules.inventaire.entity.TypeMouvementBien;
 import com.app.modules.inventaire.repository.BienMaterielRepository;
 import com.app.modules.inventaire.repository.MouvementBienRepository;
+import com.app.modules.notifications.service.NotificationService;
+import com.app.modules.rh.entity.Salarie;
+import com.app.modules.rh.entity.StatutSalarie;
 import com.app.modules.rh.repository.SalarieRepository;
 import com.app.shared.exception.BusinessException;
 import org.junit.jupiter.api.Test;
@@ -46,6 +49,7 @@ class InventaireServiceTest {
     @Mock private UtilisateurRepository utilisateurRepository;
     @Mock private JdbcTemplate jdbcTemplate;
     @Mock private AuditLogService auditLogService;
+    @Mock private NotificationService notificationService;
 
     @InjectMocks private InventaireService inventaireService;
 
@@ -158,6 +162,31 @@ class InventaireServiceTest {
 
         StatsInventaireResponse res = inventaireService.getStats(orgId);
         assertThat(res.valeurTotaleParc()).isEqualByComparingTo(new BigDecimal("123.45"));
+    }
+
+    @Test
+    void listResponsablesCandidats_trieParNomPuisPrenom() {
+        Salarie bernard = salarie(UUID.fromString("d0000000-0000-0000-0000-000000000001"), "M-2", "Bernard", "Zoé");
+        Salarie aliceB = salarie(UUID.fromString("d0000000-0000-0000-0000-000000000002"), "M-1", "Alice", "Bob");
+        Salarie aliceA = salarie(UUID.fromString("d0000000-0000-0000-0000-000000000003"), "M-3", "Alice", "Anne");
+        when(salarieRepository.findByOrganisationIdAndStatut(orgId, StatutSalarie.ACTIF))
+                .thenReturn(List.of(bernard, aliceB, aliceA));
+
+        var list = inventaireService.listResponsablesCandidats(orgId);
+
+        assertThat(list).extracting(r -> r.nom() + " " + r.prenom())
+                .containsExactly("Alice Anne", "Alice Bob", "Bernard Zoé");
+        assertThat(list.get(0).matricule()).isEqualTo("M-3");
+    }
+
+    private static Salarie salarie(UUID id, String matricule, String nom, String prenom) {
+        Salarie s = new Salarie();
+        s.setId(id);
+        s.setMatricule(matricule);
+        s.setNom(nom);
+        s.setPrenom(prenom);
+        s.setStatut(StatutSalarie.ACTIF);
+        return s;
     }
 }
 

@@ -497,6 +497,12 @@ public class RapportService {
         };
     }
 
+    /** Export inventaire dédié (LOGISTIQUE §9) — hors switch finance. */
+    @Transactional(readOnly = true)
+    public byte[] exportCsvInventaire(UUID orgId) {
+        return csvInventaire(orgId);
+    }
+
     private byte[] csvFactures(UUID orgId) {
         StringBuilder sb = new StringBuilder();
         sb.append("reference;fournisseur;date_facture;montant_ttc_eur;statut;categorie\n");
@@ -591,6 +597,37 @@ public class RapportService {
                                         .append(';')
                                         .append(escapeCsv(rs.getString(7)))
                                         .append('\n');
+                            }
+                            return null;
+                        },
+                orgId);
+        return (UTF8_BOM + sb).getBytes(StandardCharsets.UTF_8);
+    }
+
+    private byte[] csvInventaire(UUID orgId) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("code_inventaire;libelle;categorie;localisation;etat;valeur_achat;devise;responsable\n");
+        jdbcTemplate.query(
+                """
+                        SELECT b.code_inventaire, b.libelle, b.categorie,
+                               COALESCE(b.localisation, ''), b.etat::text,
+                               b.valeur_achat::text, b.devise,
+                               COALESCE(s.prenom || ' ' || s.nom, '')
+                        FROM biens_materiels b
+                        LEFT JOIN salaries s ON s.id = b.responsable_id
+                        WHERE b.organisation_id = ?
+                        ORDER BY b.code_inventaire
+                        """,
+                (ResultSetExtractor<Void>)
+                        rs -> {
+                            while (rs.next()) {
+                                for (int i = 1; i <= 8; i++) {
+                                    if (i > 1) {
+                                        sb.append(';');
+                                    }
+                                    sb.append(escapeCsv(rs.getString(i)));
+                                }
+                                sb.append('\n');
                             }
                             return null;
                         },

@@ -22,6 +22,12 @@ import {
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 
+const STATUT_CODES = ["BROUILLON", "A_PAYER", "PAYE", "ANNULE"] as const;
+
+function isFactureStatut(v: string): v is (typeof STATUT_CODES)[number] {
+  return (STATUT_CODES as readonly string[]).includes(v);
+}
+
 function statutBadge(s: string): "muted" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
   if (s === "A_PAYER") return "warning";
@@ -110,7 +116,9 @@ export default function FactureDetailPage() {
             <h1 className="text-2xl font-semibold text-foreground">{detail.reference}</h1>
             <p className="text-sm text-muted-foreground">{detail.fournisseur}</p>
           </div>
-          <Badge variant={statutBadge(detail.statut)}>{detail.statut}</Badge>
+          <Badge variant={statutBadge(detail.statut)}>
+            {isFactureStatut(detail.statut) ? t(`statuts.${detail.statut}`) : detail.statut}
+          </Badge>
         </div>
 
         <dl className="mt-6 space-y-3 text-sm">

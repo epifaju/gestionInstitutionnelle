@@ -4,6 +4,7 @@ import com.app.modules.auth.entity.Organisation;
 import com.app.modules.auth.entity.Role;
 import com.app.modules.auth.entity.Utilisateur;
 import com.app.modules.auth.security.CustomUserDetails;
+import com.app.modules.inventaire.dto.ResponsableCandidatDto;
 import com.app.modules.inventaire.dto.StatsInventaireResponse;
 import com.app.modules.inventaire.service.InventaireService;
 import com.app.shared.exception.GlobalExceptionHandler;
@@ -99,6 +100,23 @@ class InventaireControllerMvcTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.valeurTotaleParc").value(1234.50))
                 .andExpect(jsonPath("$.data.repartitionEtat[0].etat").value("OK")));
+    }
+
+    @Test
+    void responsablesCandidats_ok() throws Exception {
+        UUID sid = UUID.fromString("c0000000-0000-0000-0000-000000000001");
+        when(inventaireService.listResponsablesCandidats(any()))
+                .thenReturn(List.of(new ResponsableCandidatDto(sid, "M-001", "Dupont", "Alice")));
+
+        withAuth(
+                logistiqueAuth(),
+                () ->
+                        mockMvc
+                                .perform(get("/api/v1/inventaire/responsables-candidats").accept(MediaType.APPLICATION_JSON))
+                                .andExpect(status().isOk())
+                                .andExpect(jsonPath("$.success").value(true))
+                                .andExpect(jsonPath("$.data[0].matricule").value("M-001"))
+                                .andExpect(jsonPath("$.data[0].nom").value("Dupont")));
     }
 }
 

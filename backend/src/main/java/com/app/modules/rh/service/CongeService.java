@@ -17,6 +17,7 @@ import com.app.modules.rh.repository.CongeRepository;
 import com.app.modules.rh.repository.CongeSpecifications;
 import com.app.modules.rh.repository.DroitsCongesRepository;
 import com.app.modules.rh.repository.SalarieRepository;
+import com.app.modules.rh.util.DroitsCongesUtil;
 import com.app.modules.rh.util.JoursOuvres;
 import com.app.modules.notifications.entity.NotificationType;
 import com.app.modules.notifications.service.NotificationService;
@@ -132,15 +133,13 @@ public class CongeService {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @Transactional(readOnly = true)
+    @Transactional
     public DroitsCongesDto getMesDroitsConges(UUID orgId, UUID userId) {
-        UUID salarieId = salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)
-                .map(Salarie::getId)
+        Salarie s = salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)
                 .orElseThrow(() -> BusinessException.notFound("SALARIE_NON_LIE"));
         int annee = LocalDate.now().getYear();
-        return droitsCongesRepository.findBySalarie_IdAndAnnee(salarieId, annee)
-                .map(d -> new DroitsCongesDto(d.getAnnee(), d.getJoursDroit(), d.getJoursPris(), d.getJoursRestants()))
-                .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+        DroitsConges d = ensureDroitsForAnnee(s, annee, orgId);
+        return new DroitsCongesDto(d.getAnnee(), d.getJoursDroit(), d.getJoursPris(), d.getJoursRestants());
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -176,9 +175,7 @@ public class CongeService {
             // Soumission immédiate -> contrôles au dépôt
             if (consommeSolde(type)) {
                 int annee = req.dateDebut().getYear();
-                DroitsConges droits = droitsCongesRepository
-                        .findBySalarie_IdAndAnnee(s.getId(), annee)
-                        .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+                DroitsConges droits = ensureDroitsForAnnee(s, annee, orgId);
                 if (droits.getJoursRestants().compareTo(nb) < 0) {
                     throw BusinessException.badRequest("CONGE_SOLDE_INSUFFISANT");
                 }
@@ -231,9 +228,7 @@ public class CongeService {
         // Contrôles avant soumission
         if (consommeSolde(c.getTypeConge())) {
             int annee = c.getDateDebut().getYear();
-            DroitsConges droits = droitsCongesRepository
-                    .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
-                    .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+            DroitsConges droits = ensureDroitsForAnnee(c.getSalarie(), annee, orgId);
             if (droits.getJoursRestants().compareTo(c.getNbJours()) < 0) {
                 throw BusinessException.badRequest("CONGE_SOLDE_INSUFFISANT");
             }
@@ -264,10 +259,8 @@ public class CongeService {
         }
         Map<String, Object> avant = snapshotConge(c);
         int annee = c.getDateDebut().getYear();
-        DroitsConges droits = droitsCongesRepository
-                .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
-                .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
         if (consommeSolde(c.getTypeConge())) {
+            DroitsConges droits = ensureDroitsForAnnee(c.getSalarie(), annee, orgId);
             if (droits.getJoursRestants().compareTo(c.getNbJours()) < 0) {
                 throw BusinessException.badRequest("CONGE_SOLDE_INSUFFISANT");
             }
@@ -332,9 +325,7 @@ public class CongeService {
         Map<String, Object> avant = snapshotConge(c);
         if (consommeSolde(c.getTypeConge())) {
             int annee = c.getDateDebut().getYear();
-            DroitsConges droits = droitsCongesRepository
-                    .findBySalarie_IdAndAnnee(c.getSalarie().getId(), annee)
-                    .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+            DroitsConges droits = ensureDroitsForAnnee(c.getSalarie(), annee, orgId);
             droits.setJoursPris(droits.getJoursPris().subtract(c.getNbJours()));
             droits.setJoursRestants(droits.getJoursRestants().add(c.getNbJours()));
             droitsCongesRepository.save(droits);
@@ -373,18 +364,33 @@ public class CongeService {
     }
 
     @PreAuthorize("hasAnyRole('RH','ADMIN') or @securityService.isSelf(#salarieId, authentication)")
-    @Transactional(readOnly = true)
+    @Transactional
     public DroitsCongesDto getDroits(UUID salarieId, int annee, UUID orgId) {
         Salarie s = loadSalarieOwned(salarieId, orgId);
+        DroitsConges d = ensureDroitsForAnnee(s, annee, orgId);
+        return new DroitsCongesDto(d.getAnnee(), d.getJoursDroit(), d.getJoursPris(), d.getJoursRestants());
+    }
+
+    /**
+     * Initialise les droits annuels s'ils n'existent pas encore (salariés seed / année nouvelle).
+     * Règle PRD §8.1 : 2,5 j/mois travaillé, plafond 30.
+     */
+    DroitsConges ensureDroitsForAnnee(Salarie s, int annee, UUID orgId) {
         return droitsCongesRepository
                 .findBySalarie_IdAndAnnee(s.getId(), annee)
-                .map(
-                        d -> new DroitsCongesDto(
-                                d.getAnnee(),
-                                d.getJoursDroit(),
-                                d.getJoursPris(),
-                                d.getJoursRestants()))
-                .orElseThrow(() -> BusinessException.notFound("DROITS_CONGES_ABSENTS"));
+                .orElseGet(
+                        () -> {
+                            int mois = DroitsCongesUtil.moisTravaillesDansAnneeCivile(s.getDateEmbauche(), annee);
+                            BigDecimal joursDroit = DroitsCongesUtil.joursDroitTheoriquesPourMois(mois);
+                            DroitsConges dc = new DroitsConges();
+                            dc.setOrganisationId(orgId);
+                            dc.setSalarie(s);
+                            dc.setAnnee(annee);
+                            dc.setJoursDroit(joursDroit);
+                            dc.setJoursPris(BigDecimal.ZERO.setScale(1));
+                            dc.setJoursRestants(joursDroit);
+                            return droitsCongesRepository.save(dc);
+                        });
     }
 
     private CongeAbsence loadOwned(UUID id, UUID orgId) {

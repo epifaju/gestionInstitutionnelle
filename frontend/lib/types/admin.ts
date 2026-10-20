@@ -37,3 +37,25 @@ export type AuditLogResponse = {
   ipAddress: string | null;
   userAgent: string | null;
 };
+
+export type OrganisationSettings = {
+  id: string;
+  nom: string;
+  type: string;
+  pays: string | null;
+  deviseDefaut: string;
+  logoUrl: string | null;
+  seuilJustificatif: string | number;
+  alerteBudgetPct: number;
+  actif: boolean;
+};
+
+export type OrganisationSettingsUpdateRequest = {
+  nom: string;
+  type: string;
+  pays?: string | null;
+  deviseDefaut: string;
+  logoUrl?: string | null;
+  seuilJustificatif: string | number;
+  alerteBudgetPct: number;
+};

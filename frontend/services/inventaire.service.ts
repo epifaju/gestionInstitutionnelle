@@ -35,3 +35,14 @@ export async function historiqueBien(id: string) {
 export async function statsInventaire() {
   return get<StatsInventaireResponse>("inventaire/stats");
 }
+
+export type ResponsableCandidat = {
+  id: string;
+  matricule: string;
+  nom: string;
+  prenom: string;
+};
+
+export async function listResponsablesCandidats() {
+  return get<ResponsableCandidat[]>("inventaire/responsables-candidats");
+}

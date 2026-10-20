@@ -6,8 +6,12 @@ import com.app.audit.entity.AuditLog;
 import com.app.modules.auth.dto.AdminUserCreateRequest;
 import com.app.modules.auth.dto.AdminUserResponse;
 import com.app.modules.auth.dto.AdminUserUpdateRequest;
+import com.app.modules.auth.dto.OrganisationSettingsResponse;
+import com.app.modules.auth.dto.OrganisationSettingsUpdateRequest;
+import com.app.modules.auth.entity.Organisation;
 import com.app.modules.auth.entity.Role;
 import com.app.modules.auth.entity.Utilisateur;
+import com.app.modules.auth.repository.OrganisationRepository;
 import com.app.modules.auth.repository.UtilisateurRepository;
 import com.app.audit.AuditLogService;
 import com.app.shared.exception.BusinessException;
@@ -19,6 +23,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -31,6 +37,7 @@ import java.util.stream.Collectors;
 public class AdminService {
 
     private final UtilisateurRepository utilisateurRepository;
+    private final OrganisationRepository organisationRepository;
     private final AuditLogRepository auditLogRepository;
     private final AuditLogService auditLogService;
     private final PasswordEncoder passwordEncoder;
@@ -122,6 +129,45 @@ public class AdminService {
 
     @PreAuthorize("hasRole('ADMIN')")
     @Transactional(readOnly = true)
+    public OrganisationSettingsResponse getOrganisationSettings(UUID organisationId) {
+        Organisation org =
+                organisationRepository
+                        .findById(organisationId)
+                        .orElseThrow(() -> BusinessException.notFound("ORGANISATION"));
+        return toOrgSettings(org);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional
+    public OrganisationSettingsResponse updateOrganisationSettings(
+            OrganisationSettingsUpdateRequest req, UUID organisationId, UUID actorId) {
+        Organisation org =
+                organisationRepository
+                        .findById(organisationId)
+                        .orElseThrow(() -> BusinessException.notFound("ORGANISATION"));
+        Map<String, Object> avant = snapshotOrg(org);
+
+        org.setNom(req.nom().trim());
+        org.setType(req.type().trim());
+        org.setPays(trimToNull(req.pays()));
+        org.setDeviseDefaut(req.deviseDefaut().trim().toUpperCase());
+        org.setLogoUrl(trimToNull(req.logoUrl()));
+        if (req.seuilJustificatif() != null) {
+            org.setSeuilJustificatif(req.seuilJustificatif());
+        }
+        if (req.alerteBudgetPct() != null) {
+            org.setAlerteBudgetPct(req.alerteBudgetPct());
+        }
+        org.setUpdatedAt(Instant.now());
+        org = organisationRepository.save(org);
+
+        auditLogService.log(
+                organisationId, actorId, "UPDATE", "Organisation", org.getId(), avant, snapshotOrg(org));
+        return toOrgSettings(org);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @Transactional(readOnly = true)
     public Page<AuditLogResponse> listAuditLogs(UUID organisationId, Pageable pageable) {
         Page<AuditLog> page = auditLogRepository.findByOrganisationIdOrderByDateActionDesc(organisationId, pageable);
         var userIds =
@@ -197,5 +243,30 @@ public class AdminService {
                 u.getRole().name(),
                 u.isActif(),
                 u.getCreatedAt());
+    }
+
+    private static OrganisationSettingsResponse toOrgSettings(Organisation org) {
+        return new OrganisationSettingsResponse(
+                org.getId(),
+                org.getNom(),
+                org.getType(),
+                org.getPays(),
+                org.getDeviseDefaut(),
+                org.getLogoUrl(),
+                org.getSeuilJustificatif() != null ? org.getSeuilJustificatif() : BigDecimal.ZERO,
+                org.getAlerteBudgetPct() != null ? org.getAlerteBudgetPct() : 80,
+                org.isActif());
+    }
+
+    private static Map<String, Object> snapshotOrg(Organisation org) {
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("nom", org.getNom());
+        m.put("type", org.getType());
+        m.put("pays", org.getPays());
+        m.put("deviseDefaut", org.getDeviseDefaut());
+        m.put("logoUrl", org.getLogoUrl());
+        m.put("seuilJustificatif", org.getSeuilJustificatif());
+        m.put("alerteBudgetPct", org.getAlerteBudgetPct());
+        return m;
     }
 }

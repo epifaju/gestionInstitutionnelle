@@ -78,6 +78,18 @@ public class RapportController {
                                 .body(xlsx);
         }
 
+        /** PRD §9 — export inventaire réservé LOGISTIQUE / ADMIN (déclaré avant {entite}). */
+        @GetMapping("/export-csv/inventaire")
+        @PreAuthorize("hasAnyRole('LOGISTIQUE','ADMIN')")
+        public ResponseEntity<byte[]> exportCsvInventaire(
+                        @AuthenticationPrincipal CustomUserDetails user) {
+                byte[] csv = rapportService.exportCsvInventaire(user.getOrganisationId());
+                return ResponseEntity.ok()
+                                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"export-inventaire.csv\"")
+                                .contentType(new MediaType("text", "csv", java.nio.charset.StandardCharsets.UTF_8))
+                                .body(csv);
+        }
+
         @GetMapping("/export-csv/{entite}")
         @PreAuthorize("hasAnyRole('FINANCIER','ADMIN')")
         public ResponseEntity<byte[]> exportCsv(

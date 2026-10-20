@@ -15,6 +15,12 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+const STATUT_CODES = ["BROUILLON", "SOUMISE", "APPROUVEE", "EN_COURS", "TERMINEE", "ANNULEE"] as const;
+
+function isStatutCode(v: string): v is (typeof STATUT_CODES)[number] {
+  return (STATUT_CODES as readonly string[]).includes(v);
+}
+
 function statutVariant(s: string): "muted" | "info" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
   if (s === "SOUMISE") return "info";
@@ -84,7 +90,14 @@ export default function MissionsPage() {
       {
         accessorKey: "statut",
         header: t("thStatut"),
-        cell: ({ row }) => <Badge variant={statutVariant(row.original.statut)}>{row.original.statut}</Badge>,
+        cell: ({ row }) => {
+          const code = row.original.statut;
+          return (
+            <Badge variant={statutVariant(code)}>
+              {isStatutCode(code) ? t(`statuts.${code}`) : code}
+            </Badge>
+          );
+        },
       },
       {
         id: "total",
@@ -126,9 +139,9 @@ export default function MissionsPage() {
             onChange={(e) => setStatut(e.target.value)}
           >
             <option value="">{tc("all")}</option>
-            {["BROUILLON", "SOUMISE", "APPROUVEE", "EN_COURS", "TERMINEE", "ANNULEE"].map((s) => (
+            {STATUT_CODES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {t(`statuts.${s}`)}
               </option>
             ))}
           </select>

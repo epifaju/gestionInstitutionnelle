@@ -45,12 +45,12 @@ export function DashboardNav({ onNavigate }: { onNavigate?: () => void }) {
   const isEmploye = role === "EMPLOYE";
 
   const showFinance = isAdmin || isFin;
-  const showRhSalaries = isAdmin || isRh;
+  const showRhSalaries = isAdmin || isRh || isFin;
   const showRhContrats = isAdmin || isRh;
   const showPaie = isAdmin || isRh || isFin;
   const showMyPaie = isEmploye;
   const showBudget = isAdmin || isFin || isRh;
-  const showInv = isAdmin || isLog;
+  const showInv = isAdmin || isLog || isFin;
   const showRapports = isAdmin || isFin || isRh || isLog;
 
   const financeItems: NavItem[] = showFinance
@@ -87,6 +87,7 @@ export function DashboardNav({ onNavigate }: { onNavigate?: () => void }) {
       : []),
     ...(isAdmin
       ? [
+          { href: "/dashboard/admin/organisation", label: t("adminOrganisation") },
           { href: "/dashboard/admin/users", label: t("adminUsers") },
           { href: "/dashboard/admin/workflows", label: t("adminWorkflows") },
           { href: "/dashboard/admin/templates", label: t("adminTemplates") },

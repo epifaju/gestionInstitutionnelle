@@ -2,16 +2,31 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { intlLocaleTag } from "@/lib/intl-locale";
 import { normalizeNotificationLink } from "@/lib/notification-link";
 import { listMyNotifications, markAllNotificationsRead, markNotificationRead } from "@/services/notifications.service";
+
+function formatNotifDate(iso: string | null | undefined, localeTag: string, empty: string) {
+  if (!iso) return empty;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return empty;
+  return d.toLocaleString(localeTag, {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 export default function NotificationsPage() {
   const t = useTranslations("Notifications");
   const tc = useTranslations("Common");
+  const localeTag = intlLocaleTag(useLocale());
   const [nonLuesSeulement, setNonLuesSeulement] = useState(false);
   const [page, setPage] = useState(0);
 
@@ -69,7 +84,9 @@ export default function NotificationsPage() {
                   <TableCell className="text-xs">{n.type}</TableCell>
                   <TableCell className="font-medium">{n.titre}</TableCell>
                   <TableCell className="max-w-[30rem] truncate">{n.message}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{n.createdAt ?? tc("emDash")}</TableCell>
+                  <TableCell className="whitespace-nowrap text-sm text-muted-foreground">
+                    {formatNotifDate(n.createdAt, localeTag, tc("emDash"))}
+                  </TableCell>
                   <TableCell>{n.lu ? t("statusRead") : t("statusUnread")}</TableCell>
                   <TableCell className="text-right">
                     <div className="inline-flex items-center justify-end gap-2">

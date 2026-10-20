@@ -18,7 +18,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { LazyDashboardEvolutionChart } from "@/components/charts/lazy";
+import { LazyBudgetExecutionChart, LazyDashboardEvolutionChart } from "@/components/charts/lazy";
 import { useAuthStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { getDashboard } from "@/services/dashboard.service";
@@ -205,10 +205,21 @@ export default function DashboardPage() {
   const sCur = rCur - dCur;
   const sPrev = rPrev - dPrev;
 
-  const chartData = ev.map((m) => ({
-    mois: m.mois,
-    Dépenses: num(m.depenses),
-    Recettes: num(m.recettes),
+  const chartData = ev.map((m) => {
+    const dep = num(m.depenses);
+    const rec = num(m.recettes);
+    return {
+      mois: m.mois,
+      Dépenses: dep,
+      Recettes: rec,
+      Solde: rec - dep,
+    };
+  });
+
+  const executionChartData = data.alertesBudget.map((a) => ({
+    categorie: a.categorie,
+    taux: num(a.tauxExecution),
+    alerte: a.alerte || num(a.tauxExecution) >= 80,
   }));
 
   return (
@@ -270,24 +281,16 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="text-base">{td("alertsTitle")}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {data.alertesBudget.length === 0 ? (
+          <CardContent>
+            {executionChartData.length === 0 ? (
               <p className="text-sm text-muted-foreground">{td("alertsEmpty")}</p>
             ) : (
-              data.alertesBudget.map((a) => (
-                <div key={a.categorie} className="space-y-1">
-                  <div className="flex justify-between text-sm">
-                    <span className="font-medium text-foreground">{a.categorie}</span>
-                    <span className="text-rose-600 dark:text-rose-400">{num(a.tauxExecution).toFixed(1)} %</span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                    <div
-                      className="h-full rounded-full bg-rose-500 transition-all"
-                      style={{ width: `${Math.min(num(a.tauxExecution), 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))
+              <div className="h-64">
+                <LazyBudgetExecutionChart
+                  data={executionChartData}
+                  formatPct={(n) => `${n.toFixed(1)} %`}
+                />
+              </div>
             )}
           </CardContent>
         </Card>

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/lib/store";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { listMissions } from "@/services/missions.service";
 import type { MissionResponse } from "@/lib/types/missions";
 import { listSalaries } from "@/services/salarie.service";
@@ -45,7 +46,14 @@ function prevMonthYear() {
   return { annee: d.getFullYear(), mois: d.getMonth() + 1 };
 }
 
+const BUDGET_STATUTS = ["BROUILLON", "VALIDE", "CLOTURE", "ARCHIVE"] as const;
+
+function isBudgetStatut(v: string): v is (typeof BUDGET_STATUTS)[number] {
+  return (BUDGET_STATUTS as readonly string[]).includes(v);
+}
+
 export default function ExportsConformitePage() {
+  const t = useTranslations("ExportsConformite");
   const user = useAuthStore((s) => s.user);
   const role = user?.role ?? null;
   const isAdmin = role === "ADMIN";
@@ -56,7 +64,6 @@ export default function ExportsConformitePage() {
   const showPaie = isAdmin || isFin || isRh;
   const showBudget = isAdmin || isFin;
 
-  // ── NOTE DE FRAIS ──────────────────────────────────────────────
   const [missionSearch, setMissionSearch] = useState("");
   const [missionId, setMissionId] = useState<string | null>(null);
 
@@ -76,7 +83,6 @@ export default function ExportsConformitePage() {
 
   const selectedMission = useMemo(() => missions.find((m) => m.id === missionId) ?? null, [missions, missionId]);
 
-  // ── ÉTAT DE PAIE ───────────────────────────────────────────────
   const def = useMemo(() => prevMonthYear(), []);
   const [paieAnnee, setPaieAnnee] = useState(def.annee);
   const [paieMois, setPaieMois] = useState(def.mois);
@@ -107,7 +113,6 @@ export default function ExportsConformitePage() {
     staleTime: 10_000,
   });
 
-  // ── BUDGET ─────────────────────────────────────────────────────
   const [budgetYear, setBudgetYear] = useState(new Date().getFullYear());
   const budgetQuery = useQuery({
     queryKey: ["budget", budgetYear, "exports-conformite"],
@@ -116,7 +121,6 @@ export default function ExportsConformitePage() {
     staleTime: 30_000,
   });
 
-  // ── JOURNAL D'AUDIT ────────────────────────────────────────────
   const [auditDebut, setAuditDebut] = useState(() => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-01`;
@@ -129,7 +133,6 @@ export default function ExportsConformitePage() {
   const [auditAction, setAuditAction] = useState<string>("");
   const [auditUserId, setAuditUserId] = useState<string>("");
 
-  // ── CONFIG ─────────────────────────────────────────────────────
   const configQuery = useQuery({
     queryKey: ["exports", "config"],
     queryFn: () => getConfig(),
@@ -145,7 +148,7 @@ export default function ExportsConformitePage() {
     if (!cfg) return;
     const saved = await updateConfig(cfg);
     setCfg(saved);
-    toast.success("Configuration enregistrée.");
+    toast.success(t("config.toastSaved"));
   }
 
   async function upload(kind: "logo" | "cachet" | "signature", file: File) {
@@ -153,49 +156,52 @@ export default function ExportsConformitePage() {
       if (kind === "logo") await uploadLogo(file);
       if (kind === "cachet") await uploadCachet(file);
       if (kind === "signature") await uploadSignatureDg(file);
-      toast.success("Fichier uploadé.");
+      toast.success(t("config.toastUploaded"));
       await configQuery.refetch();
     } catch {
-      toast.error("Upload impossible.");
+      toast.error(t("config.toastUploadError"));
     }
   }
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold">Exports Conformité</h1>
-        <p className="text-sm text-muted-foreground">Notes de frais, états de paie, budget, journal d’audit.</p>
+        <h1 className="text-2xl font-semibold">{t("title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="space-y-6 lg:col-span-2">
-          {/* SECTION NOTE DE FRAIS */}
           {showNoteFrais ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>📄 Note de Frais Mission</span>
+                  <span>📄 {t("noteFrais.title")}</span>
                   <Badge>PDF</Badge>
                 </CardTitle>
-                <CardDescription>Génère une note de frais PDF prête à transmettre.</CardDescription>
+                <CardDescription>{t("noteFrais.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {missionsQuery.isError ? (
-                  <p className="text-sm text-muted-foreground">Module Missions non installé ou inaccessible.</p>
+                  <p className="text-sm text-muted-foreground">{t("noteFrais.missionsUnavailable")}</p>
                 ) : (
                   <>
                     <div className="grid gap-2">
-                      <Label>Rechercher une mission</Label>
-                      <Input value={missionSearch} onChange={(e) => setMissionSearch(e.target.value)} placeholder="Titre, salarié, destination..." />
+                      <Label>{t("noteFrais.searchLabel")}</Label>
+                      <Input
+                        value={missionSearch}
+                        onChange={(e) => setMissionSearch(e.target.value)}
+                        placeholder={t("noteFrais.searchPlaceholder")}
+                      />
                     </div>
                     <div className="grid gap-2">
-                      <Label>Mission</Label>
+                      <Label>{t("noteFrais.missionLabel")}</Label>
                       <select
                         className="h-10 rounded-md border bg-background px-3 text-sm"
                         value={missionId ?? ""}
                         onChange={(e) => setMissionId(e.target.value || null)}
                       >
-                        <option value="">Sélectionner...</option>
+                        <option value="">{t("noteFrais.selectPlaceholder")}</option>
                         {filteredMissions.map((m: MissionResponse) => (
                           <option key={m.id} value={m.id}>
                             {m.titre} — {m.salarieNomComplet ?? "—"} — {m.destination} ({m.dateDepart} → {m.dateRetour})
@@ -213,18 +219,23 @@ export default function ExportsConformitePage() {
                             <Badge variant="outline">
                               {selectedMission.dateDepart} → {selectedMission.dateRetour}
                             </Badge>
-                            <Badge variant="outline">{selectedMission.frais?.length ?? 0} frais</Badge>
+                            <Badge variant="outline">
+                              {t("noteFrais.fraisCount", { count: selectedMission.frais?.length ?? 0 })}
+                            </Badge>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            Avance: {String(selectedMission.avanceVersee ?? "0")} — Total frais validés: {String(selectedMission.totalFraisValides ?? "0")} — Solde:{" "}
-                            {String(selectedMission.soldeARegler ?? "0")}
+                            {t("noteFrais.summaryLine", {
+                              avance: String(selectedMission.avanceVersee ?? "0"),
+                              total: String(selectedMission.totalFraisValides ?? "0"),
+                              solde: String(selectedMission.soldeARegler ?? "0"),
+                            })}
                           </div>
                         </CardContent>
                       </Card>
                     ) : null}
 
                     <ExportButton
-                      label="Générer la note de frais PDF"
+                      label={t("noteFrais.generateBtn")}
                       icon={<FileText className="mr-2 h-4 w-4" />}
                       onExport={() => exportNoteFrais(missionId!)}
                       variant="pdf"
@@ -236,31 +247,30 @@ export default function ExportsConformitePage() {
             </Card>
           ) : null}
 
-          {/* SECTION PAIE */}
           {showPaie ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>💰 État de Paie</span>
+                  <span>💰 {t("paie.title")}</span>
                   <Badge>PDF</Badge>
                   <Badge variant="secondary">Excel</Badge>
                 </CardTitle>
-                <CardDescription>Exporte l’état de paie mensuel.</CardDescription>
+                <CardDescription>{t("paie.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="grid gap-2">
-                    <Label>Année</Label>
+                    <Label>{t("paie.year")}</Label>
                     <Input type="number" value={paieAnnee} onChange={(e) => setPaieAnnee(Number(e.target.value))} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Mois</Label>
+                    <Label>{t("paie.month")}</Label>
                     <Input type="number" min={1} max={12} value={paieMois} onChange={(e) => setPaieMois(Number(e.target.value))} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Service</Label>
+                    <Label>{t("paie.service")}</Label>
                     <select className="h-10 rounded-md border bg-background px-3 text-sm" value={service} onChange={(e) => setService(e.target.value)}>
-                      <option value="__ALL__">Tous les services</option>
+                      <option value="__ALL__">{t("paie.allServices")}</option>
                       {services.map((s) => (
                         <option key={s} value={s}>
                           {s}
@@ -271,13 +281,19 @@ export default function ExportsConformitePage() {
                 </div>
 
                 <p className="text-sm text-muted-foreground">
-                  {paieCountQuery.isLoading ? "Chargement..." : `${paieCountQuery.data ?? 0} salariés concernés en ${String(paieMois).padStart(2, "0")}/${paieAnnee}`}
+                  {paieCountQuery.isLoading
+                    ? t("paie.countLoading")
+                    : t("paie.countLine", {
+                        count: paieCountQuery.data ?? 0,
+                        mois: String(paieMois).padStart(2, "0"),
+                        annee: paieAnnee,
+                      })}
                   {service !== "__ALL__" ? ` — ${service}` : ""}
                 </p>
 
                 <div className="flex flex-wrap gap-2">
                   <ExportButton
-                    label="Exporter PDF"
+                    label={t("paie.exportPdf")}
                     icon={<FileText className="mr-2 h-4 w-4" />}
                     variant="pdf"
                     onExport={() =>
@@ -285,7 +301,7 @@ export default function ExportsConformitePage() {
                     }
                   />
                   <ExportButton
-                    label="Exporter Excel"
+                    label={t("paie.exportExcel")}
                     icon={<FileSpreadsheet className="mr-2 h-4 w-4" />}
                     variant="excel"
                     onExport={() =>
@@ -297,42 +313,46 @@ export default function ExportsConformitePage() {
             </Card>
           ) : null}
 
-          {/* SECTION BUDGET */}
           {showBudget ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>📊 Budget Prévisionnel</span>
+                  <span>📊 {t("budget.title")}</span>
                   <Badge>PDF</Badge>
                   <Badge variant="secondary">Excel</Badge>
                 </CardTitle>
-                <CardDescription>Budget prévu vs réalisé.</CardDescription>
+                <CardDescription>{t("budget.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid gap-2 md:max-w-xs">
-                  <Label>Année</Label>
+                  <Label>{t("budget.year")}</Label>
                   <Input type="number" value={budgetYear} onChange={(e) => setBudgetYear(Number(e.target.value))} />
                 </div>
 
                 {budgetQuery.isLoading ? (
-                  <p className="text-sm text-muted-foreground">Chargement budget…</p>
+                  <p className="text-sm text-muted-foreground">{t("budget.loading")}</p>
                 ) : budgetQuery.data ? (
                   <p className="text-sm text-muted-foreground">
-                    Statut: <Badge variant="outline">{budgetQuery.data.statut}</Badge>
+                    {t("budget.statutLabel")}{" "}
+                    <Badge variant="outline">
+                      {isBudgetStatut(budgetQuery.data.statut)
+                        ? t(`budget.statuts.${budgetQuery.data.statut}`)
+                        : budgetQuery.data.statut}
+                    </Badge>
                   </p>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Aucun budget pour cette année.</p>
+                  <p className="text-sm text-muted-foreground">{t("budget.empty")}</p>
                 )}
 
                 <div className="flex flex-wrap gap-2">
                   <ExportButton
-                    label="Exporter PDF"
+                    label={t("budget.exportPdf")}
                     icon={<FileText className="mr-2 h-4 w-4" />}
                     variant="pdf"
                     onExport={() => exportBudgetPdf(budgetYear)}
                   />
                   <ExportButton
-                    label="Exporter Excel"
+                    label={t("budget.exportExcel")}
                     icon={<FileSpreadsheet className="mr-2 h-4 w-4" />}
                     variant="excel"
                     onExport={() => exportBudgetExcel(budgetYear)}
@@ -342,47 +362,46 @@ export default function ExportsConformitePage() {
             </Card>
           ) : null}
 
-          {/* SECTION JOURNAL D'AUDIT */}
           {isAdmin ? (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <span>🔍 Journal d’Audit</span>
+                  <span>🔍 {t("audit.title")}</span>
                   <Badge>PDF</Badge>
                   <Badge variant="secondary">Excel</Badge>
                   <Badge variant="outline">CSV</Badge>
                 </CardTitle>
-                <CardDescription>Exporter les événements d’audit (ADMIN uniquement).</CardDescription>
+                <CardDescription>{t("audit.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label>Date début</Label>
+                    <Label>{t("audit.dateDebut")}</Label>
                     <Input type="date" value={auditDebut} onChange={(e) => setAuditDebut(e.target.value)} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Date fin</Label>
+                    <Label>{t("audit.dateFin")}</Label>
                     <Input type="date" value={auditFin} onChange={(e) => setAuditFin(e.target.value)} />
                   </div>
                 </div>
                 <div className="grid gap-3 md:grid-cols-3">
                   <div className="grid gap-2">
-                    <Label>Entité (optionnel)</Label>
-                    <Input value={auditEntite} onChange={(e) => setAuditEntite(e.target.value)} placeholder="Facture, Salarie..." />
+                    <Label>{t("audit.entite")}</Label>
+                    <Input value={auditEntite} onChange={(e) => setAuditEntite(e.target.value)} placeholder={t("audit.entitePlaceholder")} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>Action (optionnel)</Label>
-                    <Input value={auditAction} onChange={(e) => setAuditAction(e.target.value)} placeholder="CREATE, UPDATE..." />
+                    <Label>{t("audit.action")}</Label>
+                    <Input value={auditAction} onChange={(e) => setAuditAction(e.target.value)} placeholder={t("audit.actionPlaceholder")} />
                   </div>
                   <div className="grid gap-2">
-                    <Label>UtilisateurId (optionnel)</Label>
-                    <Input value={auditUserId} onChange={(e) => setAuditUserId(e.target.value)} placeholder="UUID" />
+                    <Label>{t("audit.userId")}</Label>
+                    <Input value={auditUserId} onChange={(e) => setAuditUserId(e.target.value)} placeholder={t("audit.userIdPlaceholder")} />
                   </div>
                 </div>
 
                 <div className="flex flex-wrap gap-2">
                   <ExportButton
-                    label="PDF"
+                    label={t("audit.pdf")}
                     icon={<FileText className="mr-2 h-4 w-4" />}
                     variant="pdf"
                     onExport={() =>
@@ -396,7 +415,7 @@ export default function ExportsConformitePage() {
                     }
                   />
                   <ExportButton
-                    label="Excel"
+                    label={t("audit.excel")}
                     icon={<FileSpreadsheet className="mr-2 h-4 w-4" />}
                     variant="excel"
                     onExport={() =>
@@ -410,7 +429,7 @@ export default function ExportsConformitePage() {
                     }
                   />
                   <ExportButton
-                    label="Export CSV brut"
+                    label={t("audit.csv")}
                     icon={<ListChecks className="mr-2 h-4 w-4" />}
                     variant="csv"
                     onExport={() =>
@@ -428,29 +447,32 @@ export default function ExportsConformitePage() {
             </Card>
           ) : null}
 
-          {/* SECTION CONFIG */}
           {isAdmin ? (
             <Card>
               <CardHeader>
-                <CardTitle>⚙️ Configuration des exports</CardTitle>
-                <CardDescription>Paramètres par organisation.</CardDescription>
+                <CardTitle>⚙️ {t("config.title")}</CardTitle>
+                <CardDescription>{t("config.description")}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {!cfg ? (
-                  <p className="text-sm text-muted-foreground">Chargement…</p>
+                  <p className="text-sm text-muted-foreground">{t("config.loading")}</p>
                 ) : (
                   <>
                     <div className="grid gap-3 md:grid-cols-2">
                       <div className="grid gap-2">
-                        <Label>Mention pied de page</Label>
+                        <Label>{t("config.piedPage")}</Label>
                         <Input value={cfg.piedPageMention ?? ""} onChange={(e) => setCfg({ ...cfg, piedPageMention: e.target.value })} />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Couleur principale (hex)</Label>
-                        <Input value={cfg.couleurPrincipale ?? ""} onChange={(e) => setCfg({ ...cfg, couleurPrincipale: e.target.value })} placeholder="#1B3A5C" />
+                        <Label>{t("config.couleur")}</Label>
+                        <Input
+                          value={cfg.couleurPrincipale ?? ""}
+                          onChange={(e) => setCfg({ ...cfg, couleurPrincipale: e.target.value })}
+                          placeholder="#1B3A5C"
+                        />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Seuil sync PDF</Label>
+                        <Label>{t("config.seuilPdf")}</Label>
                         <Input
                           type="number"
                           value={cfg.seuilLignesSyncPdf ?? 500}
@@ -458,7 +480,7 @@ export default function ExportsConformitePage() {
                         />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Seuil sync Excel</Label>
+                        <Label>{t("config.seuilExcel")}</Label>
                         <Input
                           type="number"
                           value={cfg.seuilLignesSyncExcel ?? 5000}
@@ -474,33 +496,37 @@ export default function ExportsConformitePage() {
                         checked={!!cfg.watermarkActif}
                         onChange={(e) => setCfg({ ...cfg, watermarkActif: e.target.checked })}
                       />
-                      <Label htmlFor="wm">Watermark actif</Label>
+                      <Label htmlFor="wm">{t("config.watermarkActive")}</Label>
                     </div>
                     {cfg.watermarkActif ? (
                       <div className="grid gap-2 md:max-w-sm">
-                        <Label>Texte watermark</Label>
+                        <Label>{t("config.watermarkText")}</Label>
                         <Input value={cfg.watermarkTexte ?? ""} onChange={(e) => setCfg({ ...cfg, watermarkTexte: e.target.value })} />
                       </div>
                     ) : null}
 
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="grid gap-2">
-                        <Label>Upload logo (PNG/JPG 2Mo)</Label>
+                        <Label>{t("config.uploadLogo")}</Label>
                         <Input type="file" accept="image/png,image/jpeg" onChange={(e) => e.target.files?.[0] && upload("logo", e.target.files[0])} />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Upload cachet</Label>
+                        <Label>{t("config.uploadCachet")}</Label>
                         <Input type="file" accept="image/png,image/jpeg" onChange={(e) => e.target.files?.[0] && upload("cachet", e.target.files[0])} />
                       </div>
                       <div className="grid gap-2">
-                        <Label>Upload signature DG</Label>
-                        <Input type="file" accept="image/png,image/jpeg" onChange={(e) => e.target.files?.[0] && upload("signature", e.target.files[0])} />
+                        <Label>{t("config.uploadSignature")}</Label>
+                        <Input
+                          type="file"
+                          accept="image/png,image/jpeg"
+                          onChange={(e) => e.target.files?.[0] && upload("signature", e.target.files[0])}
+                        />
                       </div>
                     </div>
 
                     <div className="flex justify-end">
                       <Button type="button" onClick={() => saveConfig()}>
-                        Enregistrer la configuration
+                        {t("config.save")}
                       </Button>
                     </div>
                   </>
@@ -517,4 +543,3 @@ export default function ExportsConformitePage() {
     </div>
   );
 }
-

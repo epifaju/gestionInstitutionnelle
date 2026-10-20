@@ -2,9 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import type { TodoActionItem } from "@/services/todo-dashboard.service";
+import { formatTodoRelative } from "@/lib/todo-i18n";
 import { UrgenceBadge } from "@/components/todo/UrgenceBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,20 +19,6 @@ export interface ActionDisponible {
   label: string;
   variante: "success" | "danger" | "default";
   requiresComment?: boolean;
-}
-
-function relativeFromIso(iso: string) {
-  const d = iso ? new Date(iso) : null;
-  if (!d || Number.isNaN(d.getTime())) return "";
-  const ms = Date.now() - d.getTime();
-  const m = Math.floor(ms / 60_000);
-  if (m < 60) return `il y a ${m} min`;
-  const h = Math.floor(m / 60);
-  if (h < 24) return `il y a ${h} h`;
-  const days = Math.floor(h / 24);
-  if (days < 14) return `il y a ${days} j`;
-  const w = Math.floor(days / 7);
-  return `il y a ${w} sem.`;
 }
 
 function btnVariant(v: ActionDisponible["variante"]): "default" | "destructive" | "outline" | "secondary" {
@@ -50,22 +38,27 @@ export function TodoActionCard({
   isLoading?: boolean;
   actionsDisponibles?: ActionDisponible[];
 }) {
+  const t = useTranslations("Todo");
+  const tc = useTranslations("Common");
   const router = useRouter();
   const [isActioning, setIsActioning] = useState(false);
   const [showCommentDialog, setShowCommentDialog] = useState(false);
   const [commentaire, setCommentaire] = useState("");
   const [pendingAction, setPendingAction] = useState<ActionDisponible | null>(null);
 
-  const rel = useMemo(() => relativeFromIso(item.dateCreation), [item.dateCreation]);
+  const rel = useMemo(
+    () => formatTodoRelative(t, item.dateCreation, { withJustNow: false }),
+    [item.dateCreation, t]
+  );
 
   async function runAction(a: ActionDisponible, comment?: string) {
     if (!onAction) return;
     setIsActioning(true);
     try {
       await onAction(a.typeAction, comment);
-      toast.success("Action effectuée");
+      toast.success(t("actionSuccess"));
     } catch (e) {
-      toast.error((e as Error)?.message ?? "Impossible d'effectuer l'action.");
+      toast.error((e as Error)?.message ?? t("actionImpossible"));
     } finally {
       setIsActioning(false);
       setCommentaire("");
@@ -116,7 +109,7 @@ export function TodoActionCard({
             </div>
 
             <Button type="button" size="sm" variant="ghost" disabled={isActioning} onClick={() => router.push(item.lienAction)}>
-              → Voir détail
+              {t("seeDetail")}
             </Button>
           </div>
         </CardContent>
@@ -125,13 +118,13 @@ export function TodoActionCard({
       <Dialog open={showCommentDialog} onOpenChange={setShowCommentDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle>Commentaire requis</DialogTitle>
-            <DialogDescription>Ajoute un commentaire pour confirmer cette action.</DialogDescription>
+            <DialogTitle>{t("commentRequired")}</DialogTitle>
+            <DialogDescription>{t("commentHint")}</DialogDescription>
           </DialogHeader>
-          <Textarea value={commentaire} onChange={(e) => setCommentaire(e.target.value)} placeholder="Motif / commentaire..." />
+          <Textarea value={commentaire} onChange={(e) => setCommentaire(e.target.value)} placeholder={t("commentPlaceholder")} />
           <DialogFooter>
             <Button type="button" variant="outline" onClick={() => setShowCommentDialog(false)} disabled={isActioning}>
-              Annuler
+              {tc("cancel")}
             </Button>
             <Button
               type="button"
@@ -142,7 +135,7 @@ export function TodoActionCard({
                 void runAction(pendingAction, commentaire.trim());
               }}
             >
-              Confirmer
+              {tc("confirm")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -150,4 +143,3 @@ export function TodoActionCard({
     </>
   );
 }
-

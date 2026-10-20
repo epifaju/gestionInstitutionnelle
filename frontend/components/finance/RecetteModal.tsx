@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { DeviseSelector } from "@/components/ui/DeviseSelector";
 import { convertirDevise } from "@/services/devises.service";
 import type { CategorieResponse, RecetteRequest } from "@/lib/types/finance";
+import { translateCategorieLabel } from "@/lib/categorie-i18n";
 
 export function RecetteModal({
   open,
@@ -29,6 +30,7 @@ export function RecetteModal({
   allowFile?: boolean;
 }) {
   const t = useTranslations("Finance.recettes.modal");
+  const tCat = useTranslations("Finance.categoryLabels");
   const tc = useTranslations("Common");
 
   const [file, setFile] = useState<File | null>(null);
@@ -189,7 +191,7 @@ export function RecetteModal({
               <option value="">{tc("emDash")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.libelle}
+                  {translateCategorieLabel(tCat, c)}
                 </option>
               ))}
             </select>

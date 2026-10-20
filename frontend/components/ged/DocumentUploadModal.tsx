@@ -6,20 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { DocumentUploadRequest } from "@/lib/types/ged";
+import { DOCUMENT_UPLOAD_TYPES } from "@/lib/document-i18n";
 import { useTranslations } from "next-intl";
-
-const TYPES = [
-  "CONTRAT",
-  "FACTURE_JUS",
-  "ORDRE_MISSION",
-  "RAPPORT",
-  "CIRCULAIRE",
-  "NOTE_DIPLOMATIQUE",
-  "ACREDITATION",
-  "VISA",
-  "PASSEPORT",
-  "AUTRE",
-];
 
 export function DocumentUploadModal({
   open,
@@ -33,6 +21,7 @@ export function DocumentUploadModal({
   onSubmit: (req: DocumentUploadRequest, file: File) => Promise<void>;
 }) {
   const t = useTranslations("Documents.uploadModal");
+  const td = useTranslations("Documents");
   const tc = useTranslations("Common");
   const [file, setFile] = useState<File | null>(initialFile ?? null);
   const [titre, setTitre] = useState("");
@@ -59,7 +48,7 @@ export function DocumentUploadModal({
   const tags = useMemo(() => {
     const parts = tagsRaw
       .split(",")
-      .map((t) => t.trim())
+      .map((x) => x.trim())
       .filter(Boolean);
     return parts.length ? parts : null;
   }, [tagsRaw]);
@@ -131,9 +120,9 @@ export function DocumentUploadModal({
                 value={typeDocument}
                 onChange={(e) => setTypeDocument(e.target.value)}
               >
-                {TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {DOCUMENT_UPLOAD_TYPES.map((code) => (
+                  <option key={code} value={code}>
+                    {td(`types.${code}`)}
                   </option>
                 ))}
               </select>
@@ -145,10 +134,10 @@ export function DocumentUploadModal({
                 value={visibilite}
                 onChange={(e) => setVisibilite(e.target.value)}
               >
-                <option value="PRIVE">PRIVE</option>
-                <option value="SERVICE">SERVICE</option>
-                <option value="ORGANISATION">ORGANISATION</option>
-                <option value="PUBLIC">PUBLIC</option>
+                <option value="PRIVE">{td("visibilite.PRIVE")}</option>
+                <option value="SERVICE">{td("visibilite.SERVICE")}</option>
+                <option value="ORGANISATION">{td("visibilite.ORGANISATION")}</option>
+                <option value="PUBLIC">{td("visibilite.PUBLIC")}</option>
               </select>
             </div>
           </div>
@@ -175,4 +164,3 @@ export function DocumentUploadModal({
     </div>
   );
 }
-

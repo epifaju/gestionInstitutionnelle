@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { DeviseSelector } from "@/components/ui/DeviseSelector";
 import { convertirDevise } from "@/services/devises.service";
 import type { CategorieResponse, FactureRequest, FactureResponse } from "@/lib/types/finance";
+import { translateCategorieLabel } from "@/lib/categorie-i18n";
 
 const schema = z.object({
   fournisseur: z.string().min(1),
@@ -44,6 +45,7 @@ export function FactureModal({
   initialFacture?: FactureResponse | null;
 }) {
   const t = useTranslations("Finance.factures.modal");
+  const tCat = useTranslations("Finance.categoryLabels");
   const tc = useTranslations("Common");
 
   const [file, setFile] = useState<File | null>(null);
@@ -209,7 +211,7 @@ export function FactureModal({
               <option value="">{tc("emDash")}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.libelle}
+                  {translateCategorieLabel(tCat, c)}
                 </option>
               ))}
             </select>

@@ -30,6 +30,12 @@ import { listConges, rejeterConge, soumettreConge, validerConge } from "@/servic
 import { getPaieAnnuelle, marquerPaye } from "@/services/paie.service";
 import { getEcheances } from "@/services/contrat.service";
 
+const SALARIE_STATUT_CODES = ["ACTIF", "EN_CONGE", "SORTI", "BROUILLON"] as const;
+
+function isSalarieStatut(v: string): v is (typeof SALARIE_STATUT_CODES)[number] {
+  return (SALARIE_STATUT_CODES as readonly string[]).includes(v);
+}
+
 function statutVariant(s: string): "success" | "warning" | "muted" | "default" {
   if (s === "ACTIF") return "success";
   if (s === "EN_CONGE") return "warning";
@@ -206,7 +212,9 @@ export default function SalarieDetailPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={statutVariant(salarie.statut)}>{salarie.statut}</Badge>
+          <Badge variant={statutVariant(salarie.statut)}>
+            {isSalarieStatut(salarie.statut) ? ts(`statut.${salarie.statut}`) : salarie.statut}
+          </Badge>
           {isRhOrAdmin ? (
             <Link href={`/rh/contrats/salaries/${id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
               {tdt("btnContrats")}
@@ -229,7 +237,12 @@ export default function SalarieDetailPage() {
       ) : null}
 
       <div className="flex flex-wrap gap-2 border-b border-border pb-2">
-        {(["infos", "conges", "paie", "docs"] as const).map((tabKey) => (
+        {(
+          (isRhOrAdmin
+            ? (["infos", "conges", "paie", "docs"] as const)
+            : (["infos", "paie"] as const)
+          )
+        ).map((tabKey) => (
           <Button
             key={tabKey}
             type="button"
@@ -281,10 +294,12 @@ export default function SalarieDetailPage() {
               </Button>
             )}
           </Card>
-          <Card className="p-4">
-            <h2 className="mb-3 font-semibold text-foreground">{ts("cardEdit")}</h2>
-            <SalarieForm defaultValues={defaultEdit} submitLabel={tc("save")} onSubmit={onUpdate} salaireEditable={false} />
-          </Card>
+          {isRhOrAdmin ? (
+            <Card className="p-4">
+              <h2 className="mb-3 font-semibold text-foreground">{ts("cardEdit")}</h2>
+              <SalarieForm defaultValues={defaultEdit} submitLabel={tc("save")} onSubmit={onUpdate} salaireEditable={false} />
+            </Card>
+          ) : null}
           <Card className="p-4 lg:col-span-2">
             <h2 className="mb-3 font-semibold text-foreground">{ts("histSalaires")}</h2>
             <div className="relative space-y-4 border-l-2 border-indigo-200 pl-4">
@@ -304,26 +319,28 @@ export default function SalarieDetailPage() {
                 </div>
               ))}
             </div>
-            <div className="mt-6 border-t border-border pt-4">
-              <h3 className="mb-2 text-sm font-semibold text-foreground">{ts("newGrille")}</h3>
-              <GrilleInline
-                labels={{
-                  brut: ts("labelBrut"),
-                  net: ts("labelNet"),
-                  devise: ts("labelDevise"),
-                  depuis: ts("labelDepuis"),
-                  submit: ts("addGrille"),
-                }}
-                onSubmit={async (b) => {
-                  await mutGrille.mutateAsync({
-                    brut: b.brut,
-                    net: b.net,
-                    devise: b.devise,
-                    dateDebut: b.dateDebut,
-                  });
-                }}
-              />
-            </div>
+            {isRhOrAdmin ? (
+              <div className="mt-6 border-t border-border pt-4">
+                <h3 className="mb-2 text-sm font-semibold text-foreground">{ts("newGrille")}</h3>
+                <GrilleInline
+                  labels={{
+                    brut: ts("labelBrut"),
+                    net: ts("labelNet"),
+                    devise: ts("labelDevise"),
+                    depuis: ts("labelDepuis"),
+                    submit: ts("addGrille"),
+                  }}
+                  onSubmit={async (b) => {
+                    await mutGrille.mutateAsync({
+                      brut: b.brut,
+                      net: b.net,
+                      devise: b.devise,
+                      dateDebut: b.dateDebut,
+                    });
+                  }}
+                />
+              </div>
+            ) : null}
           </Card>
         </div>
       )}

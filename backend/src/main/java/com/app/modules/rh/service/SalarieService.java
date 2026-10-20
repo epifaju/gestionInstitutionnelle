@@ -57,7 +57,7 @@ public class SalarieService {
     private final AuditLogService auditLogService;
     private final MinioStorageService minioStorageService;
 
-    @PreAuthorize("hasAnyRole('RH','ADMIN')")
+    @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
     @Transactional(readOnly = true)
     public Page<SalarieResponse> listSalaries(
             UUID orgId, String statut, String service, String search, Pageable pageable) {
@@ -82,7 +82,7 @@ public class SalarieService {
         return salarieRepository.findAll(spec, sorted).map(s -> toResponse(s, orgId));
     }
 
-    @PreAuthorize("hasAnyRole('RH','ADMIN') or @securityService.isSelf(#id,authentication)")
+    @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER') or @securityService.isSelf(#id,authentication)")
     @Transactional(readOnly = true)
     public SalarieResponse getById(UUID id, UUID orgId) {
         Salarie s = loadOwned(id, orgId);
@@ -257,7 +257,7 @@ public class SalarieService {
         return minioStorageService.download(objectName);
     }
 
-    @PreAuthorize("hasAnyRole('RH','ADMIN')")
+    @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
     @Transactional(readOnly = true)
     public List<HistoriqueSalaireResponse> listHistoriqueSalaires(UUID id, UUID orgId) {
         loadOwned(id, orgId);

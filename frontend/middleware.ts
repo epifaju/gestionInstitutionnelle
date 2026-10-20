@@ -5,7 +5,7 @@ import { getDefaultHomePath } from "./lib/post-login";
 
 const ACCESS_COOKIE = "access_token";
 
-/** Chemins protégés : auth + RBAC (PRD §9) */
+/** Chemins protégés : auth + RBAC (PRD §9 + extensions) */
 function hasRoleAccess(pathname: string, role: string): boolean {
   const isAdmin = role === "ADMIN";
 
@@ -38,12 +38,18 @@ function hasRoleAccess(pathname: string, role: string): boolean {
     return true;
   }
 
+  /** PRD §9 : FINANCIER — lecture salariés (pas le reste du module RH) */
+  if (pathname.startsWith("/rh/salaries") || pathname.startsWith("/dashboard/rh/salaries")) {
+    return isAdmin || role === "RH" || role === "FINANCIER";
+  }
+
   if (pathname.startsWith("/dashboard/rh") || pathname.startsWith("/rh")) {
     return isAdmin || role === "RH";
   }
 
+  /** PRD §9 : FINANCIER — lecture inventaire */
   if (pathname.startsWith("/inventaire") || pathname.startsWith("/dashboard/inventaire")) {
-    return isAdmin || role === "LOGISTIQUE";
+    return isAdmin || role === "LOGISTIQUE" || role === "FINANCIER";
   }
 
   if (pathname.startsWith("/rapports") || pathname.startsWith("/dashboard/rapports")) {
@@ -54,8 +60,21 @@ function hasRoleAccess(pathname: string, role: string): boolean {
     return role === "EMPLOYE" || role === "RH" || role === "ADMIN";
   }
 
-  if (pathname.startsWith("/dashboard/admin")) {
+  if (pathname.startsWith("/dashboard/admin") || pathname.startsWith("/admin")) {
     return isAdmin;
+  }
+
+  /** Extensions — alignées API / shell */
+  if (pathname.startsWith("/missions")) {
+    return isAdmin || ["RH", "FINANCIER", "LOGISTIQUE"].includes(role);
+  }
+
+  if (pathname.startsWith("/todo")) {
+    return role !== "EMPLOYE";
+  }
+
+  if (pathname.startsWith("/documents") || pathname.startsWith("/courriers") || pathname.startsWith("/notifications")) {
+    return true; // tous authentifiés ; règles fines côté API
   }
 
   /* PRD §9 : EMPLOYE — pas de dashboard KPI ; uniquement paramètres sous /dashboard */
@@ -77,6 +96,12 @@ function isProtectedPath(pathname: string): boolean {
   if (pathname === "/inventaire" || pathname.startsWith("/inventaire/")) return true;
   if (pathname === "/rapports" || pathname.startsWith("/rapports/")) return true;
   if (pathname === "/employe" || pathname.startsWith("/employe/")) return true;
+  if (pathname === "/missions" || pathname.startsWith("/missions/")) return true;
+  if (pathname === "/documents" || pathname.startsWith("/documents/")) return true;
+  if (pathname === "/courriers" || pathname.startsWith("/courriers/")) return true;
+  if (pathname === "/notifications" || pathname.startsWith("/notifications/")) return true;
+  if (pathname === "/todo" || pathname.startsWith("/todo/")) return true;
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) return true;
   return false;
 }
 
@@ -123,5 +148,17 @@ export const config = {
     "/rapports/:path*",
     "/employe",
     "/employe/:path*",
+    "/missions",
+    "/missions/:path*",
+    "/documents",
+    "/documents/:path*",
+    "/courriers",
+    "/courriers/:path*",
+    "/notifications",
+    "/notifications/:path*",
+    "/todo",
+    "/todo/:path*",
+    "/admin",
+    "/admin/:path*",
   ],
 };

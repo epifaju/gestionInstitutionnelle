@@ -35,6 +35,17 @@ const typeColor: Record<string, string> = {
   SANS_SOLDE: "bg-muted text-foreground",
 };
 
+const STATUT_CODES = ["EN_ATTENTE", "VALIDE", "REJETE", "ANNULE", "BROUILLON"] as const;
+const TYPE_CODES = ["ANNUEL", "MALADIE", "EXCEPTIONNEL", "SANS_SOLDE"] as const;
+
+function isStatutCode(v: string): v is (typeof STATUT_CODES)[number] {
+  return (STATUT_CODES as readonly string[]).includes(v);
+}
+
+function isTypeCode(v: string): v is (typeof TYPE_CODES)[number] {
+  return (TYPE_CODES as readonly string[]).includes(v);
+}
+
 function startOfMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }
@@ -139,7 +150,14 @@ export default function CongesPage() {
         header: t("thSalarie"),
       },
       { accessorKey: "service", header: t("thService") },
-      { accessorKey: "typeConge", header: t("thType") },
+      {
+        accessorKey: "typeConge",
+        header: t("thType"),
+        cell: ({ row }) => {
+          const code = row.original.typeConge;
+          return isTypeCode(code) ? t(`type.${code}`) : code;
+        },
+      },
       {
         id: "periode",
         header: t("thPeriode"),
@@ -153,7 +171,10 @@ export default function CongesPage() {
       {
         accessorKey: "statut",
         header: t("thStatut"),
-        cell: ({ row }) => <Badge>{row.original.statut}</Badge>,
+        cell: ({ row }) => {
+          const code = row.original.statut;
+          return <Badge>{isStatutCode(code) ? t(`statut.${code}`) : code}</Badge>;
+        },
       },
       {
         id: "actions",
@@ -246,10 +267,10 @@ export default function CongesPage() {
                 }}
               >
                 <option value="">{tc("all")}</option>
-                <option value="EN_ATTENTE">EN_ATTENTE</option>
-                <option value="VALIDE">VALIDE</option>
-                <option value="REJETE">REJETE</option>
-                <option value="ANNULE">ANNULE</option>
+                <option value="EN_ATTENTE">{t("statut.EN_ATTENTE")}</option>
+                <option value="VALIDE">{t("statut.VALIDE")}</option>
+                <option value="REJETE">{t("statut.REJETE")}</option>
+                <option value="ANNULE">{t("statut.ANNULE")}</option>
               </select>
             </div>
             <div>
@@ -263,10 +284,10 @@ export default function CongesPage() {
                 }}
               >
                 <option value="">{tc("all")}</option>
-                <option value="ANNUEL">ANNUEL</option>
-                <option value="MALADIE">MALADIE</option>
-                <option value="EXCEPTIONNEL">EXCEPTIONNEL</option>
-                <option value="SANS_SOLDE">SANS_SOLDE</option>
+                <option value="ANNUEL">{t("type.ANNUEL")}</option>
+                <option value="MALADIE">{t("type.MALADIE")}</option>
+                <option value="EXCEPTIONNEL">{t("type.EXCEPTIONNEL")}</option>
+                <option value="SANS_SOLDE">{t("type.SANS_SOLDE")}</option>
               </select>
             </div>
           </div>
@@ -354,7 +375,7 @@ export default function CongesPage() {
                   <div className="font-semibold text-foreground">{day}</div>
                   {dayEvents.slice(0, 3).map((c) => (
                     <div key={c.id} className={`mt-0.5 truncate rounded px-0.5 ${typeColor[c.typeConge] ?? "bg-muted text-foreground"}`}>
-                      {c.typeConge}
+                      {isTypeCode(c.typeConge) ? t(`type.${c.typeConge}`) : c.typeConge}
                     </div>
                   ))}
                 </div>

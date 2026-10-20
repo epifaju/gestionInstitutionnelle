@@ -15,6 +15,7 @@ import {
   downloadBilanMensuelPdf,
   downloadBlob,
   downloadExportCsv,
+  downloadExportCsvInventaire,
   getBilanMensuel,
 } from "@/services/rapports.service";
 
@@ -28,6 +29,7 @@ export default function RapportsPage() {
   const localeTag = intlLocaleTag(useLocale());
   const user = useAuthStore((s) => s.user);
   const canFinance = user?.role === "FINANCIER" || user?.role === "ADMIN";
+  const canInventaireExport = user?.role === "LOGISTIQUE" || user?.role === "ADMIN";
 
   const now = new Date();
   const [annee, setAnnee] = useState(now.getFullYear());
@@ -199,7 +201,27 @@ export default function RapportsPage() {
         </Card>
       )}
 
-      {!canFinance && (
+      {canInventaireExport ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{t("inventaireExportTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                const blob = await downloadExportCsvInventaire();
+                downloadBlob(blob, "export-inventaire.csv");
+              }}
+            >
+              {t("downloadCsv")} — {t("csvTypeInventaire")}
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      {!canFinance && !canInventaireExport && (
         <p className="text-sm text-muted-foreground">
           {t("restrictedHint")}
         </p>

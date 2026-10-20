@@ -102,6 +102,7 @@
     "rapports": "Rapports",
     "rapportsConformite": "Exports conformité",
     "settings": "Paramètres",
+    "adminOrganisation": "Organisation",
     "adminUsers": "Utilisateurs",
     "adminWorkflows": "Workflows",
     "adminTemplates": "Modèles",
@@ -157,6 +158,14 @@
     "thNbJours": "Nb jours",
     "thStatut": "Statut",
     "thTotalFrais": "Total frais",
+    "statuts": {
+      "BROUILLON": "Brouillon",
+      "SOUMISE": "Soumise",
+      "APPROUVEE": "Approuvée",
+      "EN_COURS": "En cours",
+      "TERMINEE": "Terminée",
+      "ANNULEE": "Annulée"
+    },
     "fTitre": "Titre",
     "fDestination": "Destination",
     "fPays": "Pays (optionnel)",
@@ -204,7 +213,7 @@
     "kpiRecettes": "Recettes",
     "kpiSolde": "Solde",
     "kpiEffectifs": "Effectifs actifs",
-    "chartTitle": "Dépenses vs recettes (6 mois)",
+    "chartTitle": "Dépenses, recettes et solde (6 mois)",
     "alertsTitle": "Alertes budget",
     "alertsEmpty": "Aucune catégorie au-dessus du seuil.",
     "topSuppliers": "Top 5 fournisseurs (année en cours)",
@@ -282,11 +291,31 @@
       "fieldExpirationDate": "Date d’expiration",
       "submit": "Uploader"
     },
+    "types": {
+      "CONTRAT": "Contrat",
+      "FACTURE_JUS": "Facture / justificatif",
+      "ORDRE_MISSION": "Ordre de mission",
+      "RAPPORT": "Rapport",
+      "CIRCULAIRE": "Circulaire",
+      "NOTE_DIPLOMATIQUE": "Note diplomatique",
+      "ACREDITATION": "Accréditation",
+      "VISA": "Visa",
+      "PASSEPORT": "Passeport",
+      "AUTRE": "Autre",
+      "COURRIER": "Courrier"
+    },
+    "visibilite": {
+      "PRIVE": "Privé",
+      "SERVICE": "Service",
+      "ORGANISATION": "Organisation",
+      "PUBLIC": "Public"
+    },
     "card": {
       "download": "Télécharger",
       "delete": "Supprimer",
       "expiresIn": "Expire dans {days}j",
-      "expired": "Expiré ({days}j)"
+      "expired": "Expiré ({days}j)",
+      "sizeKb": "{n} Ko"
     }
   },
   "Finance": {
@@ -323,6 +352,12 @@
       "edit": "Modifier",
       "toastSaved": "Enregistré.",
       "toastPaymentSaved": "Paiement enregistré.",
+      "statuts": {
+        "BROUILLON": "Brouillon",
+        "A_PAYER": "À payer",
+        "PAYE": "Payé",
+        "ANNULE": "Annulé"
+      },
       "modal": {
         "titleNew": "Nouvelle facture",
         "titleEdit": "Modifier la facture",
@@ -416,6 +451,39 @@
       "yes": "Oui",
       "no": "Non"
     },
+    "categoryLabels": {
+      "byCode": {
+        "FONCT": "Fonctionnement",
+        "MISSION": "Missions",
+        "EVENT": "Événements",
+        "LOGIST": "Logistique",
+        "SAL": "Salaires",
+        "FRSRV": "Frais de service",
+        "ADHES": "Adhésions",
+        "SUBV": "Subventions",
+        "DONS": "Dons des organisations",
+        "FOURN": "Fourniture",
+        "FOURNITURE": "Fourniture",
+        "MOBIL": "Mobilier",
+        "MOBILIER": "Mobilier",
+        "VENTE": "Vente de biens",
+        "VENTE_BIENS": "Vente de biens"
+      },
+      "byLibelle": {
+        "fonctionnement": "Fonctionnement",
+        "missions": "Missions",
+        "evenements": "Événements",
+        "logistique": "Logistique",
+        "salaires": "Salaires",
+        "frais_de_service": "Frais de service",
+        "adhesions": "Adhésions",
+        "subventions": "Subventions",
+        "dons_des_organisations": "Dons des organisations",
+        "fourniture": "Fourniture",
+        "mobilier": "Mobilier",
+        "vente_de_biens": "Vente de biens"
+      }
+    },
     "paiementModal": {
       "title": "Paiement — {reference}",
       "remaining": "Restant : {amount} {currency}",
@@ -452,6 +520,12 @@
       "filterSearch": "Recherche",
       "filterPlaceholder": "Filtrer",
       "searchPlaceholder": "Nom, prénom, matricule…",
+      "statut": {
+        "ACTIF": "Actif",
+        "EN_CONGE": "En congé",
+        "SORTI": "Sorti",
+        "BROUILLON": "Brouillon"
+      },
       "thMatricule": "Matricule",
       "thNomPrenom": "Nom Prénom",
       "thService": "Service",
@@ -894,6 +968,27 @@
       "thJours": "Jours",
       "thStatut": "Statut",
       "thActions": "Actions",
+      "statut": {
+        "EN_ATTENTE": "En attente",
+        "VALIDE": "Validé",
+        "REJETE": "Rejeté",
+        "ANNULE": "Annulé",
+        "BROUILLON": "Brouillon"
+      },
+      "type": {
+        "ANNUEL": "Annuel",
+        "MALADIE": "Maladie",
+        "EXCEPTIONNEL": "Exceptionnel",
+        "SANS_SOLDE": "Sans solde"
+      },
+      "form": {
+        "typeLabel": "Type de congé",
+        "dateDebut": "Début",
+        "dateFin": "Fin",
+        "estimatedDays": "Jours ouvrés estimés : {count}",
+        "commentaire": "Commentaire",
+        "submit": "Soumettre"
+      },
       "weekdayMon": "Lun",
       "weekdayTue": "Mar",
       "weekdayWed": "Mer",
@@ -906,7 +1001,7 @@
       "placeholderMotif": "Obligatoire",
       "confirmRejectAction": "Confirmer le rejet",
       "validateModalTitle": "Valider la demande",
-      "validateModalHint": "Cette action passera la demande au statut VALIDE.",
+      "validateModalHint": "Cette action passera la demande au statut Validé.",
       "confirmValidateAction": "Confirmer la validation"
     },
     "paie": {
@@ -935,7 +1030,22 @@
       "cancelPaymentTitle": "Annuler le paiement",
       "cancelPaymentHint": "Cette action passera le paiement au statut ANNULE.",
       "confirmCancelPayment": "Confirmer l’annulation",
-      "cancelPaymentSuccess": "Paiement annulé"
+      "cancelPaymentSuccess": "Paiement annulé",
+      "exportPdfBtn": "État de paie PDF",
+      "exportExcelBtn": "État de paie Excel",
+      "exportDialogTitle": "Exports — État de paie",
+      "exportDialogHint": "Sélectionnez la période et le service.",
+      "exportYear": "Année",
+      "exportMonth": "Mois",
+      "exportService": "Service",
+      "exportAllServices": "Tous les services",
+      "exportPdf": "Exporter PDF",
+      "exportExcel": "Exporter Excel",
+      "statut": {
+        "EN_ATTENTE": "En attente",
+        "PAYE": "Payé",
+        "ANNULE": "Annulé"
+      }
     },
     "myPaie": {
       "title": "Ma paie",
@@ -1110,7 +1220,10 @@
     "subtitle": "Biens matériels",
     "pageSubtitle": "Biens matériels et mouvements.",
     "createBien": "+ Nouveau bien",
+    "exportCsv": "Export CSV",
     "totalParcTitle": "Valeur totale du parc (hors service exclu)",
+    "chartByEtat": "Répartition par état",
+    "chartByCategorie": "Répartition par catégorie",
     "thCode": "Code",
     "thLibelle": "Libellé",
     "thCategorie": "Catégorie",
@@ -1156,6 +1269,8 @@
     "csvTypeFactures": "Factures",
     "csvTypeRecettes": "Recettes",
     "csvTypeSalaires": "Salaires",
+    "csvTypeInventaire": "Inventaire",
+    "inventaireExportTitle": "Export inventaire",
     "previewTitle": "Aperçu bilan mensuel",
     "kpiDepenses": "Dépenses",
     "kpiRecettes": "Recettes",
@@ -1165,6 +1280,195 @@
     "kpiEffectifsActifs": "Effectifs actifs",
     "kpiCongesPeriode": "Congés (période)",
     "restrictedHint": "Les exports comptables sont réservés aux rôles Financier et Administrateur."
+  },
+  "Todo": {
+    "title": "À faire",
+    "titleToday": "À faire aujourd'hui",
+    "summary": "{total} action(s) dont {urgentes} urgente(s)",
+    "summaryActions": "{count} actions",
+    "urgentesBadge": "{count} urgentes",
+    "urgentBadge": "Urgent",
+    "refresh": "Actualiser",
+    "markAllDone": "Tout marquer comme traité",
+    "markAllConfirm": "Confirmer : exécuter les actions rapides (validation / approbation / marquer payé) sur les éléments affichés ?",
+    "batchDone": "Traitement batch terminé",
+    "batchError": "Erreur lors du traitement batch.",
+    "loadError": "Impossible de charger les actions.",
+    "empty": "Tout est à jour — aucune action à afficher.",
+    "emptyToday": "Tout est à jour — Aucune action requise aujourd'hui",
+    "emptySection": "Aucune action requise pour l'instant",
+    "emptyGroup": "Aucun élément à afficher.",
+    "updated": "Mis à jour {rel}.",
+    "seeAll": "Voir tout →",
+    "seeDetail": "→ Voir détail",
+    "moreOthers": "+ {count} autres →",
+    "filters": "Filtres",
+    "filterAll": "Toutes",
+    "filterCritical": "Critiques",
+    "filterUrgent": "Urgentes",
+    "filterNormal": "Normales",
+    "sort": "Tri",
+    "sortUrgency": "Par urgence",
+    "sortDate": "Par date",
+    "sortCategory": "Par catégorie",
+    "collapseAll": "Tout masquer ▲",
+    "expandAll": "Tout afficher ▼",
+    "collapseSection": "réduire",
+    "expandSection": "ouvrir",
+    "actionCount": "{count} action(s)",
+    "actionSuccess": "Action effectuée",
+    "actionFailed": "Action impossible",
+    "actionImpossible": "Impossible d'effectuer l'action.",
+    "commentRequired": "Commentaire requis",
+    "commentHint": "Ajoute un commentaire pour confirmer cette action.",
+    "commentPlaceholder": "Motif / commentaire…",
+    "actions": {
+      "validate": "✓ Valider",
+      "reject": "✗ Rejeter",
+      "markPaid": "✓ Marquer payé",
+      "approve": "✓ Approuver",
+      "refuse": "✗ Refuser"
+    },
+    "urgence": {
+      "CRITIQUE": "Critique",
+      "URGENT": "Urgent",
+      "NORMAL": "Normal"
+    },
+    "roles": {
+      "Ressources Humaines": "Ressources Humaines",
+      "Finance": "Finance",
+      "Administration": "Administration",
+      "Logistique": "Logistique"
+    },
+    "categories": {
+      "CONGES_A_VALIDER": "Congés en attente de validation",
+      "MISSIONS_A_APPROUVER": "Missions soumises à approuver",
+      "FRAIS_A_VALIDER": "Frais en attente de validation",
+      "ECHEANCES_RH_URGENTES": "Échéances RH urgentes",
+      "FACTURES_A_PAYER": "Factures à payer",
+      "SALAIRES_A_VERSER": "Salaires à verser (mois courant)",
+      "FRAIS_A_REMBOURSER": "Frais validés à rembourser",
+      "BUDGET_A_VALIDER": "Budget en attente de validation",
+      "BUDGETS_A_VALIDER": "Budgets à valider",
+      "FACTURES_RETARD_CRITIQUE": "Factures en retard critique",
+      "DOCS_EXPIRANTS": "Documents expirants",
+      "BIENS_DEFAILLANTS": "Biens matériels défaillants"
+    },
+    "relative": {
+      "justNow": "à l’instant",
+      "minutes": "il y a {n} min",
+      "hours": "il y a {n} h",
+      "days": "il y a {n} j",
+      "weeks": "il y a {n} sem."
+    }
+  },
+  "ExportsConformite": {
+    "title": "Exports Conformité",
+    "subtitle": "Notes de frais, états de paie, budget, journal d’audit.",
+    "noteFrais": {
+      "title": "Note de Frais Mission",
+      "description": "Génère une note de frais PDF prête à transmettre.",
+      "missionsUnavailable": "Module Missions non installé ou inaccessible.",
+      "searchLabel": "Rechercher une mission",
+      "searchPlaceholder": "Titre, salarié, destination…",
+      "missionLabel": "Mission",
+      "selectPlaceholder": "Sélectionner…",
+      "fraisCount": "{count} frais",
+      "summaryLine": "Avance: {avance} — Total frais validés: {total} — Solde: {solde}",
+      "generateBtn": "Générer la note de frais PDF"
+    },
+    "paie": {
+      "title": "État de Paie",
+      "description": "Exporte l’état de paie mensuel.",
+      "year": "Année",
+      "month": "Mois",
+      "service": "Service",
+      "allServices": "Tous les services",
+      "countLoading": "Chargement…",
+      "countLine": "{count} salariés concernés en {mois}/{annee}",
+      "exportPdf": "Exporter PDF",
+      "exportExcel": "Exporter Excel"
+    },
+    "budget": {
+      "title": "Budget Prévisionnel",
+      "description": "Budget prévu vs réalisé.",
+      "year": "Année",
+      "loading": "Chargement budget…",
+      "statutLabel": "Statut:",
+      "empty": "Aucun budget pour cette année.",
+      "exportPdf": "Exporter PDF",
+      "exportExcel": "Exporter Excel",
+      "statuts": {
+        "BROUILLON": "Brouillon",
+        "VALIDE": "Validé",
+        "CLOTURE": "Clôturé",
+        "ARCHIVE": "Archivé"
+      }
+    },
+    "audit": {
+      "title": "Journal d’Audit",
+      "description": "Exporter les événements d’audit (ADMIN uniquement).",
+      "dateDebut": "Date début",
+      "dateFin": "Date fin",
+      "entite": "Entité (optionnel)",
+      "entitePlaceholder": "Facture, Salarie…",
+      "action": "Action (optionnel)",
+      "actionPlaceholder": "CREATE, UPDATE…",
+      "userId": "UtilisateurId (optionnel)",
+      "userIdPlaceholder": "UUID",
+      "pdf": "PDF",
+      "excel": "Excel",
+      "csv": "Export CSV brut"
+    },
+    "config": {
+      "title": "Configuration des exports",
+      "description": "Paramètres par organisation.",
+      "loading": "Chargement…",
+      "piedPage": "Mention pied de page",
+      "couleur": "Couleur principale (hex)",
+      "seuilPdf": "Seuil sync PDF",
+      "seuilExcel": "Seuil sync Excel",
+      "watermarkActive": "Watermark actif",
+      "watermarkText": "Texte watermark",
+      "uploadLogo": "Upload logo (PNG/JPG 2Mo)",
+      "uploadCachet": "Upload cachet",
+      "uploadSignature": "Upload signature DG",
+      "save": "Enregistrer la configuration",
+      "toastSaved": "Configuration enregistrée.",
+      "toastUploaded": "Fichier uploadé.",
+      "toastUploadError": "Upload impossible."
+    },
+    "recent": {
+      "title": "Mes exports récents",
+      "loading": "Chargement…",
+      "empty": "Aucun export récent."
+    },
+    "jobStatut": {
+      "EN_ATTENTE": "En attente",
+      "EN_COURS": "En cours",
+      "TERMINE": "Terminé",
+      "ERREUR": "Erreur",
+      "EXPIRE": "Expiré"
+    },
+    "progress": {
+      "ready": "Export prêt",
+      "error": "Erreur d’export",
+      "generating": "Génération en cours…",
+      "download": "Télécharger",
+      "retry": "Réessayer",
+      "refresh": "Actualiser",
+      "expiresIn": "Expire dans {hours}h",
+      "available48h": "Disponible 48h",
+      "available48hExpire": "Disponible 48h — expire dans {hours}h.",
+      "errorGeneric": "Une erreur est survenue pendant la génération."
+    },
+    "button": {
+      "preparing": "Préparation…",
+      "downloadNamed": "Télécharger ({name})",
+      "download": "Télécharger",
+      "errorJob": "Export en erreur.",
+      "errorLaunch": "Impossible de lancer l’export."
+    }
   },
   "Errors": {
     "title": "Erreur",
@@ -1181,6 +1485,23 @@
     "passwordMismatch": "Les mots de passe ne correspondent pas"
   },
   "Admin": {
+    "organisation": {
+      "title": "Paramètres de l’organisation",
+      "subtitle": "Identité, devise et seuils métier (ADMIN).",
+      "restricted": "Accès réservé aux administrateurs.",
+      "cardIdentity": "Identité",
+      "cardThresholds": "Seuils métier",
+      "labelNom": "Nom",
+      "labelType": "Type",
+      "labelPays": "Pays",
+      "labelDevise": "Devise par défaut",
+      "labelLogo": "URL du logo",
+      "labelSeuilJustificatif": "Seuil justificatif (EUR)",
+      "hintSeuilJustificatif": "Au-delà de ce montant, un justificatif est requis pour les paiements.",
+      "labelAlerteBudget": "Alerte budget (%)",
+      "hintAlerteBudget": "Pourcentage d’exécution à partir duquel une alerte s’affiche.",
+      "toastSaved": "Paramètres enregistrés"
+    },
     "templates": {
       "title": "Bibliothèque de modèles",
       "subtitle": "Créer des modèles (DOCX/HTML), gérer les versions et uploader les révisions.",

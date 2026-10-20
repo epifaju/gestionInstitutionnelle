@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { RecetteRequest, RecetteResponse } from "@/lib/types/finance";
 import { useAuthStore } from "@/lib/store";
 import { createRecette, deleteRecette, listCategories, listRecettes, updateRecette, uploadJustificatifRecette } from "@/services/finance.service";
+import { translateCategorieLabel } from "@/lib/categorie-i18n";
 
 function fmt(v: string | number) {
   const n = typeof v === "string" ? parseFloat(v) : v;
@@ -23,6 +24,7 @@ function fmt(v: string | number) {
 
 export default function RecettesPage() {
   const t = useTranslations("Finance.recettes");
+  const tCat = useTranslations("Finance.categoryLabels");
   const tc = useTranslations("Common");
   const qc = useQueryClient();
   const role = useAuthStore((s) => s.user?.role);
@@ -86,7 +88,10 @@ export default function RecettesPage() {
       {
         accessorKey: "categorieLibelle",
         header: t("thCategorie"),
-        cell: ({ row }) => row.original.categorieLibelle ?? tc("emDash"),
+        cell: ({ row }) =>
+          row.original.categorieLibelle
+            ? translateCategorieLabel(tCat, { libelle: row.original.categorieLibelle })
+            : tc("emDash"),
       },
       {
         id: "actions",
@@ -138,7 +143,7 @@ export default function RecettesPage() {
         },
       },
     ],
-    [canEdit, t, tc]
+    [canEdit, t, tCat, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });

@@ -12,15 +12,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { BienRequest, BienResponse, MouvementResponse } from "@/lib/types/inventaire";
 import { useAuthStore } from "@/lib/store";
+import { LazyInventaireRepartitionChart } from "@/components/charts/lazy";
 import {
   creerBien,
   historiqueBien,
   listBiens,
+  listResponsablesCandidats,
   modifierBien,
   reformerBien,
   statsInventaire,
 } from "@/services/inventaire.service";
-import { listSalaries } from "@/services/salarie.service";
+import { downloadBlob, downloadExportCsvInventaire } from "@/services/rapports.service";
 
 function fmtEur(n: string | number, localeTag: string, empty: string) {
   const x = typeof n === "number" ? n : parseFloat(String(n));
@@ -42,16 +44,19 @@ export default function InventairePage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const canWrite = user?.role === "ADMIN" || user?.role === "LOGISTIQUE";
+  const canExport = canWrite;
 
   const [page, setPage] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
   const [edit, setEdit] = useState<BienResponse | null>(null);
   const [histId, setHistId] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const { data: stats } = useQuery({ queryKey: ["inventaire", "stats"], queryFn: statsInventaire });
-  const { data: salaries } = useQuery({
-    queryKey: ["rh", "salaries", "all"],
-    queryFn: () => listSalaries({ page: 0, size: 500 }),
+  const { data: responsables } = useQuery({
+    queryKey: ["inventaire", "responsables-candidats"],
+    queryFn: listResponsablesCandidats,
+    enabled: canWrite,
   });
   const { data: listData, isLoading } = useQuery({
     queryKey: ["inventaire", "biens", page],
@@ -88,32 +93,85 @@ export default function InventairePage() {
           <h1 className="text-2xl font-semibold text-foreground">{ti("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{ti("pageSubtitle")}</p>
         </div>
-        {canWrite && (
-          <Button
-            onClick={() => {
-              setEdit(null);
-              setModalOpen(true);
-            }}
-          >
-            {ti("createBien")}
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {canExport ? (
+            <Button
+              type="button"
+              variant="outline"
+              disabled={exporting}
+              onClick={async () => {
+                setExporting(true);
+                try {
+                  const blob = await downloadExportCsvInventaire();
+                  downloadBlob(blob, "export-inventaire.csv");
+                } finally {
+                  setExporting(false);
+                }
+              }}
+            >
+              {ti("exportCsv")}
+            </Button>
+          ) : null}
+          {canWrite ? (
+            <Button
+              onClick={() => {
+                setEdit(null);
+                setModalOpen(true);
+              }}
+            >
+              {ti("createBien")}
+            </Button>
+          ) : null}
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{ti("totalParcTitle")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {stats ? (
-            <p className="text-3xl font-semibold tracking-tight text-foreground">
-              {fmtEur(stats.valeurTotaleParc, localeTag, tc("emDash"))}
-            </p>
-          ) : (
-            <Skeleton className="h-10 w-48" />
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{ti("totalParcTitle")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats ? (
+              <p className="text-3xl font-semibold tracking-tight text-foreground">
+                {fmtEur(stats.valeurTotaleParc, localeTag, tc("emDash"))}
+              </p>
+            ) : (
+              <Skeleton className="h-10 w-48" />
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{ti("chartByEtat")}</CardTitle>
+          </CardHeader>
+          <CardContent className="h-52">
+            {stats ? (
+              <LazyInventaireRepartitionChart
+                data={(stats.repartitionEtat ?? []).map((x) => ({ name: x.etat, value: x.count }))}
+              />
+            ) : (
+              <Skeleton className="h-full w-full" />
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">{ti("chartByCategorie")}</CardTitle>
+          </CardHeader>
+          <CardContent className="h-52">
+            {stats ? (
+              <LazyInventaireRepartitionChart
+                data={(stats.repartitionCategorie ?? []).map((x) => ({
+                  name: x.categorie,
+                  value: x.count,
+                }))}
+              />
+            ) : (
+              <Skeleton className="h-full w-full" />
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {isLoading || !listData ? (
         <Skeleton className="h-64 w-full" />
@@ -205,7 +263,7 @@ export default function InventairePage() {
           setEdit(null);
         }}
         initial={edit}
-        salaries={salaries?.content ?? []}
+        responsables={responsables ?? []}
         pending={mutSave.isPending}
         onSubmit={(req) => mutSave.mutate({ id: edit?.id, req })}
       />

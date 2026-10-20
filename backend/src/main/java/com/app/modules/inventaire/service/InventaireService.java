@@ -6,7 +6,9 @@ import com.app.modules.auth.repository.UtilisateurRepository;
 import com.app.modules.inventaire.dto.BienRequest;
 import com.app.modules.inventaire.dto.BienResponse;
 import com.app.modules.inventaire.dto.MouvementResponse;
+import com.app.modules.inventaire.dto.ResponsableCandidatDto;
 import com.app.modules.inventaire.dto.StatsInventaireResponse;
+import com.app.modules.rh.entity.StatutSalarie;
 import com.app.modules.inventaire.entity.BienMateriel;
 import com.app.modules.inventaire.entity.EtatBien;
 import com.app.modules.inventaire.entity.MouvementBien;
@@ -70,6 +72,18 @@ public class InventaireService {
         BienMateriel b =
                 bienRepo.findByIdAndOrganisationId(id, orgId).orElseThrow(() -> BusinessException.notFound("BIEN"));
         return toResponse(b);
+    }
+
+    /** Candidats responsable pour le picker inventaire (sans ouvrir le CRUD RH). */
+    @Transactional(readOnly = true)
+    public List<ResponsableCandidatDto> listResponsablesCandidats(UUID orgId) {
+        return salarieRepository.findByOrganisationIdAndStatut(orgId, StatutSalarie.ACTIF).stream()
+                .map(s -> new ResponsableCandidatDto(s.getId(), s.getMatricule(), s.getNom(), s.getPrenom()))
+                .sorted((a, b) -> {
+                    int c = Objects.compare(a.nom(), b.nom(), String::compareToIgnoreCase);
+                    return c != 0 ? c : Objects.compare(a.prenom(), b.prenom(), String::compareToIgnoreCase);
+                })
+                .toList();
     }
 
     @Transactional

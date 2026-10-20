@@ -30,6 +30,12 @@ import { GenerateDocumentDialog } from "@/components/templates/GenerateDocumentD
 import { exportNoteFrais, type ExportJobResponse } from "@/services/export-conformite.service";
 import { ExportProgressCard } from "@/components/exports/ExportProgressCard";
 
+const MISSION_STATUT_CODES = ["BROUILLON", "SOUMISE", "APPROUVEE", "EN_COURS", "TERMINEE", "ANNULEE"] as const;
+
+function isMissionStatut(v: string): v is (typeof MISSION_STATUT_CODES)[number] {
+  return (MISSION_STATUT_CODES as readonly string[]).includes(v);
+}
+
 function statutVariant(s: string): "muted" | "info" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
   if (s === "SOUMISE") return "info";
@@ -281,7 +287,9 @@ export default function MissionDetailPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={statutVariant(mission.statut)}>{mission.statut}</Badge>
+          <Badge variant={statutVariant(mission.statut)}>
+            {isMissionStatut(mission.statut) ? t(`statuts.${mission.statut}`) : mission.statut}
+          </Badge>
           {canExportNoteFrais ? (
             <Button
               type="button"

@@ -38,8 +38,8 @@ export default function PaieOrganisationPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const canMark = user?.role === "RH" || user?.role === "FINANCIER" || user?.role === "ADMIN";
-  /** Liste salariés = RH/ADMIN only — ne pas appeler pour FINANCIER (sinon ACCES_REFUSE). */
-  const canListSalaries = user?.role === "RH" || user?.role === "ADMIN";
+  /** PRD §9 : FINANCIER lecture salariés (export paie / filtre service). */
+  const canListSalaries = user?.role === "RH" || user?.role === "ADMIN" || user?.role === "FINANCIER";
   const [annee, setAnnee] = useState(() => new Date().getFullYear());
   const [page, setPage] = useState(0);
   const [markOpen, setMarkOpen] = useState(false);
@@ -154,7 +154,17 @@ export default function PaieOrganisationPage() {
         header: t("thMontant"),
         cell: ({ row }) => <span>{fmtMoney(row.original.montant, row.original.devise, localeTag)}</span>,
       },
-      { accessorKey: "statut", header: t("thStatut") },
+      {
+        accessorKey: "statut",
+        header: t("thStatut"),
+        cell: ({ row }) => {
+          const code = row.original.statut;
+          if (code === "EN_ATTENTE" || code === "PAYE" || code === "ANNULE") {
+            return t(`statut.${code}`);
+          }
+          return code;
+        },
+      },
       ...(canMark
         ? ([
             {
@@ -207,10 +217,10 @@ export default function PaieOrganisationPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button type="button" variant="secondary" onClick={() => setExportOpen(true)}>
-            📄 État de paie PDF
+            📄 {t("exportPdfBtn")}
           </Button>
           <Button type="button" variant="outline" onClick={() => setExportOpen(true)}>
-            📊 État de paie Excel
+            📊 {t("exportExcelBtn")}
           </Button>
           <label className="text-sm text-muted-foreground" htmlFor="annee-paie">
             {tc("year")}
@@ -231,27 +241,27 @@ export default function PaieOrganisationPage() {
       <Dialog open={exportOpen} onOpenChange={setExportOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Exports — État de paie</DialogTitle>
-            <DialogDescription>Sélectionnez la période et le service.</DialogDescription>
+            <DialogTitle>{t("exportDialogTitle")}</DialogTitle>
+            <DialogDescription>{t("exportDialogHint")}</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-3 md:grid-cols-3">
             <div className="space-y-1">
-              <Label>Année</Label>
+              <Label>{t("exportYear")}</Label>
               <Input type="number" value={annee} onChange={(e) => setAnnee(Number(e.target.value) || new Date().getFullYear())} />
             </div>
             <div className="space-y-1">
-              <Label>Mois</Label>
+              <Label>{t("exportMonth")}</Label>
               <Input type="number" min={1} max={12} value={exportMois} onChange={(e) => setExportMois(Number(e.target.value) || 1)} />
             </div>
             <div className="space-y-1">
-              <Label>Service</Label>
+              <Label>{t("exportService")}</Label>
               <select
                 className="h-10 w-full rounded-md border bg-background px-3 text-sm"
                 value={exportService}
                 onChange={(e) => setExportService(e.target.value)}
               >
-                <option value="__ALL__">Tous les services</option>
+                <option value="__ALL__">{t("exportAllServices")}</option>
                 {(servicesData ?? []).map((s) => (
                   <option key={s} value={s}>
                     {s}
@@ -263,14 +273,14 @@ export default function PaieOrganisationPage() {
 
           <div className="flex flex-wrap gap-2">
             <ExportButton
-              label="Exporter PDF"
+              label={t("exportPdf")}
               variant="pdf"
               onExport={() =>
                 exportEtatPaiePdf({ annee, mois: exportMois, service: exportService === "__ALL__" ? null : exportService })
               }
             />
             <ExportButton
-              label="Exporter Excel"
+              label={t("exportExcel")}
               variant="excel"
               onExport={() =>
                 exportEtatPaieExcel({ annee, mois: exportMois, service: exportService === "__ALL__" ? null : exportService })

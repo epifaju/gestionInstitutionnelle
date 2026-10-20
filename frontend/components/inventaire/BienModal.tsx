@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { BienRequest, BienResponse } from "@/lib/types/inventaire";
-import type { SalarieResponse } from "@/lib/types/rh";
+import type { ResponsableCandidat } from "@/services/inventaire.service";
 
 const ETATS = ["BON", "USE", "DEFAILLANT", "HORS_SERVICE"] as const;
 
@@ -17,10 +17,10 @@ type Props = {
   onSubmit: (body: BienRequest) => void;
   pending?: boolean;
   initial?: BienResponse | null;
-  salaries: SalarieResponse[];
+  responsables: ResponsableCandidat[];
 };
 
-export function BienModal({ open, onClose, onSubmit, pending, initial, salaries }: Props) {
+export function BienModal({ open, onClose, onSubmit, pending, initial, responsables }: Props) {
   const t = useTranslations("Inventaire.modal");
   const tc = useTranslations("Common");
   const [libelle, setLibelle] = useState("");
@@ -146,9 +146,10 @@ export function BienModal({ open, onClose, onSubmit, pending, initial, salaries 
               onChange={(e) => setResponsableId(e.target.value)}
             >
               <option value="">{tc("emDash")}</option>
-              {salaries.map((s) => (
+              {responsables.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.prenom} {s.nom}
+                  {s.matricule ? ` (${s.matricule})` : ""}
                 </option>
               ))}
             </select>

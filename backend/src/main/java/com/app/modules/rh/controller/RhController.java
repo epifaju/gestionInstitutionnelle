@@ -53,7 +53,7 @@ public class RhController {
         private final PaieService paieService;
 
         @GetMapping("/salaries")
-        @PreAuthorize("hasAnyRole('RH','ADMIN')")
+        @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
         public ResponseEntity<ApiResponse<PageResponse<SalarieResponse>>> listSalaries(
                         @AuthenticationPrincipal CustomUserDetails user,
                         @RequestParam(required = false) String statut,
@@ -74,7 +74,7 @@ public class RhController {
         }
 
         @GetMapping("/salaries/{id}")
-        @PreAuthorize("hasAnyRole('RH','ADMIN') or @securityService.isSelf(#id,authentication)")
+        @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER') or @securityService.isSelf(#id,authentication)")
         public ResponseEntity<ApiResponse<SalarieResponse>> getSalarie(
                         @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) {
                 return ResponseEntity.ok(ApiResponse.ok(salarieService.getById(id, user.getOrganisationId())));
@@ -141,7 +141,7 @@ public class RhController {
         }
 
         @GetMapping("/salaries/{id}/historique-salaires")
-        @PreAuthorize("hasAnyRole('RH','ADMIN')")
+        @PreAuthorize("hasAnyRole('RH','ADMIN','FINANCIER')")
         public ResponseEntity<ApiResponse<List<HistoriqueSalaireResponse>>> historiqueSalaires(
                         @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) {
                 return ResponseEntity.ok(

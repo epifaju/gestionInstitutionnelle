@@ -16,7 +16,14 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { SalarieModal } from "@/components/rh/SalarieModal";
 import type { SalarieRequest, SalarieResponse } from "@/lib/types/rh";
+import { useAuthStore } from "@/lib/store";
 import { createSalarie, listSalaries } from "@/services/salarie.service";
+
+const STATUT_CODES = ["ACTIF", "EN_CONGE", "SORTI", "BROUILLON"] as const;
+
+function isStatutCode(v: string): v is (typeof STATUT_CODES)[number] {
+  return (STATUT_CODES as readonly string[]).includes(v);
+}
 
 function statutVariant(s: string): "success" | "warning" | "muted" | "default" {
   if (s === "ACTIF") return "success";
@@ -29,6 +36,8 @@ export default function SalariesPage() {
   const ts = useTranslations("RH.salaries");
   const tc = useTranslations("Common");
   const qc = useQueryClient();
+  const user = useAuthStore((s) => s.user);
+  const canWrite = user?.role === "RH" || user?.role === "ADMIN";
   const [page, setPage] = useState(0);
   const [statut, setStatut] = useState<string>("");
   const [service, setService] = useState("");
@@ -73,9 +82,14 @@ export default function SalariesPage() {
       {
         accessorKey: "statut",
         header: ts("thStatutList"),
-        cell: ({ row }) => (
-          <Badge variant={statutVariant(row.original.statut)}>{row.original.statut}</Badge>
-        ),
+        cell: ({ row }) => {
+          const code = row.original.statut;
+          return (
+            <Badge variant={statutVariant(code)}>
+              {isStatutCode(code) ? ts(`statut.${code}`) : code}
+            </Badge>
+          );
+        },
       },
       {
         id: "actions",
@@ -103,9 +117,11 @@ export default function SalariesPage() {
           <h1 className="text-2xl font-semibold text-foreground">{ts("title")}</h1>
           <p className="text-sm text-muted-foreground">{ts("subtitle")}</p>
         </div>
-        <Button type="button" onClick={() => setModal(true)}>
-          {ts("create")}
-        </Button>
+        {canWrite ? (
+          <Button type="button" onClick={() => setModal(true)}>
+            {ts("create")}
+          </Button>
+        ) : null}
       </div>
 
       <div className="flex flex-wrap gap-2 rounded-lg border border-border bg-card p-3 text-card-foreground">
@@ -129,10 +145,11 @@ export default function SalariesPage() {
             }}
           >
             <option value="">{tc("all")}</option>
-            <option value="ACTIF">ACTIF</option>
-            <option value="EN_CONGE">EN_CONGE</option>
-            <option value="SORTI">SORTI</option>
-            <option value="BROUILLON">BROUILLON</option>
+            {STATUT_CODES.map((code) => (
+              <option key={code} value={code}>
+                {ts(`statut.${code}`)}
+              </option>
+            ))}
           </select>
         </div>
         <div className="min-w-[200px] flex-1">
@@ -210,13 +227,15 @@ export default function SalariesPage() {
         </div>
       )}
 
-      <SalarieModal
-        open={modal}
-        onClose={() => setModal(false)}
-        onCreate={async (b) => {
-          await mut.mutateAsync(b);
-        }}
-      />
+      {canWrite ? (
+        <SalarieModal
+          open={modal}
+          onClose={() => setModal(false)}
+          onCreate={async (b) => {
+            await mut.mutateAsync(b);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

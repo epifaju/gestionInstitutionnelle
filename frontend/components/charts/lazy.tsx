@@ -19,3 +19,13 @@ export const LazyDevisesHistoryChart = dynamic(
   () => import("./devises-history-chart").then((m) => m.DevisesHistoryChart),
   { ssr: false, loading: () => chartFallback }
 );
+
+export const LazyBudgetExecutionChart = dynamic(
+  () => import("./budget-execution-chart").then((m) => m.BudgetExecutionChart),
+  { ssr: false, loading: () => chartFallback }
+);
+
+export const LazyInventaireRepartitionChart = dynamic(
+  () => import("./inventaire-repartition-chart").then((m) => m.InventaireRepartitionChart),
+  { ssr: false, loading: () => chartFallback }
+);

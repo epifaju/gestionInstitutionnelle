@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,8 @@ const schema = z.object({
 
 export type CongeFormValues = z.infer<typeof schema>;
 
+const TYPE_OPTIONS = ["ANNUEL", "MALADIE", "EXCEPTIONNEL", "SANS_SOLDE"] as const;
+
 export function CongeForm({
   salarieId,
   onSubmit,
@@ -26,6 +29,7 @@ export function CongeForm({
   salarieId: string;
   onSubmit: (data: CongeRequest) => Promise<void>;
 }) {
+  const t = useTranslations("RH.conges");
   const form = useForm<CongeFormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -59,36 +63,37 @@ export function CongeForm({
     >
       <input type="hidden" {...form.register("salarieId")} />
       <div>
-        <Label>Type de congé</Label>
+        <Label>{t("form.typeLabel")}</Label>
         <select
           className="flex h-9 w-full rounded-md border border-border bg-background px-3 text-sm text-foreground"
           {...form.register("typeConge")}
         >
-          <option value="ANNUEL">Annuel</option>
-          <option value="MALADIE">Maladie</option>
-          <option value="EXCEPTIONNEL">Exceptionnel</option>
-          <option value="SANS_SOLDE">Sans solde</option>
+          {TYPE_OPTIONS.map((code) => (
+            <option key={code} value={code}>
+              {t(`type.${code}`)}
+            </option>
+          ))}
         </select>
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label htmlFor="dateDebut">Début</Label>
+          <Label htmlFor="dateDebut">{t("form.dateDebut")}</Label>
           <Input id="dateDebut" type="date" {...form.register("dateDebut")} />
         </div>
         <div>
-          <Label htmlFor="dateFin">Fin</Label>
+          <Label htmlFor="dateFin">{t("form.dateFin")}</Label>
           <Input id="dateFin" type="date" {...form.register("dateFin")} />
         </div>
       </div>
       <p className="text-sm text-muted-foreground">
-        Jours ouvrés estimés : <span className="font-semibold text-foreground">{nb}</span>
+        {t("form.estimatedDays", { count: nb })}
       </p>
       <div>
-        <Label htmlFor="commentaire">Commentaire</Label>
+        <Label htmlFor="commentaire">{t("form.commentaire")}</Label>
         <Input id="commentaire" {...form.register("commentaire")} />
       </div>
       <Button type="submit" disabled={form.formState.isSubmitting}>
-        Soumettre
+        {t("form.submit")}
       </Button>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useAuthStore } from "@/lib/store";
@@ -48,6 +49,8 @@ function flatten(data: TodoDashboardResponse | undefined) {
 }
 
 export default function TodoPage() {
+  const t = useTranslations("Todo");
+  const tc = useTranslations("Common");
   const user = useAuthStore((s) => s.user);
   const queryClient = useQueryClient();
   const [filtre, setFiltre] = useState<Filtre>("TOUTES");
@@ -89,12 +92,12 @@ export default function TodoPage() {
     return (
       <Card className="border-border">
         <CardHeader>
-          <CardTitle className="text-base">📋 À faire</CardTitle>
+          <CardTitle className="text-base">📋 {t("title")}</CardTitle>
         </CardHeader>
         <CardContent className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">Impossible de charger les actions.</p>
+          <p className="text-sm text-muted-foreground">{t("loadError")}</p>
           <Button type="button" variant="outline" size="sm" onClick={() => refetch()}>
-            Réessayer
+            {tc("retry")}
           </Button>
         </CardContent>
       </Card>
@@ -103,7 +106,7 @@ export default function TodoPage() {
 
   async function toutMarquerTraite() {
     if (user?.role !== "ADMIN") return;
-    if (!confirm("Confirmer : exécuter les actions rapides (validation / approbation / marquer payé) sur les éléments affichés ?")) return;
+    if (!confirm(t("markAllConfirm"))) return;
 
     const actionable = groups.flatMap((g) =>
       g.items.map((it) => ({ groupeCategorie: g.categorie, item: it }))
@@ -126,11 +129,11 @@ export default function TodoPage() {
         if (!typeAction) continue;
         await todoDashboardService.executerAction(item.type, item.id, { typeAction });
       }
-      toast.success("Traitement batch terminé");
+      toast.success(t("batchDone"));
       queryClient.invalidateQueries({ queryKey: ["todo-dashboard"] });
       queryClient.invalidateQueries({ queryKey: ["sidebar-comptages"] });
     } catch (e) {
-      toast.error((e as Error)?.message ?? "Erreur lors du traitement batch.");
+      toast.error((e as Error)?.message ?? t("batchError"));
     } finally {
       setBatching(false);
     }
@@ -140,21 +143,23 @@ export default function TodoPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-semibold text-foreground">📋 À faire</h1>
+          <h1 className="text-2xl font-semibold text-foreground">📋 {t("title")}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {data.totalActionsGlobal} action(s) dont {data.totalActionsUrgentes} urgente(s)
+            {t("summary", { total: data.totalActionsGlobal, urgentes: data.totalActionsUrgentes })}
           </p>
         </div>
         <div className="flex items-center gap-2">
           {data.totalActionsUrgentes > 0 ? (
-            <Badge className="bg-red-600 text-white hover:bg-red-600">{data.totalActionsUrgentes} urgentes</Badge>
+            <Badge className="bg-red-600 text-white hover:bg-red-600">
+              {t("urgentesBadge", { count: data.totalActionsUrgentes })}
+            </Badge>
           ) : null}
           <Button type="button" variant="outline" size="sm" onClick={() => refetch()} disabled={batching}>
-            🔄 Actualiser
+            🔄 {t("refresh")}
           </Button>
           {user?.role === "ADMIN" ? (
             <Button type="button" variant="destructive" size="sm" onClick={() => void toutMarquerTraite()} disabled={batching}>
-              Tout marquer comme traité
+              {t("markAllDone")}
             </Button>
           ) : null}
         </div>
@@ -162,29 +167,29 @@ export default function TodoPage() {
 
       <Card className="border-border">
         <CardContent className="flex flex-wrap items-center gap-2 p-4">
-          <span className="text-sm font-medium text-foreground">Filtres</span>
+          <span className="text-sm font-medium text-foreground">{t("filters")}</span>
           <Button type="button" size="sm" variant={filtre === "TOUTES" ? "default" : "outline"} onClick={() => setFiltre("TOUTES")}>
-            Toutes
+            {t("filterAll")}
           </Button>
           <Button type="button" size="sm" variant={filtre === "CRITIQUES" ? "default" : "outline"} onClick={() => setFiltre("CRITIQUES")}>
-            Critiques
+            {t("filterCritical")}
           </Button>
           <Button type="button" size="sm" variant={filtre === "URGENTES" ? "default" : "outline"} onClick={() => setFiltre("URGENTES")}>
-            Urgentes
+            {t("filterUrgent")}
           </Button>
           <Button type="button" size="sm" variant={filtre === "NORMALES" ? "default" : "outline"} onClick={() => setFiltre("NORMALES")}>
-            Normales
+            {t("filterNormal")}
           </Button>
 
-          <span className="ml-auto text-sm font-medium text-foreground">Tri</span>
+          <span className="ml-auto text-sm font-medium text-foreground">{t("sort")}</span>
           <Button type="button" size="sm" variant={tri === "URGENCE" ? "default" : "outline"} onClick={() => setTri("URGENCE")}>
-            Par urgence
+            {t("sortUrgency")}
           </Button>
           <Button type="button" size="sm" variant={tri === "DATE" ? "default" : "outline"} onClick={() => setTri("DATE")}>
-            Par date
+            {t("sortDate")}
           </Button>
           <Button type="button" size="sm" variant={tri === "CATEGORIE" ? "default" : "outline"} onClick={() => setTri("CATEGORIE")}>
-            Par catégorie
+            {t("sortCategory")}
           </Button>
         </CardContent>
       </Card>
@@ -192,7 +197,7 @@ export default function TodoPage() {
       <div className="space-y-4">
         {groups.length === 0 ? (
           <Card className="border-border">
-            <CardContent className="p-6 text-sm text-muted-foreground">✅ Tout est à jour — aucune action à afficher.</CardContent>
+            <CardContent className="p-6 text-sm text-muted-foreground">✅ {t("empty")}</CardContent>
           </Card>
         ) : (
           groups.map((g) => <TodoActionGroup key={g.categorie} groupe={g} onRefresh={() => refetch()} />)
@@ -201,4 +206,3 @@ export default function TodoPage() {
     </div>
   );
 }
-

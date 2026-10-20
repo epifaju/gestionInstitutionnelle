@@ -21,6 +21,13 @@ import { FactureModal } from "@/components/finance/FactureModal";
 import type { FactureRequest, FactureResponse } from "@/lib/types/finance";
 import { useAuthStore } from "@/lib/store";
 import { createFacture, listCategories, listFactures } from "@/services/finance.service";
+import { translateCategorieLabel } from "@/lib/categorie-i18n";
+
+const STATUT_CODES = ["BROUILLON", "A_PAYER", "PAYE", "ANNULE"] as const;
+
+function isFactureStatut(v: string): v is (typeof STATUT_CODES)[number] {
+  return (STATUT_CODES as readonly string[]).includes(v);
+}
 
 function statutBadge(s: string): "muted" | "warning" | "success" | "dangerSolid" {
   if (s === "BROUILLON") return "muted";
@@ -53,6 +60,7 @@ function downloadCsv(rows: FactureResponse[], headerLine: string) {
 
 export default function FacturesPage() {
   const t = useTranslations("Finance.factures");
+  const tCat = useTranslations("Finance.categoryLabels");
   const tc = useTranslations("Common");
   const qc = useQueryClient();
   const router = useRouter();
@@ -127,12 +135,22 @@ export default function FacturesPage() {
       {
         accessorKey: "categorieLibelle",
         header: t("thCategorie"),
-        cell: ({ row }) => row.original.categorieLibelle ?? tc("emDash"),
+        cell: ({ row }) =>
+          row.original.categorieLibelle
+            ? translateCategorieLabel(tCat, { libelle: row.original.categorieLibelle })
+            : tc("emDash"),
       },
       {
         accessorKey: "statut",
         header: t("thStatut"),
-        cell: ({ row }) => <Badge variant={statutBadge(row.original.statut)}>{row.original.statut}</Badge>,
+        cell: ({ row }) => {
+          const code = row.original.statut;
+          return (
+            <Badge variant={statutBadge(code)}>
+              {isFactureStatut(code) ? t(`statuts.${code}`) : code}
+            </Badge>
+          );
+        },
       },
       {
         id: "open",
@@ -148,7 +166,7 @@ export default function FacturesPage() {
         ),
       },
     ],
-    [t, tc]
+    [t, tCat, tc]
   );
 
   const table = useReactTable({ data: rows, columns, getCoreRowModel: getCoreRowModel() });
@@ -175,7 +193,7 @@ export default function FacturesPage() {
             <option value="">{tc("allFeminine")}</option>
             {(categories ?? []).map((c) => (
               <option key={c.id} value={c.id}>
-                {c.libelle}
+                {translateCategorieLabel(tCat, c)}
               </option>
             ))}
           </select>
@@ -188,10 +206,11 @@ export default function FacturesPage() {
             onChange={(e) => setStatut(e.target.value)}
           >
             <option value="">{tc("all")}</option>
-            <option value="BROUILLON">BROUILLON</option>
-            <option value="A_PAYER">A_PAYER</option>
-            <option value="PAYE">PAYE</option>
-            <option value="ANNULE">ANNULE</option>
+            {STATUT_CODES.map((code) => (
+              <option key={code} value={code}>
+                {t(`statuts.${code}`)}
+              </option>
+            ))}
           </select>
         </div>
         <div>

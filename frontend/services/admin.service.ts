@@ -4,6 +4,8 @@ import type {
   AdminUserResponse,
   AdminUserUpdateRequest,
   AuditLogResponse,
+  OrganisationSettings,
+  OrganisationSettingsUpdateRequest,
 } from "@/lib/types/admin";
 import type { PageResponse } from "@/lib/types/rh";
 
@@ -21,4 +23,12 @@ export async function updateAdminUser(id: string, body: AdminUserUpdateRequest) 
 
 export async function listAuditLogs(params: { page?: number; size?: number }) {
   return get<PageResponse<AuditLogResponse>>("admin/audit-logs", { params });
+}
+
+export async function getOrganisationSettings() {
+  return get<OrganisationSettings>("admin/organisation");
+}
+
+export async function updateOrganisationSettings(body: OrganisationSettingsUpdateRequest) {
+  return put<OrganisationSettings>("admin/organisation", body);
 }

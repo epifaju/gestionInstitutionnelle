@@ -5,6 +5,7 @@ import com.app.modules.inventaire.dto.BienRequest;
 import com.app.modules.inventaire.dto.BienResponse;
 import com.app.modules.inventaire.dto.MouvementResponse;
 import com.app.modules.inventaire.dto.ReformeRequest;
+import com.app.modules.inventaire.dto.ResponsableCandidatDto;
 import com.app.modules.inventaire.dto.StatsInventaireResponse;
 import com.app.modules.inventaire.service.InventaireService;
 import com.app.shared.dto.ApiResponse;
@@ -58,7 +59,7 @@ public class InventaireController {
     }
 
     @GetMapping("/biens/{id}")
-    @PreAuthorize("hasAnyRole('LOGISTIQUE','ADMIN')")
+    @PreAuthorize("hasAnyRole('LOGISTIQUE','ADMIN','FINANCIER')")
     public ResponseEntity<ApiResponse<BienResponse>> getBien(
             @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) {
         return ResponseEntity.ok(ApiResponse.ok(inventaireService.getById(id, user.getOrganisationId())));
@@ -85,7 +86,7 @@ public class InventaireController {
     }
 
     @GetMapping("/biens/{id}/historique")
-    @PreAuthorize("hasAnyRole('LOGISTIQUE','ADMIN')")
+    @PreAuthorize("hasAnyRole('LOGISTIQUE','ADMIN','FINANCIER')")
     public ResponseEntity<ApiResponse<List<MouvementResponse>>> historique(
             @AuthenticationPrincipal CustomUserDetails user, @PathVariable UUID id) {
         return ResponseEntity.ok(
@@ -97,5 +98,13 @@ public class InventaireController {
     public ResponseEntity<ApiResponse<StatsInventaireResponse>> stats(
             @AuthenticationPrincipal CustomUserDetails user) {
         return ResponseEntity.ok(ApiResponse.ok(inventaireService.getStats(user.getOrganisationId())));
+    }
+
+    @GetMapping("/responsables-candidats")
+    @PreAuthorize("hasAnyRole('LOGISTIQUE','ADMIN','FINANCIER')")
+    public ResponseEntity<ApiResponse<List<ResponsableCandidatDto>>> responsablesCandidats(
+            @AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(
+                ApiResponse.ok(inventaireService.listResponsablesCandidats(user.getOrganisationId())));
     }
 }

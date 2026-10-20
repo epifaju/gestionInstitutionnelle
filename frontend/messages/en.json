@@ -102,6 +102,7 @@
     "rapports": "Reports",
     "rapportsConformite": "Compliance exports",
     "settings": "Settings",
+    "adminOrganisation": "Organisation",
     "adminUsers": "Users",
     "adminWorkflows": "Workflows",
     "adminTemplates": "Templates",
@@ -157,6 +158,14 @@
     "thNbJours": "Days",
     "thStatut": "Status",
     "thTotalFrais": "Total expenses",
+    "statuts": {
+      "BROUILLON": "Draft",
+      "SOUMISE": "Submitted",
+      "APPROUVEE": "Approved",
+      "EN_COURS": "In progress",
+      "TERMINEE": "Completed",
+      "ANNULEE": "Cancelled"
+    },
     "fTitre": "Title",
     "fDestination": "Destination",
     "fPays": "Country (optional)",
@@ -204,7 +213,7 @@
     "kpiRecettes": "Income",
     "kpiSolde": "Balance",
     "kpiEffectifs": "Active headcount",
-    "chartTitle": "Expenses vs income (6 months)",
+    "chartTitle": "Expenses, income and balance (6 months)",
     "alertsTitle": "Budget alerts",
     "alertsEmpty": "No category above the threshold.",
     "topSuppliers": "Top 5 suppliers (current year)",
@@ -282,11 +291,31 @@
       "fieldExpirationDate": "Expiration date",
       "submit": "Upload"
     },
+    "types": {
+      "CONTRAT": "Contract",
+      "FACTURE_JUS": "Invoice / receipt",
+      "ORDRE_MISSION": "Mission order",
+      "RAPPORT": "Report",
+      "CIRCULAIRE": "Circular",
+      "NOTE_DIPLOMATIQUE": "Diplomatic note",
+      "ACREDITATION": "Accreditation",
+      "VISA": "Visa",
+      "PASSEPORT": "Passport",
+      "AUTRE": "Other",
+      "COURRIER": "Letter"
+    },
+    "visibilite": {
+      "PRIVE": "Private",
+      "SERVICE": "Department",
+      "ORGANISATION": "Organisation",
+      "PUBLIC": "Public"
+    },
     "card": {
       "download": "Download",
       "delete": "Delete",
       "expiresIn": "Expires in {days}d",
-      "expired": "Expired ({days}d)"
+      "expired": "Expired ({days}d)",
+      "sizeKb": "{n} KB"
     }
   },
   "Finance": {
@@ -323,6 +352,12 @@
       "edit": "Edit",
       "toastSaved": "Saved.",
       "toastPaymentSaved": "Payment recorded.",
+      "statuts": {
+        "BROUILLON": "Draft",
+        "A_PAYER": "To pay",
+        "PAYE": "Paid",
+        "ANNULE": "Cancelled"
+      },
       "modal": {
         "titleNew": "New invoice",
         "titleEdit": "Edit invoice",
@@ -416,6 +451,39 @@
       "yes": "Yes",
       "no": "No"
     },
+    "categoryLabels": {
+      "byCode": {
+        "FONCT": "Operations",
+        "MISSION": "Missions",
+        "EVENT": "Events",
+        "LOGIST": "Logistics",
+        "SAL": "Payroll",
+        "FRSRV": "Service fees",
+        "ADHES": "Memberships",
+        "SUBV": "Grants",
+        "DONS": "Donations from organisations",
+        "FOURN": "Supplies",
+        "FOURNITURE": "Supplies",
+        "MOBIL": "Furniture",
+        "MOBILIER": "Furniture",
+        "VENTE": "Sale of goods",
+        "VENTE_BIENS": "Sale of goods"
+      },
+      "byLibelle": {
+        "fonctionnement": "Operations",
+        "missions": "Missions",
+        "evenements": "Events",
+        "logistique": "Logistics",
+        "salaires": "Payroll",
+        "frais_de_service": "Service fees",
+        "adhesions": "Memberships",
+        "subventions": "Grants",
+        "dons_des_organisations": "Donations from organisations",
+        "fourniture": "Supplies",
+        "mobilier": "Furniture",
+        "vente_de_biens": "Sale of goods"
+      }
+    },
     "paiementModal": {
       "title": "Payment — {reference}",
       "remaining": "Remaining: {amount} {currency}",
@@ -452,6 +520,12 @@
       "filterSearch": "Search",
       "filterPlaceholder": "Filter",
       "searchPlaceholder": "Name, employee ID…",
+      "statut": {
+        "ACTIF": "Active",
+        "EN_CONGE": "On leave",
+        "SORTI": "Left",
+        "BROUILLON": "Draft"
+      },
       "thMatricule": "Employee ID",
       "thNomPrenom": "Name",
       "thService": "Department",
@@ -880,6 +954,27 @@
       "thJours": "Days",
       "thStatut": "Status",
       "thActions": "Actions",
+      "statut": {
+        "EN_ATTENTE": "Pending",
+        "VALIDE": "Approved",
+        "REJETE": "Rejected",
+        "ANNULE": "Cancelled",
+        "BROUILLON": "Draft"
+      },
+      "type": {
+        "ANNUEL": "Annual",
+        "MALADIE": "Sick leave",
+        "EXCEPTIONNEL": "Exceptional",
+        "SANS_SOLDE": "Unpaid"
+      },
+      "form": {
+        "typeLabel": "Leave type",
+        "dateDebut": "Start",
+        "dateFin": "End",
+        "estimatedDays": "Estimated working days: {count}",
+        "commentaire": "Comment",
+        "submit": "Submit"
+      },
       "weekdayMon": "Mon",
       "weekdayTue": "Tue",
       "weekdayWed": "Wed",
@@ -892,7 +987,7 @@
       "placeholderMotif": "Required",
       "confirmRejectAction": "Confirm rejection",
       "validateModalTitle": "Approve request",
-      "validateModalHint": "This will set the request status to VALIDE.",
+      "validateModalHint": "This will set the request status to Approved.",
       "confirmValidateAction": "Confirm approval"
     },
     "paie": {
@@ -921,7 +1016,22 @@
       "cancelPaymentTitle": "Cancel payment",
       "cancelPaymentHint": "This will set the payment status to CANCELLED.",
       "confirmCancelPayment": "Confirm cancellation",
-      "cancelPaymentSuccess": "Payment cancelled"
+      "cancelPaymentSuccess": "Payment cancelled",
+      "exportPdfBtn": "Payroll PDF",
+      "exportExcelBtn": "Payroll Excel",
+      "exportDialogTitle": "Exports — Payroll statement",
+      "exportDialogHint": "Select the period and department.",
+      "exportYear": "Year",
+      "exportMonth": "Month",
+      "exportService": "Department",
+      "exportAllServices": "All departments",
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel",
+      "statut": {
+        "EN_ATTENTE": "Pending",
+        "PAYE": "Paid",
+        "ANNULE": "Cancelled"
+      }
     },
     "myPaie": {
       "title": "My pay",
@@ -1096,7 +1206,10 @@
     "subtitle": "Fixed assets",
     "pageSubtitle": "Assets and movements.",
     "createBien": "+ New asset",
+    "exportCsv": "Export CSV",
     "totalParcTitle": "Total fleet value (excluding out-of-service)",
+    "chartByEtat": "Breakdown by condition",
+    "chartByCategorie": "Breakdown by category",
     "thCode": "Code",
     "thLibelle": "Label",
     "thCategorie": "Category",
@@ -1142,6 +1255,8 @@
     "csvTypeFactures": "Invoices",
     "csvTypeRecettes": "Receipts",
     "csvTypeSalaires": "Payroll",
+    "csvTypeInventaire": "Inventory",
+    "inventaireExportTitle": "Inventory export",
     "previewTitle": "Monthly report preview",
     "kpiDepenses": "Expenses",
     "kpiRecettes": "Income",
@@ -1151,6 +1266,195 @@
     "kpiEffectifsActifs": "Active headcount",
     "kpiCongesPeriode": "Leave (period)",
     "restrictedHint": "Accounting exports are restricted to Finance and Administrator roles."
+  },
+  "Todo": {
+    "title": "To-do",
+    "titleToday": "To-do today",
+    "summary": "{total} action(s) including {urgentes} urgent",
+    "summaryActions": "{count} actions",
+    "urgentesBadge": "{count} urgent",
+    "urgentBadge": "Urgent",
+    "refresh": "Refresh",
+    "markAllDone": "Mark all as done",
+    "markAllConfirm": "Confirm: run quick actions (approve / reject / mark paid) on the displayed items?",
+    "batchDone": "Batch processing completed",
+    "batchError": "Error during batch processing.",
+    "loadError": "Unable to load actions.",
+    "empty": "All caught up — nothing to show.",
+    "emptyToday": "All caught up — no action required today",
+    "emptySection": "No action required for now",
+    "emptyGroup": "No items to display.",
+    "updated": "Updated {rel}.",
+    "seeAll": "See all →",
+    "seeDetail": "→ View detail",
+    "moreOthers": "+ {count} more →",
+    "filters": "Filters",
+    "filterAll": "All",
+    "filterCritical": "Critical",
+    "filterUrgent": "Urgent",
+    "filterNormal": "Normal",
+    "sort": "Sort",
+    "sortUrgency": "By urgency",
+    "sortDate": "By date",
+    "sortCategory": "By category",
+    "collapseAll": "Collapse all ▲",
+    "expandAll": "Expand all ▼",
+    "collapseSection": "collapse",
+    "expandSection": "expand",
+    "actionCount": "{count} action(s)",
+    "actionSuccess": "Action completed",
+    "actionFailed": "Action failed",
+    "actionImpossible": "Unable to perform the action.",
+    "commentRequired": "Comment required",
+    "commentHint": "Add a comment to confirm this action.",
+    "commentPlaceholder": "Reason / comment…",
+    "actions": {
+      "validate": "✓ Approve",
+      "reject": "✗ Reject",
+      "markPaid": "✓ Mark as paid",
+      "approve": "✓ Approve",
+      "refuse": "✗ Refuse"
+    },
+    "urgence": {
+      "CRITIQUE": "Critical",
+      "URGENT": "Urgent",
+      "NORMAL": "Normal"
+    },
+    "roles": {
+      "Ressources Humaines": "Human Resources",
+      "Finance": "Finance",
+      "Administration": "Administration",
+      "Logistique": "Logistics"
+    },
+    "categories": {
+      "CONGES_A_VALIDER": "Leave awaiting approval",
+      "MISSIONS_A_APPROUVER": "Missions awaiting approval",
+      "FRAIS_A_VALIDER": "Expenses awaiting validation",
+      "ECHEANCES_RH_URGENTES": "Urgent HR deadlines",
+      "FACTURES_A_PAYER": "Invoices to pay",
+      "SALAIRES_A_VERSER": "Payroll to pay (current month)",
+      "FRAIS_A_REMBOURSER": "Validated expenses to reimburse",
+      "BUDGET_A_VALIDER": "Budget awaiting approval",
+      "BUDGETS_A_VALIDER": "Budgets to approve",
+      "FACTURES_RETARD_CRITIQUE": "Critically overdue invoices",
+      "DOCS_EXPIRANTS": "Expiring documents",
+      "BIENS_DEFAILLANTS": "Faulty assets"
+    },
+    "relative": {
+      "justNow": "just now",
+      "minutes": "{n} min ago",
+      "hours": "{n} h ago",
+      "days": "{n} d ago",
+      "weeks": "{n} wk ago"
+    }
+  },
+  "ExportsConformite": {
+    "title": "Compliance exports",
+    "subtitle": "Expense reports, payroll statements, budget, audit log.",
+    "noteFrais": {
+      "title": "Mission expense report",
+      "description": "Generate a PDF expense report ready to send.",
+      "missionsUnavailable": "Missions module not installed or unavailable.",
+      "searchLabel": "Search a mission",
+      "searchPlaceholder": "Title, employee, destination…",
+      "missionLabel": "Mission",
+      "selectPlaceholder": "Select…",
+      "fraisCount": "{count} expenses",
+      "summaryLine": "Advance: {avance} — Validated total: {total} — Balance: {solde}",
+      "generateBtn": "Generate expense report PDF"
+    },
+    "paie": {
+      "title": "Payroll statement",
+      "description": "Export the monthly payroll statement.",
+      "year": "Year",
+      "month": "Month",
+      "service": "Department",
+      "allServices": "All departments",
+      "countLoading": "Loading…",
+      "countLine": "{count} employees concerned in {mois}/{annee}",
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel"
+    },
+    "budget": {
+      "title": "Budget forecast",
+      "description": "Planned vs actual budget.",
+      "year": "Year",
+      "loading": "Loading budget…",
+      "statutLabel": "Status:",
+      "empty": "No budget for this year.",
+      "exportPdf": "Export PDF",
+      "exportExcel": "Export Excel",
+      "statuts": {
+        "BROUILLON": "Draft",
+        "VALIDE": "Approved",
+        "CLOTURE": "Closed",
+        "ARCHIVE": "Archived"
+      }
+    },
+    "audit": {
+      "title": "Audit log",
+      "description": "Export audit events (ADMIN only).",
+      "dateDebut": "Start date",
+      "dateFin": "End date",
+      "entite": "Entity (optional)",
+      "entitePlaceholder": "Invoice, Employee…",
+      "action": "Action (optional)",
+      "actionPlaceholder": "CREATE, UPDATE…",
+      "userId": "User ID (optional)",
+      "userIdPlaceholder": "UUID",
+      "pdf": "PDF",
+      "excel": "Excel",
+      "csv": "Raw CSV export"
+    },
+    "config": {
+      "title": "Export settings",
+      "description": "Organisation-level settings.",
+      "loading": "Loading…",
+      "piedPage": "Footer text",
+      "couleur": "Primary colour (hex)",
+      "seuilPdf": "PDF sync threshold",
+      "seuilExcel": "Excel sync threshold",
+      "watermarkActive": "Watermark enabled",
+      "watermarkText": "Watermark text",
+      "uploadLogo": "Upload logo (PNG/JPG 2MB)",
+      "uploadCachet": "Upload stamp",
+      "uploadSignature": "Upload DG signature",
+      "save": "Save settings",
+      "toastSaved": "Settings saved.",
+      "toastUploaded": "File uploaded.",
+      "toastUploadError": "Upload failed."
+    },
+    "recent": {
+      "title": "My recent exports",
+      "loading": "Loading…",
+      "empty": "No recent exports."
+    },
+    "jobStatut": {
+      "EN_ATTENTE": "Pending",
+      "EN_COURS": "In progress",
+      "TERMINE": "Completed",
+      "ERREUR": "Error",
+      "EXPIRE": "Expired"
+    },
+    "progress": {
+      "ready": "Export ready",
+      "error": "Export error",
+      "generating": "Generating…",
+      "download": "Download",
+      "retry": "Retry",
+      "refresh": "Refresh",
+      "expiresIn": "Expires in {hours}h",
+      "available48h": "Available 48h",
+      "available48hExpire": "Available 48h — expires in {hours}h.",
+      "errorGeneric": "An error occurred during generation."
+    },
+    "button": {
+      "preparing": "Preparing…",
+      "downloadNamed": "Download ({name})",
+      "download": "Download",
+      "errorJob": "Export failed.",
+      "errorLaunch": "Unable to start the export."
+    }
   },
   "Errors": {
     "title": "Error",
@@ -1167,6 +1471,23 @@
     "passwordMismatch": "Passwords do not match"
   },
   "Admin": {
+    "organisation": {
+      "title": "Organisation settings",
+      "subtitle": "Identity, currency and business thresholds (ADMIN).",
+      "restricted": "Administrator access only.",
+      "cardIdentity": "Identity",
+      "cardThresholds": "Business thresholds",
+      "labelNom": "Name",
+      "labelType": "Type",
+      "labelPays": "Country",
+      "labelDevise": "Default currency",
+      "labelLogo": "Logo URL",
+      "labelSeuilJustificatif": "Supporting document threshold (EUR)",
+      "hintSeuilJustificatif": "Above this amount, a supporting document is required for payments.",
+      "labelAlerteBudget": "Budget alert (%)",
+      "hintAlerteBudget": "Execution percentage at which a budget alert is shown.",
+      "toastSaved": "Settings saved"
+    },
     "templates": {
       "title": "Template library",
       "subtitle": "Create templates (DOCX/HTML), manage versions and upload revisions.",

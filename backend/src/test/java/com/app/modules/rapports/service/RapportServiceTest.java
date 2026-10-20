@@ -65,6 +65,17 @@ class RapportServiceTest {
     }
 
     @Test
+    void exportCsvInventaire_contientBOM_etHeader_memeSansLignes() {
+        doReturn(null).when(jdbcTemplate).query(anyString(), any(org.springframework.jdbc.core.ResultSetExtractor.class), eq(orgId));
+
+        byte[] csv = rapportService.exportCsvInventaire(orgId);
+        String s = new String(csv, java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(s)
+                .startsWith(
+                        "\uFEFFcode_inventaire;libelle;categorie;localisation;etat;valeur_achat;devise;responsable\n");
+    }
+
+    @Test
     void getDashboard_employe_pasDAggregats_finance_inventaire() {
         // For EMPLOYE: should not call statsService or inventaireService
         when(jdbcTemplate.queryForObject(anyString(), eq(Long.class), eq(orgId), eq(userId))).thenReturn(0L);
