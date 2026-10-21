@@ -15,10 +15,19 @@ class TemplateFixturesTest {
     void courrierFixture_canBeRendered() throws Exception {
         TemplateRenderService svc = new TemplateRenderService();
         byte[] docx = Files.readAllBytes(Path.of("..", "templates", "courrier.docx"));
-        assertDoesNotThrow(() -> svc.renderDocx(docx, Map.of(
-                "courrier.organisationId", "ORG",
-                "courrier.subjectId", "SUBJ"
-        )));
+        Map<String, String> values = new HashMap<>();
+        values.put("courrier.organisationId", "ORG");
+        values.put("courrier.subjectId", "SUBJ");
+        values.put("courrier.reference", "REF-1");
+        values.put("courrier.sens", "SORTIE");
+        values.put("courrier.statut", "ENREGISTRE");
+        values.put("courrier.dateCourrier", "2026-04-01");
+        values.put("courrier.canal", "EMAIL");
+        values.put("courrier.objet", "Objet test");
+        values.put("courrier.expediteur", "Expéditeur");
+        values.put("courrier.destinataire", "Destinataire");
+        values.put("courrier.notes", "Corps du courrier");
+        assertDoesNotThrow(() -> svc.renderDocx(docx, values));
     }
 
     @Test

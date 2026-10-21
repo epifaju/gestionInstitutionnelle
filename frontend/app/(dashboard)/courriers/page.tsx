@@ -214,6 +214,14 @@ export default function CourriersPage() {
                             {tc("open")}
                           </Button>
                         ) : null}
+                        <GenerateDocumentDialog
+                          subjectType="COURRIER"
+                          subjectId={r.id}
+                          triggerLabel={t("generate")}
+                          onGenerated={() => {
+                            qc.invalidateQueries({ queryKey: ["templates", "generated", "COURRIER"] });
+                          }}
+                        />
                         <Button type="button" size="sm" variant="outline" onClick={() => openEdit(r)}>
                           {canWrite ? tc("modify") : tc("open")}
                         </Button>
@@ -236,7 +244,15 @@ export default function CourriersPage() {
                 placeholder={t("searchPh")}
               />
               <div className="flex flex-wrap gap-2">
-                {orgId ? <GenerateDocumentDialog subjectType="COURRIER" subjectId={orgId} /> : null}
+                {orgId ? (
+                  <GenerateDocumentDialog
+                    subjectType="COURRIER"
+                    subjectId={orgId}
+                    onGenerated={() => {
+                      qc.invalidateQueries({ queryKey: ["templates", "generated", "COURRIER"] });
+                    }}
+                  />
+                ) : null}
                 <Button type="button" variant="outline" size="sm" onClick={() => refetchGen()}>
                   {t("refresh")}
                 </Button>

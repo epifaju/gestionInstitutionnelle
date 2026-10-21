@@ -1,5 +1,7 @@
 package com.app.modules.templates.service;
 
+import com.app.modules.courriers.dto.CourrierResponse;
+import com.app.modules.courriers.service.CourrierService;
 import com.app.modules.missions.dto.MissionResponse;
 import com.app.modules.missions.service.MissionService;
 import com.app.modules.rh.dto.ContratResponse;
@@ -18,6 +20,7 @@ public class TemplateDataService {
 
     private final MissionService missionService;
     private final ContratService contratService;
+    private final CourrierService courrierService;
 
     public Map<String, String> buildValues(String subjectType, UUID subjectId, UUID orgId) {
         if (subjectType == null) throw BusinessException.badRequest("TEMPLATE_SUBJECT_INVALIDE");
@@ -59,9 +62,28 @@ public class TemplateDataService {
             return out;
         }
         if ("Courrier".equalsIgnoreCase(t) || "COURRIER".equalsIgnoreCase(t)) {
-            // Generic letter templates can be created without placeholders (or using organisation/subject ids)
             out.put("courrier.organisationId", orgId.toString());
             out.put("courrier.subjectId", subjectId.toString());
+            try {
+                CourrierResponse c = courrierService.getById(subjectId, orgId);
+                out.put("courrier.id", c.id().toString());
+                out.put("courrier.reference", nz(c.reference()));
+                out.put("courrier.objet", nz(c.objet()));
+                out.put("courrier.expediteur", nz(c.expediteur()));
+                out.put("courrier.destinataire", nz(c.destinataire()));
+                out.put("courrier.sens", nz(c.sens()));
+                out.put("courrier.statut", nz(c.statut()));
+                out.put("courrier.canal", nz(c.canal()));
+                out.put("courrier.dateCourrier", nz(c.dateCourrier()));
+                out.put("courrier.dateReception", nz(c.dateReception()));
+                out.put("courrier.dateEnvoi", nz(c.dateEnvoi()));
+                out.put("courrier.notes", nz(c.notes()));
+            } catch (BusinessException ex) {
+                if (!"COURRIER_NON_TROUVE".equals(ex.getCode())) {
+                    throw ex;
+                }
+                // Fallback : génération générique (subjectId = organisationId)
+            }
             return out;
         }
         throw BusinessException.badRequest("TEMPLATE_SUBJECT_UNSUPPORTED");
@@ -71,4 +93,3 @@ public class TemplateDataService {
         return v == null ? "" : String.valueOf(v);
     }
 }
-

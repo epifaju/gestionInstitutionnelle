@@ -6,13 +6,17 @@
       <w:r><w:t>COURRIER</w:t></w:r>
     </w:p>
 
-    <w:p><w:r><w:t xml:space="preserve">Référence : CR-${courrier.subjectId}</w:t></w:r></w:p>
-    <w:p><w:r><w:t xml:space="preserve">Organisation : ${courrier.organisationId}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Référence : ${courrier.reference}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Sens : ${courrier.sens} — Statut : ${courrier.statut}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Date : ${courrier.dateCourrier}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Canal : ${courrier.canal}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Id : CR-${courrier.subjectId}</w:t></w:r></w:p>
 
     <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
 
-    <w:p><w:r><w:t xml:space="preserve">Objet : ________________________________</w:t></w:r></w:p>
-    <w:p><w:r><w:t xml:space="preserve">Destinataire : __________________________</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Objet : ${courrier.objet}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Expéditeur : ${courrier.expediteur}</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">Destinataire : ${courrier.destinataire}</w:t></w:r></w:p>
 
     <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
 
@@ -20,7 +24,7 @@
       <w:r><w:t xml:space="preserve">Madame, Monsieur,</w:t></w:r>
     </w:p>
     <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
-    <w:p><w:r><w:t xml:space="preserve">[Votre contenu ici]</w:t></w:r></w:p>
+    <w:p><w:r><w:t xml:space="preserve">${courrier.notes}</w:t></w:r></w:p>
     <w:p><w:r><w:t xml:space="preserve"> </w:t></w:r></w:p>
     <w:p><w:r><w:t xml:space="preserve">Veuillez agréer, Madame, Monsieur, l’expression de nos salutations distinguées.</w:t></w:r></w:p>
 
@@ -30,4 +34,3 @@
     <w:sectPr/>
   </w:body>
 </w:document>
-

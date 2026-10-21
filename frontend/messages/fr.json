@@ -136,6 +136,7 @@
     "empty": "Aucun courrier généré pour le moment.",
     "emptyRegistre": "Aucun courrier enregistré pour le moment.",
     "create": "Nouveau courrier",
+    "generate": "Générer",
     "thCreatedAt": "Créé le",
     "thFormat": "Format",
     "thId": "ID",

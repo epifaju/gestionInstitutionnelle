@@ -23,10 +23,12 @@ export function GenerateDocumentDialog({
   subjectType,
   subjectId,
   triggerLabel,
+  onGenerated,
 }: {
   subjectType: string;
   subjectId: string;
   triggerLabel?: string;
+  onGenerated?: () => void;
 }) {
   const t = useTranslations("Templates.generate");
   const tc = useTranslations("Common");
@@ -81,6 +83,7 @@ export function GenerateDocumentDialog({
     onSuccess: async (gd) => {
       toast.success(tc("successCreated"));
       setOpen(false);
+      onGenerated?.();
       if (gd.outputDocumentId) {
         const { url } = await getPresignedUrl(gd.outputDocumentId);
         window.open(url, "_blank", "noopener,noreferrer");

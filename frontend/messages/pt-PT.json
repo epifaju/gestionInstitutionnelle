@@ -126,6 +126,7 @@
     "empty": "Ainda não existem cartas geradas.",
     "emptyRegistre": "Ainda não existem cartas registadas.",
     "create": "Nova carta",
+    "generate": "Gerar",
     "thCreatedAt": "Criado em",
     "thFormat": "Formato",
     "thId": "ID",

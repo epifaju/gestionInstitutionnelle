@@ -136,6 +136,7 @@
     "empty": "No generated letter yet.",
     "emptyRegistre": "No registered mail yet.",
     "create": "New mail item",
+    "generate": "Generate",
     "thCreatedAt": "Created at",
     "thFormat": "Format",
     "thId": "ID",
