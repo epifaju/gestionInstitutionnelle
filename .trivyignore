@@ -1,0 +1,16 @@
+# Spring Framework / Security fixes beyond 6.2.19 and 6.5.11 are not on Maven
+# Central for the Boot 3.5 OSS line (commercial NES or Spring Boot 4 / Framework 7).
+# Boot 3.5 OSS ended at 3.5.16. Revisit on migration to Spring Boot 4.x.
+CVE-2026-59313
+CVE-2026-59283
+CVE-2026-59282
+CVE-2026-47892
+CVE-2026-47891
+CVE-2026-47890
+CVE-2026-47889
+CVE-2026-47886
+CVE-2026-47885
+CVE-2026-47884
+CVE-2026-22732
+CVE-2026-22731
+CVE-2026-22733

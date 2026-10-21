@@ -5,7 +5,9 @@ COPY src ./src
 RUN mvn -q -DskipTests package
 
 FROM eclipse-temurin:21-jre-alpine
-RUN apk add --no-cache wget ca-certificates \
+# apk upgrade picks up fixed OS packages (e.g. libexpat CVE-2026-77214).
+RUN apk upgrade --no-cache \
+    && apk add --no-cache wget ca-certificates \
     && update-ca-certificates \
     && addgroup -g 1001 app \
     && adduser -D -u 1001 -G app app \
