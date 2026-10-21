@@ -6,6 +6,7 @@ import com.app.modules.auth.entity.Role;
 import com.app.modules.auth.entity.Utilisateur;
 import com.app.modules.auth.repository.UtilisateurRepository;
 import com.app.modules.auth.security.CustomUserDetails;
+import com.app.modules.notifications.service.NotificationService;
 import com.app.modules.rh.dto.CongeRequest;
 import com.app.modules.rh.dto.CongeValidationRequest;
 import com.app.modules.rh.entity.CongeAbsence;
@@ -25,6 +26,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -49,6 +53,7 @@ class CongeServiceTest {
     @Mock private DroitsCongesRepository droitsCongesRepository;
     @Mock private UtilisateurRepository utilisateurRepository;
     @Mock private AuditLogService auditLogService;
+    @Mock private NotificationService notificationService;
 
     @InjectMocks private CongeService congeService;
 
@@ -366,5 +371,178 @@ class CongeServiceTest {
         assertThatThrownBy(() -> congeService.annulerValide(congeId, orgId))
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("code", "CONGE_ANNULATION_DATE");
+    }
+
+    @Test
+    void listConges_employeSansSalarie_pageVide() {
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("emp@test.com");
+        u.setRole(Role.EMPLOYE);
+        Organisation o = new Organisation();
+        o.setId(orgId);
+        u.setOrganisation(o);
+        CustomUserDetails ud = new CustomUserDetails(u);
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities()));
+
+        when(salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)).thenReturn(Optional.empty());
+        when(utilisateurRepository.findById(userId)).thenReturn(Optional.of(u));
+        when(salarieRepository.findByOrganisationIdAndEmailIgnoreCase(orgId, "emp@test.com")).thenReturn(Optional.empty());
+
+        var page = congeService.listConges(orgId, null, null, null, null, null, null, PageRequest.of(0, 20));
+        assertThat(page.getTotalElements()).isZero();
+    }
+
+    @Test
+    void listConges_employeAutreSalarie_refuse() {
+        Utilisateur u = new Utilisateur();
+        u.setId(userId);
+        u.setOrganisationId(orgId);
+        u.setEmail("emp@test.com");
+        u.setRole(Role.EMPLOYE);
+        Organisation o = new Organisation();
+        o.setId(orgId);
+        u.setOrganisation(o);
+        CustomUserDetails ud = new CustomUserDetails(u);
+        SecurityContextHolder.getContext()
+                .setAuthentication(new UsernamePasswordAuthenticationToken(ud, null, ud.getAuthorities()));
+
+        Salarie own = new Salarie();
+        own.setId(salarieId);
+        own.setOrganisationId(orgId);
+        when(salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)).thenReturn(Optional.of(own));
+
+        assertThatThrownBy(() ->
+                        congeService.listConges(
+                                orgId, null, null, null, null, null, UUID.randomUUID(), PageRequest.of(0, 20)))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "CONGE_NON_AUTORISE");
+    }
+
+    @Test
+    void listConges_rh_ok() {
+        Salarie s = new Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(orgId);
+        s.setNom("Doe");
+        s.setPrenom("Jane");
+        s.setService("RH");
+        CongeAbsence c = new CongeAbsence();
+        c.setId(UUID.fromString("d3000000-0000-0000-0000-000000000001"));
+        c.setOrganisationId(orgId);
+        c.setSalarie(s);
+        c.setTypeConge(TypeConge.ANNUEL);
+        c.setDateDebut(LocalDate.of(2026, 5, 1));
+        c.setDateFin(LocalDate.of(2026, 5, 5));
+        c.setNbJours(new BigDecimal("5"));
+        c.setStatut(StatutConge.EN_ATTENTE);
+
+        when(congeRepository.findAll(any(Specification.class), any(PageRequest.class)))
+                .thenReturn(new PageImpl<>(List.of(c), PageRequest.of(0, 20), 1));
+
+        var page = congeService.listConges(orgId, "EN_ATTENTE", null, null, null, null, null, PageRequest.of(0, 20));
+        assertThat(page.getContent()).hasSize(1);
+        assertThat(page.getContent().get(0).statut()).isEqualTo("EN_ATTENTE");
+    }
+
+    @Test
+    void getById_orgMismatch() {
+        CongeAbsence c = new CongeAbsence();
+        c.setId(UUID.fromString("d4000000-0000-0000-0000-000000000001"));
+        c.setOrganisationId(UUID.randomUUID());
+        when(congeRepository.findById(c.getId())).thenReturn(Optional.of(c));
+
+        assertThatThrownBy(() -> congeService.getById(c.getId(), orgId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "CONGE_ORG_MISMATCH");
+    }
+
+    @Test
+    void listMesConges_nonLie() {
+        when(salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> congeService.listMesConges(orgId, userId, PageRequest.of(0, 10)))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "SALARIE_NON_LIE");
+    }
+
+    @Test
+    void soumettre_brouillon_sansControleSolde() {
+        Salarie s = new Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(orgId);
+        s.setNom("Doe");
+        s.setPrenom("Jane");
+        s.setService("RH");
+        when(salarieRepository.findById(salarieId)).thenReturn(Optional.of(s));
+        when(congeRepository.save(any(CongeAbsence.class))).thenAnswer(inv -> {
+            CongeAbsence c = inv.getArgument(0);
+            c.setId(UUID.fromString("d5000000-0000-0000-0000-000000000001"));
+            return c;
+        });
+
+        CongeRequest req =
+                new CongeRequest(salarieId, "ANNUEL", LocalDate.of(2026, 7, 1), LocalDate.of(2026, 7, 10), null);
+        congeService.soumettre(req, true, orgId, userId);
+
+        ArgumentCaptor<CongeAbsence> cap = ArgumentCaptor.forClass(CongeAbsence.class);
+        verify(congeRepository).save(cap.capture());
+        assertThat(cap.getValue().getStatut()).isEqualTo(StatutConge.BROUILLON);
+        verify(congeRepository, never()).existsChevauchement(any(), any(), any(), any());
+    }
+
+    @Test
+    void soumettreBrouillon_ok() {
+        UUID congeId = UUID.fromString("d6000000-0000-0000-0000-000000000001");
+        Salarie s = new Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(orgId);
+        s.setNom("Doe");
+        s.setPrenom("Jane");
+        s.setService("RH");
+
+        CongeAbsence c = new CongeAbsence();
+        c.setId(congeId);
+        c.setOrganisationId(orgId);
+        c.setSalarie(s);
+        c.setTypeConge(TypeConge.ANNUEL);
+        c.setDateDebut(LocalDate.of(2026, 8, 1));
+        c.setDateFin(LocalDate.of(2026, 8, 5));
+        c.setNbJours(new BigDecimal("5"));
+        c.setStatut(StatutConge.BROUILLON);
+        when(congeRepository.findById(congeId)).thenReturn(Optional.of(c));
+
+        DroitsConges d = new DroitsConges();
+        d.setJoursRestants(new BigDecimal("20"));
+        when(droitsCongesRepository.findBySalarie_IdAndAnnee(salarieId, 2026)).thenReturn(Optional.of(d));
+        when(congeRepository.existsChevauchement(salarieId, c.getDateDebut(), c.getDateFin(), StatutConge.VALIDE))
+                .thenReturn(false);
+        when(congeRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(utilisateurRepository.findByOrganisationIdAndRoleAndActifTrue(orgId, Role.RH)).thenReturn(List.of());
+
+        var out = congeService.soumettreBrouillon(congeId, orgId, userId);
+        assertThat(out.statut()).isEqualTo("EN_ATTENTE");
+    }
+
+    @Test
+    void getMesDroitsConges_ok() {
+        Salarie s = new Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(orgId);
+        s.setDateEmbauche(LocalDate.of(2020, 1, 1));
+        when(salarieRepository.findByOrganisationIdAndUtilisateur_Id(orgId, userId)).thenReturn(Optional.of(s));
+
+        DroitsConges d = new DroitsConges();
+        d.setAnnee(LocalDate.now().getYear());
+        d.setJoursDroit(new BigDecimal("30"));
+        d.setJoursPris(new BigDecimal("2"));
+        d.setJoursRestants(new BigDecimal("28"));
+        when(droitsCongesRepository.findBySalarie_IdAndAnnee(salarieId, LocalDate.now().getYear()))
+                .thenReturn(Optional.of(d));
+
+        var dto = congeService.getMesDroitsConges(orgId, userId);
+        assertThat(dto.joursRestants()).isEqualByComparingTo("28");
     }
 }

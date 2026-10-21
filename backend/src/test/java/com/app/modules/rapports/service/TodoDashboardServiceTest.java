@@ -344,5 +344,79 @@ class TodoDashboardServiceTest {
         assertThat(service.humanizeDelay(now.minusDays(3))).isEqualTo("il y a 3 jours");
         assertThat(service.humanizeDelay(now.minusDays(15))).isEqualTo("il y a 2 semaines");
     }
+
+    @Test
+    void testGetTodoDashboard_RoleFinancier_RetourneSectionFinance() {
+        stubViews(
+                null,
+                Map.of(
+                        "factures_a_payer", 2,
+                        "factures_en_retard", 0,
+                        "montant_total_a_payer", BigDecimal.TEN,
+                        "salaires_a_verser", 1,
+                        "montant_salaires_a_verser", BigDecimal.ONE
+                ),
+                null
+        );
+        stubTableExists(Map.of("frais_mission", 0L));
+        when(factureRepository.findTop5ByOrganisationIdAndStatutOrderByDateFactureAsc(orgId, StatutFacture.A_PAYER))
+                .thenReturn(List.of());
+        when(paiementSalaireRepository.findTop5ByOrganisationIdAndStatutAndAnneeAndMoisOrderBySalarie_NomAscSalarie_PrenomAsc(
+                any(), any(), anyInt(), anyInt()))
+                .thenReturn(List.of());
+        when(budgetAnnuelRepository.findByOrganisationIdAndAnneeAndStatut(any(), anyInt(), any()))
+                .thenReturn(Optional.empty());
+
+        var res = service.getTodoDashboard(orgId, "FINANCIER", userId);
+
+        assertThat(res.sections()).hasSize(1);
+        assertThat(res.sections().getFirst().roleLabel()).isEqualTo("Finance");
+        assertThat(res.totalActionsGlobal()).isEqualTo(2 + 1);
+    }
+
+    @Test
+    void testGetComptages_Employe_Zero() {
+        assertThat(service.getComptages(orgId, "EMPLOYE", userId)).containsEntry("total", 0L);
+    }
+
+    @Test
+    void testGetComptages_Financier_AvecBudget() {
+        stubViews(
+                null,
+                Map.of("factures_a_payer", 1L, "factures_en_retard", 0L, "salaires_a_verser", 2L),
+                null
+        );
+        stubTableExists(Map.of("frais_mission", 0L));
+        when(budgetAnnuelRepository.existsByOrganisationIdAndAnneeAndStatutIn(any(), anyInt(), any()))
+                .thenReturn(true);
+
+        Map<String, Long> counts = service.getComptages(orgId, "FINANCIER", userId);
+
+        assertThat(counts.get("factures_a_payer")).isEqualTo(1L);
+        assertThat(counts.get("salaires_a_verser")).isEqualTo(2L);
+        assertThat(counts.get("budget_a_valider")).isEqualTo(1L);
+        assertThat(counts.get("total")).isEqualTo(1L + 2L + 1L);
+    }
+
+    @Test
+    void testExecuterAction_MarquerPaiePayee() {
+        UUID paieId = UUID.fromString("f0000000-0000-0000-0000-000000000099");
+
+        var res = service.executerActionRapide(
+                paieId, "PAIE", new QuickActionRequest("MARQUER_PAIE_PAYEE", "OK"), orgId, userId);
+
+        verify(paieService).marquerPaye(eq(paieId), any(), eq(orgId));
+        assertThat(res.succes()).isTrue();
+        assertThat(res.nouveauStatut()).isEqualTo("PAYE");
+    }
+
+    @Test
+    void testExecuterAction_Inconnue_Refuse() {
+        assertThatThrownBy(() ->
+                        service.executerActionRapide(
+                                UUID.randomUUID(), "X", new QuickActionRequest("INCONNUE", null), orgId, userId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "TODO_ACTION_IMPOSSIBLE");
+    }
 }
 

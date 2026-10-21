@@ -115,5 +115,172 @@ class PayrollAdminServiceTest {
         assertThat(out).hasSize(1);
         assertThat(out.getFirst().code()).isEqualTo("R1");
     }
+
+    @Test
+    void getEmployerSettings_nullWhenMissing() {
+        UUID orgId = UUID.randomUUID();
+        when(employerSettingsRepository.findById(orgId)).thenReturn(Optional.empty());
+        assertThat(service.getEmployerSettings(orgId)).isNull();
+    }
+
+    @Test
+    void createLegalConstant_ok() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        when(legalConstantRepository.save(any(PayrollLegalConstant.class))).thenAnswer(inv -> {
+            PayrollLegalConstant c = inv.getArgument(0);
+            c.setId(UUID.randomUUID());
+            return c;
+        });
+
+        var out = service.createLegalConstant(orgId, userId, new com.app.modules.payroll.dto.PayrollLegalConstantRequest(
+                "PMSS", "Plafond", BigDecimal.valueOf(3864), LocalDate.of(2026, 1, 1), null));
+        assertThat(out.code()).isEqualTo("PMSS");
+        verify(auditLogService).log(eq(orgId), eq(userId), eq("CREATE"), eq("PayrollLegalConstant"), any(), eq(null), any());
+    }
+
+    @Test
+    void createRubrique_ok() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        when(rubriqueRepository.save(any(PayrollRubrique.class))).thenAnswer(inv -> {
+            PayrollRubrique r = inv.getArgument(0);
+            r.setId(UUID.randomUUID());
+            return r;
+        });
+
+        var out = service.createRubrique(orgId, userId, new com.app.modules.payroll.dto.PayrollRubriqueRequest(
+                "PRIME", "Prime", "GAIN", "FIXED", null, null, null, BigDecimal.TEN, 20, true, LocalDate.of(2026, 1, 1), null));
+        assertThat(out.code()).isEqualTo("PRIME");
+        assertThat(out.ordreAffichage()).isEqualTo(20);
+    }
+
+    @Test
+    void upsertEmployeeProfile_refuseSalarieAutreOrg() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID salarieId = UUID.randomUUID();
+        com.app.modules.rh.entity.Salarie s = new com.app.modules.rh.entity.Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(UUID.randomUUID());
+        when(salarieRepository.findById(salarieId)).thenReturn(Optional.of(s));
+
+        assertThatThrownBy(() -> service.upsertEmployeeProfile(orgId, userId,
+                new com.app.modules.payroll.dto.EmployeePayrollProfileRequest(salarieId, true, "C", "L", null)))
+                .isInstanceOf(BusinessException.class);
+        verify(profileRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteLegalConstant_ok() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID id = UUID.randomUUID();
+        PayrollLegalConstant c = new PayrollLegalConstant();
+        c.setId(id);
+        c.setOrganisationId(orgId);
+        c.setCode("PMSS");
+        when(legalConstantRepository.findById(id)).thenReturn(Optional.of(c));
+
+        service.deleteLegalConstant(id, orgId, userId);
+        verify(legalConstantRepository).delete(c);
+    }
+
+    @Test
+    void createUpdateDeleteCotisation_ok() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID id = UUID.randomUUID();
+        when(cotisationRepository.save(any())).thenAnswer(inv -> {
+            com.app.modules.payroll.entity.PayrollCotisation c = inv.getArgument(0);
+            if (c.getId() == null) c.setId(id);
+            return c;
+        });
+
+        var req = new com.app.modules.payroll.dto.PayrollCotisationRequest(
+                "SS", "Sécurité sociale", "URSSAF", "BRUT",
+                BigDecimal.valueOf(0.07), BigDecimal.valueOf(0.13), "PMSS",
+                false, false, 100, true, LocalDate.of(2026, 1, 1), null);
+        var created = service.createCotisation(orgId, userId, req);
+        assertThat(created.code()).isEqualTo("SS");
+
+        com.app.modules.payroll.entity.PayrollCotisation existing = new com.app.modules.payroll.entity.PayrollCotisation();
+        existing.setId(id);
+        existing.setOrganisationId(orgId);
+        when(cotisationRepository.findById(id)).thenReturn(Optional.of(existing));
+        var updated = service.updateCotisation(id, orgId, userId, req);
+        assertThat(updated.libelle()).isEqualTo("Sécurité sociale");
+
+        service.deleteCotisation(id, orgId, userId);
+        verify(cotisationRepository).delete(existing);
+    }
+
+    @Test
+    void upsertEmployeeProfile_ok() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID salarieId = UUID.randomUUID();
+        com.app.modules.rh.entity.Salarie s = new com.app.modules.rh.entity.Salarie();
+        s.setId(salarieId);
+        s.setOrganisationId(orgId);
+        s.setNom("Martin");
+        s.setPrenom("Bob");
+        when(salarieRepository.findById(salarieId)).thenReturn(Optional.of(s));
+        when(profileRepository.findByOrganisationIdAndSalarie_Id(orgId, salarieId)).thenReturn(Optional.empty());
+        when(profileRepository.save(any())).thenAnswer(inv -> {
+            com.app.modules.payroll.entity.EmployeePayrollProfile p = inv.getArgument(0);
+            p.setId(UUID.randomUUID());
+            return p;
+        });
+
+        var out = service.upsertEmployeeProfile(orgId, userId,
+                new com.app.modules.payroll.dto.EmployeePayrollProfileRequest(
+                        salarieId, true, "CCN", "Convention", BigDecimal.valueOf(0.03)));
+        assertThat(out.cadre()).isTrue();
+        assertThat(out.salarieNomComplet()).contains("Martin");
+    }
+
+    @Test
+    void updateDeleteRubrique_ok() {
+        UUID orgId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID id = UUID.randomUUID();
+        PayrollRubrique r = new PayrollRubrique();
+        r.setId(id);
+        r.setOrganisationId(orgId);
+        when(rubriqueRepository.findById(id)).thenReturn(Optional.of(r));
+        when(rubriqueRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        var updated = service.updateRubrique(id, orgId, userId, new com.app.modules.payroll.dto.PayrollRubriqueRequest(
+                "PRIME", "Prime", "GAIN", "FIXED", null, null, null, BigDecimal.TEN, null, true,
+                LocalDate.of(2026, 1, 1), null));
+        assertThat(updated.ordreAffichage()).isEqualTo(100);
+
+        service.deleteRubrique(id, orgId, userId);
+        verify(rubriqueRepository).delete(r);
+    }
+
+    @Test
+    void listLegalConstantsAndCotisations_filtersOrg() {
+        UUID orgId = UUID.randomUUID();
+        PayrollLegalConstant c1 = new PayrollLegalConstant();
+        c1.setOrganisationId(orgId);
+        c1.setCode("PMSS");
+        c1.setLibelle("P");
+        c1.setValeur(BigDecimal.ONE);
+        c1.setEffectiveFrom(LocalDate.of(2026, 1, 1));
+        PayrollLegalConstant c2 = new PayrollLegalConstant();
+        c2.setOrganisationId(UUID.randomUUID());
+        c2.setCode("X");
+        when(legalConstantRepository.findAll()).thenReturn(List.of(c1, c2));
+        assertThat(service.listLegalConstants(orgId)).hasSize(1);
+
+        com.app.modules.payroll.entity.PayrollCotisation cot = new com.app.modules.payroll.entity.PayrollCotisation();
+        cot.setOrganisationId(orgId);
+        cot.setCode("SS");
+        cot.setLibelle("SS");
+        when(cotisationRepository.findAll()).thenReturn(List.of(cot));
+        assertThat(service.listCotisations(orgId)).hasSize(1);
+    }
 }
 

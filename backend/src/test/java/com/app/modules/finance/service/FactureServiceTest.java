@@ -261,4 +261,145 @@ class FactureServiceTest {
                 .isInstanceOf(BusinessException.class)
                 .hasFieldOrPropertyWithValue("code", "CATEGORIE_ABSENTE");
     }
+
+    @Test
+    void getById_ok() {
+        UUID id = UUID.fromString("f4000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setReference("FAC-2026-0001");
+        f.setFournisseur("ACME");
+        f.setDateFacture(LocalDate.of(2026, 1, 10));
+        f.setMontantHt(new BigDecimal("100"));
+        f.setTva(new BigDecimal("20"));
+        f.setMontantTtc(new BigDecimal("120"));
+        f.setDevise("EUR");
+        f.setTauxChangeEur(BigDecimal.ONE);
+        f.setStatut(StatutFacture.A_PAYER);
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+        when(facturePaiementRepository.sumMontantByFactureId(id)).thenReturn(BigDecimal.ZERO);
+
+        var out = factureService.getById(id, orgId);
+        assertThat(out.reference()).isEqualTo("FAC-2026-0001");
+        assertThat(out.statut()).isEqualTo("A_PAYER");
+    }
+
+    @Test
+    void getById_refuseAutreOrg() {
+        UUID id = UUID.fromString("f4000000-0000-0000-0000-000000000002");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(UUID.randomUUID());
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        assertThatThrownBy(() -> factureService.getById(id, orgId))
+                .isInstanceOf(BusinessException.class);
+    }
+
+    @Test
+    void changerStatut_brouillonVersAPayer_ok() {
+        UUID id = UUID.fromString("f5000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setReference("FAC-1");
+        f.setFournisseur("X");
+        f.setDateFacture(LocalDate.of(2026, 2, 1));
+        f.setMontantHt(new BigDecimal("100"));
+        f.setTva(new BigDecimal("20"));
+        f.setMontantTtc(new BigDecimal("120"));
+        f.setDevise("EUR");
+        f.setTauxChangeEur(BigDecimal.ONE);
+        f.setStatut(StatutFacture.BROUILLON);
+        f.setJustificatifUrl("factures/x.pdf");
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+        when(factureRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(facturePaiementRepository.sumMontantByFactureId(id)).thenReturn(BigDecimal.ZERO);
+        Organisation org = new Organisation();
+        org.setSeuilJustificatif(new BigDecimal("500"));
+        when(organisationRepository.findById(orgId)).thenReturn(Optional.of(org));
+
+        var out = factureService.changerStatut(id, "A_PAYER", orgId, userId);
+        assertThat(out.statut()).isEqualTo("A_PAYER");
+        assertThat(f.getStatut()).isEqualTo(StatutFacture.A_PAYER);
+    }
+
+    @Test
+    void changerStatut_aPayerVersAnnule_ok() {
+        UUID id = UUID.fromString("f5000000-0000-0000-0000-000000000002");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setReference("FAC-2");
+        f.setFournisseur("Y");
+        f.setDateFacture(LocalDate.of(2026, 2, 1));
+        f.setMontantHt(new BigDecimal("50"));
+        f.setTva(new BigDecimal("20"));
+        f.setMontantTtc(new BigDecimal("60"));
+        f.setDevise("EUR");
+        f.setTauxChangeEur(BigDecimal.ONE);
+        f.setStatut(StatutFacture.A_PAYER);
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+        when(factureRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+        when(facturePaiementRepository.sumMontantByFactureId(id)).thenReturn(BigDecimal.ZERO);
+
+        var out = factureService.changerStatut(id, "ANNULE", orgId, userId);
+        assertThat(out.statut()).isEqualTo("ANNULE");
+    }
+
+    @Test
+    void getJustificatifObjectName_ok() {
+        UUID id = UUID.fromString("f6000000-0000-0000-0000-000000000001");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setJustificatifUrl("factures/" + orgId + "/" + id + "/j.pdf");
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        assertThat(factureService.getJustificatifObjectName(id, orgId))
+                .isEqualTo("factures/" + orgId + "/" + id + "/j.pdf");
+    }
+
+    @Test
+    void getJustificatifObjectName_absent() {
+        UUID id = UUID.fromString("f6000000-0000-0000-0000-000000000002");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setJustificatifUrl(null);
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        assertThatThrownBy(() -> factureService.getJustificatifObjectName(id, orgId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "JUSTIFICATIF_ABSENT");
+    }
+
+    @Test
+    void getJustificatifObjectName_blank() {
+        UUID id = UUID.fromString("f6000000-0000-0000-0000-000000000004");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setJustificatifUrl("   ");
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        assertThatThrownBy(() -> factureService.getJustificatifObjectName(id, orgId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "JUSTIFICATIF_ABSENT");
+    }
+
+    @Test
+    void getJustificatifObjectName_prefixMismatch() {
+        UUID id = UUID.fromString("f6000000-0000-0000-0000-000000000003");
+        Facture f = new Facture();
+        f.setId(id);
+        f.setOrganisationId(orgId);
+        f.setJustificatifUrl("other/path.pdf");
+        when(factureRepository.findById(id)).thenReturn(Optional.of(f));
+
+        assertThatThrownBy(() -> factureService.getJustificatifObjectName(id, orgId))
+                .isInstanceOf(BusinessException.class)
+                .hasFieldOrPropertyWithValue("code", "JUSTIFICATIF_ORG_MISMATCH");
+    }
 }

@@ -25,6 +25,14 @@ import {
   validerConge,
 } from "@/services/conge.service";
 import { CongeForm } from "@/components/forms/CongeForm";
+import {
+  canAnnulerCongeValide,
+  endOfMonth,
+  fmtIso,
+  isCongeStatutCode,
+  isCongeTypeCode,
+  startOfMonth,
+} from "@/lib/conges-ui";
 import { useAuthStore } from "@/lib/store";
 import { getMySalarie } from "@/services/salarie.service";
 
@@ -34,38 +42,6 @@ const typeColor: Record<string, string> = {
   EXCEPTIONNEL: "bg-orange-200 text-orange-900",
   SANS_SOLDE: "bg-muted text-foreground",
 };
-
-const STATUT_CODES = ["EN_ATTENTE", "VALIDE", "REJETE", "ANNULE", "BROUILLON"] as const;
-const TYPE_CODES = ["ANNUEL", "MALADIE", "EXCEPTIONNEL", "SANS_SOLDE"] as const;
-
-function isStatutCode(v: string): v is (typeof STATUT_CODES)[number] {
-  return (STATUT_CODES as readonly string[]).includes(v);
-}
-
-function isTypeCode(v: string): v is (typeof TYPE_CODES)[number] {
-  return (TYPE_CODES as readonly string[]).includes(v);
-}
-
-function startOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth(), 1);
-}
-
-function endOfMonth(d: Date) {
-  return new Date(d.getFullYear(), d.getMonth() + 1, 0);
-}
-
-function fmtIso(d: Date) {
-  return d.toISOString().slice(0, 10);
-}
-
-/** Congé validé annulable seulement si la date de début est strictement après aujourd'hui (règle métier). */
-function canAnnulerCongeValide(dateDebutIso: string) {
-  const start = new Date(dateDebutIso + "T12:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  start.setHours(0, 0, 0, 0);
-  return start.getTime() > today.getTime();
-}
 
 export default function CongesPage() {
   const t = useTranslations("RH.conges");
@@ -155,7 +131,7 @@ export default function CongesPage() {
         header: t("thType"),
         cell: ({ row }) => {
           const code = row.original.typeConge;
-          return isTypeCode(code) ? t(`type.${code}`) : code;
+          return isCongeTypeCode(code) ? t(`type.${code}`) : code;
         },
       },
       {
@@ -173,7 +149,7 @@ export default function CongesPage() {
         header: t("thStatut"),
         cell: ({ row }) => {
           const code = row.original.statut;
-          return <Badge>{isStatutCode(code) ? t(`statut.${code}`) : code}</Badge>;
+          return <Badge>{isCongeStatutCode(code) ? t(`statut.${code}`) : code}</Badge>;
         },
       },
       {
@@ -375,7 +351,7 @@ export default function CongesPage() {
                   <div className="font-semibold text-foreground">{day}</div>
                   {dayEvents.slice(0, 3).map((c) => (
                     <div key={c.id} className={`mt-0.5 truncate rounded px-0.5 ${typeColor[c.typeConge] ?? "bg-muted text-foreground"}`}>
-                      {isTypeCode(c.typeConge) ? t(`type.${c.typeConge}`) : c.typeConge}
+                      {isCongeTypeCode(c.typeConge) ? t(`type.${c.typeConge}`) : c.typeConge}
                     </div>
                   ))}
                 </div>

@@ -22,35 +22,16 @@ import type { FactureRequest, FactureResponse } from "@/lib/types/finance";
 import { useAuthStore } from "@/lib/store";
 import { createFacture, listCategories, listFactures } from "@/services/finance.service";
 import { translateCategorieLabel } from "@/lib/categorie-i18n";
-
-const STATUT_CODES = ["BROUILLON", "A_PAYER", "PAYE", "ANNULE"] as const;
-
-function isFactureStatut(v: string): v is (typeof STATUT_CODES)[number] {
-  return (STATUT_CODES as readonly string[]).includes(v);
-}
-
-function statutBadge(s: string): "muted" | "warning" | "success" | "dangerSolid" {
-  if (s === "BROUILLON") return "muted";
-  if (s === "A_PAYER") return "warning";
-  if (s === "PAYE") return "success";
-  return "dangerSolid";
-}
-
-function fmt(v: string | number) {
-  const n = typeof v === "string" ? parseFloat(v) : v;
-  return Number.isNaN(n) ? String(v) : n.toFixed(2);
-}
+import {
+  buildFacturesCsv,
+  FACTURE_STATUT_CODES,
+  fmtMontant,
+  isFactureStatut,
+  statutBadge,
+} from "@/lib/factures-ui";
 
 function downloadCsv(rows: FactureResponse[], headerLine: string) {
-  const lines = [
-    headerLine,
-    ...rows.map((r) =>
-      [r.reference, r.fournisseur, r.dateFacture, fmt(r.montantHt), fmt(r.montantTtc), r.categorieLibelle ?? "", r.statut].join(
-        ";"
-      )
-    ),
-  ];
-  const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const blob = new Blob([buildFacturesCsv(rows, headerLine)], { type: "text/csv;charset=utf-8" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = `factures-${new Date().toISOString().slice(0, 10)}.csv`;
@@ -121,14 +102,14 @@ export default function FacturesPage() {
       {
         id: "ht",
         header: t("thHt"),
-        cell: ({ row }) => <span>{fmt(row.original.montantHt)}</span>,
+        cell: ({ row }) => <span>{fmtMontant(row.original.montantHt)}</span>,
       },
       {
         id: "ttc",
         header: t("thTtc"),
         cell: ({ row }) => (
           <span>
-            {fmt(row.original.montantTtc)} {row.original.devise}
+            {fmtMontant(row.original.montantTtc)} {row.original.devise}
           </span>
         ),
       },
@@ -206,7 +187,7 @@ export default function FacturesPage() {
             onChange={(e) => setStatut(e.target.value)}
           >
             <option value="">{tc("all")}</option>
-            {STATUT_CODES.map((code) => (
+            {FACTURE_STATUT_CODES.map((code) => (
               <option key={code} value={code}>
                 {t(`statuts.${code}`)}
               </option>
