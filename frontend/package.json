@@ -61,6 +61,7 @@
     "proxy-addr": "^2.0.8",
     "serialize-javascript": "^7.0.3",
     "source-map-js": "^1.2.2",
+    "tar": "^7.5.22",
     "websocket-driver": "^0.7.5",
     "@babel/plugin-transform-modules-systemjs": "^7.29.4",
     "@modelcontextprotocol/sdk": "^1.31.0"
