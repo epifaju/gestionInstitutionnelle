@@ -48,6 +48,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
       MINIO_BUCKET: ${MINIO_BUCKET}
       FRONTEND_URL: ${FRONTEND_URL}
+      REFRESH_COOKIE_SECURE: ${REFRESH_COOKIE_SECURE:-true}
     volumes:
       - backend_logs:/var/log/gestion
     depends_on:

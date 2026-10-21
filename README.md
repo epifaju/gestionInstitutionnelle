@@ -48,34 +48,77 @@ Si ton `mvn` utilise Java 17 alors que le projet est en Java 21, `mvn test` peut
   - **Health (backend direct)**: `http://localhost:8080/actuator/health`
 
 ### Prod (docker-compose.prod.yml)
-- **Lancer**:
+
+#### 1. Secrets & TLS (P0.3)
+
+```bash
+# Générer les clés JWT
+./scripts/generate-jwt-keys.sh          # ou .\scripts\generate-jwt-keys.ps1
+
+# Copier .env.example → .env, renseigner DB_*, MinIO, FRONTEND_URL=https://…,
+# REFRESH_COOKIE_SECURE=true, coller les JWT_*.
+
+# Déposer les certificats (non versionnés) :
+#   nginx/certs/fullchain.pem
+#   nginx/certs/privkey.pem
+
+# Vérifier avant démarrage (échoue si valeurs d’exemple / certs absents)
+./scripts/check-prod-env.sh             # ou .\scripts\check-prod-env.ps1
+```
+
+#### 2. Lancer
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-- **TLS**:
-  - déposer les certificats dans `nginx/certs/`:
-    - `nginx/certs/fullchain.pem`
-    - `nginx/certs/privkey.pem`
-  - l’HTTP (80) redirige automatiquement vers HTTPS (443).
+- HTTP (80) redirige vers HTTPS (443).
+- Nginx `client_max_body_size` = **55M** (aligné GED 50 MiB).
+- Sonde publique : `https://<host>/healthz` → actuator health.
 
-- **Variables importantes**:
-  - **DB**: `DB_*`
-  - **JWT (RS256)**: `JWT_PRIVATE_KEY_B64`, `JWT_PUBLIC_KEY_B64`
-  - **MinIO**: `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, `MINIO_BUCKET`, `MINIO_PUBLIC_ENDPOINT`
-  - **CORS**: `FRONTEND_URL`
-  - **Cookie refresh**: mettre `REFRESH_COOKIE_SECURE=true` en HTTPS
+#### 3. Comptes fixture (P0.2)
+
+En profil `prod`, le backend **désactive au démarrage** les emails Flyway/E2E :
+`admin@test.com`, `rh@test.com`, `financier@test.com`, `employe@test.com`
+(mot de passe documenté `AdminTest123!` — ne jamais les laisser actifs en prod).
+
+**Bootstrap du premier ADMIN réel** (une fois) :
+
+```sql
+-- Temporaire : réactiver le compte fixture pour créer un vrai ADMIN via l’UI /admin/users,
+-- puis changer son mot de passe. Au redémarrage suivant, les fixtures sont à nouveau désactivés.
+UPDATE utilisateurs SET actif = true WHERE lower(email) = lower('admin@test.com');
+```
+
+Ensuite créer `admin@votre-domaine.org` (rôle ADMIN) dans l’UI, puis vous connecter uniquement avec ce compte.
+
+#### 4. Sauvegardes (P0.4)
+
+```bash
+./scripts/backup/backup.sh              # → backups/<timestamp>/postgres.dump + minio/
+./scripts/backup/restore.sh backups/<timestamp>   # demande confirmation « RESTORE »
+```
+
+**Test de restore obligatoire** sur un environnement de staging (instance vide) : login + ouverture d’un document GED.
+
+#### 5. Supervision (P0.5)
+
+Voir [docs/ops-supervision.md](docs/ops-supervision.md) : sonde `/healthz` + `/login`, détection 5xx nginx, logs applicatifs.
 
 ### Observabilité
 - **Logs**: fichier par défaut `/var/log/gestion/application.log` (voir `LOGGING_FILE_NAME`).
-- **Metrics Prometheus (backend direct)**: `GET http://localhost:8080/actuator/prometheus` (à protéger en prod selon ton infra).
+- **Health public**: `GET /healthz`.
+- **Metrics Prometheus (backend direct)**: non exposés par défaut en profil `prod` (à activer côté ops si besoin, derrière un réseau privé).
 
 ### CI
-- **GitHub Actions**: workflow `.github/workflows/ci.yml` (backend tests + frontend build + build images Docker).
+- **GitHub Actions**: workflow `.github/workflows/ci.yml` (backend tests + frontend build/tests + images Docker + Trivy). Playwright E2E opt-in.
 
-### À faire avant une mise en prod “sérieuse” (P0)
-- **HTTPS/TLS**: activer le bloc 443 dans `nginx/nginx.prod.conf` + certificats + HSTS.
-- **Secrets**: utiliser un secret store (pas de secrets en clair dans `.env` en prod).
-- **Sauvegardes**: stratégie backup/restore Postgres + MinIO (et test de restore).
-- **Alerting**: dashboards + alertes (health, erreurs 5xx, latence, DB).
+### Checklist P0 avant prod « sérieuse »
+- [x] nginx body size aligné GED (55M)
+- [x] comptes fixture désactivés en profil prod
+- [x] scripts JWT + `check-prod-env` + certs gitignorés
+- [x] scripts backup/restore Postgres + MinIO
+- [x] runbook supervision (`docs/ops-supervision.md`)
+- [ ] exécuter `check-prod-env` + déposer certs réels sur le serveur
+- [ ] tester un restore complet sur staging
+- [ ] brancher une sonde externe sur `/healthz`

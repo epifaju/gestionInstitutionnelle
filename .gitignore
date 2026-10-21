@@ -9,3 +9,8 @@ node_modules/
 .vscode/
 *.log
 scripts/e2e-contrats.env
+# Certificats TLS prod (garder nginx/certs/.gitkeep)
+nginx/certs/*
+!nginx/certs/.gitkeep
+# Dumps de sauvegarde locaux
+backups/

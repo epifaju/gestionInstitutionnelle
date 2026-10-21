@@ -15,6 +15,8 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, UUID> 
 
     List<Utilisateur> findAllByEmailIgnoreCase(String email);
 
+    List<Utilisateur> findByEmailIgnoreCaseIn(List<String> emails);
+
     @EntityGraph(attributePaths = "organisation")
     Optional<Utilisateur> findFirstByEmailIgnoreCaseOrderByIdAsc(String email);
 
