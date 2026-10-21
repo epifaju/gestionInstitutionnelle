@@ -129,14 +129,70 @@
     }
   },
   "Courriers": {
-    "title": "Letters",
-    "subtitle": "Generate and browse letter history.",
+    "title": "Mail registry",
+    "subtitle": "Inbound/outbound registry and letter generation.",
     "refresh": "Refresh",
     "searchPh": "Filter…",
     "empty": "No generated letter yet.",
+    "emptyRegistre": "No registered mail yet.",
+    "create": "New mail item",
     "thCreatedAt": "Created at",
     "thFormat": "Format",
-    "thId": "ID"
+    "thId": "ID",
+    "thDate": "Date",
+    "thSens": "Direction",
+    "thObjet": "Subject",
+    "thReference": "Reference",
+    "thStatut": "Status",
+    "tabs": {
+      "registre": "Registry",
+      "generation": "Generation"
+    },
+    "filters": {
+      "allSens": "All directions",
+      "allStatut": "All statuses"
+    },
+    "sens": {
+      "ENTREE": "Inbound",
+      "SORTIE": "Outbound"
+    },
+    "statut": {
+      "BROUILLON": "Draft",
+      "ENREGISTRE": "Registered",
+      "ENVOYE": "Sent",
+      "RECU": "Received",
+      "CLASSE": "Filed",
+      "ANNULE": "Cancelled"
+    },
+    "canal": {
+      "COURRIER_POSTAL": "Postal mail",
+      "EMAIL": "Email",
+      "MAIN_PROPRE": "Hand delivery",
+      "AUTRE": "Other"
+    },
+    "fields": {
+      "sens": "Direction",
+      "statut": "Status",
+      "objet": "Subject",
+      "reference": "Reference",
+      "expediteur": "Sender",
+      "destinataire": "Recipient",
+      "dateCourrier": "Mail date",
+      "dateReception": "Received on",
+      "dateEnvoi": "Sent on",
+      "canal": "Channel",
+      "notes": "Notes",
+      "piece": "Attachment"
+    },
+    "modal": {
+      "createTitle": "New mail item",
+      "editTitle": "Edit mail item",
+      "subtitle": "Fill in the registry details.",
+      "pieceExistante": "A file is already linked; a new upload will replace it."
+    },
+    "toast": {
+      "saved": "Mail item saved."
+    }
   },
   "Missions": {
     "title": "Missions",

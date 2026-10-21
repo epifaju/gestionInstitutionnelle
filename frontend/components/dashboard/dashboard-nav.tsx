@@ -72,10 +72,12 @@ export function DashboardNav({ onNavigate }: { onNavigate?: () => void }) {
     ...(isAdmin || isRh ? [{ href: "/rh/paie/parametres", label: t("paieSettings") }] : []),
   ];
 
+  const showCourriers = isAdmin || isRh || isFin;
+
   const restItems: NavItem[] = [
     { href: "/notifications", label: t("notifications") },
     { href: "/documents", label: t("documents") },
-    { href: "/courriers", label: t("courriers") },
+    ...(showCourriers ? [{ href: "/courriers", label: t("courriers") }] : []),
     { href: "/missions", label: t("missions") },
     ...(showBudget ? [{ href: "/budget", label: t("budget") }] : []),
     ...(showInv ? [{ href: "/inventaire", label: t("inventaire") }] : []),

@@ -130,13 +130,69 @@
   },
   "Courriers": {
     "title": "Courriers",
-    "subtitle": "Génération et historique des courriers.",
+    "subtitle": "Registre entrée/sortie et génération de courriers.",
     "refresh": "Rafraîchir",
     "searchPh": "Filtrer…",
     "empty": "Aucun courrier généré pour le moment.",
+    "emptyRegistre": "Aucun courrier enregistré pour le moment.",
+    "create": "Nouveau courrier",
     "thCreatedAt": "Créé le",
     "thFormat": "Format",
-    "thId": "ID"
+    "thId": "ID",
+    "thDate": "Date",
+    "thSens": "Sens",
+    "thObjet": "Objet",
+    "thReference": "Référence",
+    "thStatut": "Statut",
+    "tabs": {
+      "registre": "Registre",
+      "generation": "Génération"
+    },
+    "filters": {
+      "allSens": "Tous les sens",
+      "allStatut": "Tous les statuts"
+    },
+    "sens": {
+      "ENTREE": "Entrée",
+      "SORTIE": "Sortie"
+    },
+    "statut": {
+      "BROUILLON": "Brouillon",
+      "ENREGISTRE": "Enregistré",
+      "ENVOYE": "Envoyé",
+      "RECU": "Reçu",
+      "CLASSE": "Classé",
+      "ANNULE": "Annulé"
+    },
+    "canal": {
+      "COURRIER_POSTAL": "Courrier postal",
+      "EMAIL": "E-mail",
+      "MAIN_PROPRE": "Main propre",
+      "AUTRE": "Autre"
+    },
+    "fields": {
+      "sens": "Sens",
+      "statut": "Statut",
+      "objet": "Objet",
+      "reference": "Référence",
+      "expediteur": "Expéditeur",
+      "destinataire": "Destinataire",
+      "dateCourrier": "Date du courrier",
+      "dateReception": "Date de réception",
+      "dateEnvoi": "Date d’envoi",
+      "canal": "Canal",
+      "notes": "Notes",
+      "piece": "Pièce jointe"
+    },
+    "modal": {
+      "createTitle": "Nouveau courrier",
+      "editTitle": "Modifier le courrier",
+      "subtitle": "Renseignez les informations du registre.",
+      "pieceExistante": "Une pièce est déjà liée ; un nouvel upload la remplacera."
+    },
+    "toast": {
+      "saved": "Courrier enregistré."
+    }
   },
   "Missions": {
     "title": "Missions",

@@ -119,14 +119,70 @@
     }
   },
   "Courriers": {
-    "title": "Cartas",
-    "subtitle": "Geração e histórico de cartas.",
+    "title": "Correspondência",
+    "subtitle": "Registo de entrada/saída e geração de cartas.",
     "refresh": "Atualizar",
     "searchPh": "Filtrar…",
     "empty": "Ainda não existem cartas geradas.",
+    "emptyRegistre": "Ainda não existem cartas registadas.",
+    "create": "Nova carta",
     "thCreatedAt": "Criado em",
     "thFormat": "Formato",
-    "thId": "ID"
+    "thId": "ID",
+    "thDate": "Data",
+    "thSens": "Sentido",
+    "thObjet": "Assunto",
+    "thReference": "Referência",
+    "thStatut": "Estado",
+    "tabs": {
+      "registre": "Registo",
+      "generation": "Geração"
+    },
+    "filters": {
+      "allSens": "Todos os sentidos",
+      "allStatut": "Todos os estados"
+    },
+    "sens": {
+      "ENTREE": "Entrada",
+      "SORTIE": "Saída"
+    },
+    "statut": {
+      "BROUILLON": "Rascunho",
+      "ENREGISTRE": "Registado",
+      "ENVOYE": "Enviado",
+      "RECU": "Recebido",
+      "CLASSE": "Arquivado",
+      "ANNULE": "Anulado"
+    },
+    "canal": {
+      "COURRIER_POSTAL": "Correio postal",
+      "EMAIL": "E-mail",
+      "MAIN_PROPRE": "Entrega em mão",
+      "AUTRE": "Outro"
+    },
+    "fields": {
+      "sens": "Sentido",
+      "statut": "Estado",
+      "objet": "Assunto",
+      "reference": "Referência",
+      "expediteur": "Remetente",
+      "destinataire": "Destinatário",
+      "dateCourrier": "Data da carta",
+      "dateReception": "Data de receção",
+      "dateEnvoi": "Data de envio",
+      "canal": "Canal",
+      "notes": "Notas",
+      "piece": "Anexo"
+    },
+    "modal": {
+      "createTitle": "Nova carta",
+      "editTitle": "Editar carta",
+      "subtitle": "Preencha os dados do registo.",
+      "pieceExistante": "Já existe um anexo; um novo envio substitui-o."
+    },
+    "toast": {
+      "saved": "Carta guardada."
+    }
   },
   "Missions": {
     "title": "Missões",

@@ -73,7 +73,11 @@ function hasRoleAccess(pathname: string, role: string): boolean {
     return role !== "EMPLOYE";
   }
 
-  if (pathname.startsWith("/documents") || pathname.startsWith("/courriers") || pathname.startsWith("/notifications")) {
+  if (pathname.startsWith("/courriers")) {
+    return isAdmin || role === "RH" || role === "FINANCIER";
+  }
+
+  if (pathname.startsWith("/documents") || pathname.startsWith("/notifications")) {
     return true; // tous authentifiés ; règles fines côté API
   }
 
