@@ -142,6 +142,8 @@ class AdminServiceTest {
         OrganisationSettingsUpdateRequest req =
                 new OrganisationSettingsUpdateRequest(
                         "  Nouvelle Org  ",
+                        "  Mon titre  ",
+                        "  Mon slogan  ",
                         "ONG",
                         "  France  ",
                         "usd",
@@ -152,6 +154,8 @@ class AdminServiceTest {
         var resp = adminService.updateOrganisationSettings(req, orgId, actorId);
 
         assertThat(resp.nom()).isEqualTo("Nouvelle Org");
+        assertThat(resp.titreApp()).isEqualTo("Mon titre");
+        assertThat(resp.slogan()).isEqualTo("Mon slogan");
         assertThat(resp.deviseDefaut()).isEqualTo("USD");
         assertThat(resp.pays()).isEqualTo("France");
         assertThat(resp.logoUrl()).isNull();

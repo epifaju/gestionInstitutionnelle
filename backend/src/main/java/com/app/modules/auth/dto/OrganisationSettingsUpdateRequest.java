@@ -10,6 +10,8 @@ import java.math.BigDecimal;
 
 public record OrganisationSettingsUpdateRequest(
         @NotBlank @Size(max = 200) String nom,
+        @Size(max = 120) String titreApp,
+        @Size(max = 200) String slogan,
         @NotBlank @Size(max = 50) String type,
         @Size(max = 100) String pays,
         @NotBlank @Size(min = 3, max = 3) String deviseDefaut,

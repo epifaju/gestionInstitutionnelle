@@ -189,13 +189,15 @@ export function RecetteModal({
               onChange={(e) => setForm((f) => ({ ...f, categorieId: e.target.value ? e.target.value : null }))}
             >
               <option value="">{tc("emDash")}</option>
-              {categories.map((c) => (
+              {categories
+                .filter((c) => c.type === "RECETTE")
+                .map((c) => (
                 <option key={c.id} value={c.id}>
                   {translateCategorieLabel(tCat, c)}
                 </option>
               ))}
             </select>
-            {categories.length === 0 ? (
+            {categories.filter((c) => c.type === "RECETTE").length === 0 ? (
               <p className="mt-1 text-xs text-muted-foreground">
                 {t.rich("noCategoriesHint", { b: (chunks) => <span className="font-medium">{chunks}</span> })}
               </p>

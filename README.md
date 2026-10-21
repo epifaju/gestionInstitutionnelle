@@ -113,12 +113,24 @@ Voir [docs/ops-supervision.md](docs/ops-supervision.md) : sonde `/healthz` + `/l
 ### CI
 - **GitHub Actions**: workflow `.github/workflows/ci.yml` (backend tests + frontend build/tests + images Docker + Trivy). Playwright E2E opt-in.
 
-### Checklist P0 avant prod « sérieuse »
+### Checklist P0 / R1–R5 (ops)
+
+Séquence locale validée (certs auto-signés + `.env.prod`) ; sur serveur réel, remplacer par certs Let’s Encrypt / secrets définitifs.
+
+```powershell
+.\scripts\ops\prepare-local-prod.ps1          # R1 local
+.\scripts\check-prod-env.ps1 -EnvFile .\.env.prod
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build   # R2
+.\scripts\ops\bootstrap-admin.ps1             # R3
+.\scripts\backup\backup.ps1                   # R4
+.\scripts\backup\restore.ps1 -BackupDir backups\<stamp> -ConfirmRestore
+.\scripts\ops\probe-healthz.ps1               # R5
+```
+
 - [x] nginx body size aligné GED (55M)
 - [x] comptes fixture désactivés en profil prod
 - [x] scripts JWT + `check-prod-env` + certs gitignorés
-- [x] scripts backup/restore Postgres + MinIO
-- [x] runbook supervision (`docs/ops-supervision.md`)
-- [ ] exécuter `check-prod-env` + déposer certs réels sur le serveur
-- [ ] tester un restore complet sur staging
-- [ ] brancher une sonde externe sur `/healthz`
+- [x] scripts backup/restore Postgres + MinIO (+ `.ps1` Windows)
+- [x] runbook supervision (`docs/ops-supervision.md`) + `probe-healthz.ps1`
+- [x] R1–R5 dry-run local (prepare → deploy → bootstrap → backup/restore → probe)
+- [ ] **Sur serveur réel** : certs non auto-signés + sonde externe (UptimeRobot / cron) + cron backup quotidien (`scripts/backup/CRON.example.txt`)

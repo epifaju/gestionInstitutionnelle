@@ -68,4 +68,12 @@ public class CustomUserDetails implements UserDetails {
     public String getOrganisationNom() {
         return organisation != null ? organisation.getNom() : null;
     }
+
+    public String getTitreApp() {
+        return organisation != null ? organisation.getTitreApp() : null;
+    }
+
+    public String getSlogan() {
+        return organisation != null ? organisation.getSlogan() : null;
+    }
 }

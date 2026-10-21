@@ -55,7 +55,7 @@ class AuthControllerMvcTest {
     void login_ok_retourneApiResponseOk() throws Exception {
         UUID userId = UUID.fromString("a0000000-0000-0000-0000-000000000001");
         UUID orgId = UUID.fromString("b0000000-0000-0000-0000-000000000001");
-        UserInfo ui = new UserInfo(userId, "x@test.com", "Doe", "John", "ADMIN", orgId, "Org", "fr");
+        UserInfo ui = new UserInfo(userId, "x@test.com", "Doe", "John", "ADMIN", orgId, "Org", null, null, "fr");
         when(authService.login(any(LoginRequest.class), any())).thenReturn(new LoginResponse("access", "Bearer", 900, ui));
 
         mockMvc.perform(post("/api/v1/auth/login")
@@ -71,7 +71,7 @@ class AuthControllerMvcTest {
     void updateLangue_ok_appelleService_etRetourneUserInfo() throws Exception {
         UUID userId = UUID.fromString("a0000000-0000-0000-0000-000000000001");
         UUID orgId = UUID.fromString("b0000000-0000-0000-0000-000000000001");
-        UserInfo ui = new UserInfo(userId, "x@test.com", null, null, "ADMIN", orgId, null, "pt-PT");
+        UserInfo ui = new UserInfo(userId, "x@test.com", null, null, "ADMIN", orgId, null, null, null, "pt-PT");
         when(authService.updateLangue("pt_pt")).thenReturn(ui);
 
         mockMvc.perform(put("/api/v1/auth/me/langue")

@@ -9,13 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAuthStore } from "@/lib/store";
+import { get } from "@/lib/api";
+import { useAuthStore, type UserInfo } from "@/lib/store";
 import { getOrganisationSettings, updateOrganisationSettings } from "@/services/admin.service";
 
 export default function OrganisationSettingsPage() {
   const t = useTranslations("Admin.organisation");
   const tc = useTranslations("Common");
   const user = useAuthStore((s) => s.user);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const setAuth = useAuthStore((s) => s.setAuth);
   const isAdmin = user?.role === "ADMIN";
   const qc = useQueryClient();
 
@@ -26,6 +29,8 @@ export default function OrganisationSettingsPage() {
   });
 
   const [nom, setNom] = useState("");
+  const [titreApp, setTitreApp] = useState("");
+  const [slogan, setSlogan] = useState("");
   const [type, setType] = useState("");
   const [pays, setPays] = useState("");
   const [deviseDefaut, setDeviseDefaut] = useState("EUR");
@@ -36,6 +41,8 @@ export default function OrganisationSettingsPage() {
   useEffect(() => {
     if (!data) return;
     setNom(data.nom ?? "");
+    setTitreApp(data.titreApp ?? "");
+    setSlogan(data.slogan ?? "");
     setType(data.type ?? "");
     setPays(data.pays ?? "");
     setDeviseDefaut(data.deviseDefaut ?? "EUR");
@@ -48,6 +55,8 @@ export default function OrganisationSettingsPage() {
     mutationFn: () =>
       updateOrganisationSettings({
         nom: nom.trim(),
+        titreApp: titreApp.trim() || null,
+        slogan: slogan.trim() || null,
         type: type.trim(),
         pays: pays.trim() || null,
         deviseDefaut: deviseDefaut.trim().toUpperCase(),
@@ -55,8 +64,16 @@ export default function OrganisationSettingsPage() {
         seuilJustificatif,
         alerteBudgetPct: Number.parseInt(alerteBudgetPct, 10),
       }),
-    onSuccess: () => {
+    onSuccess: async () => {
       qc.invalidateQueries({ queryKey: ["admin", "organisation"] });
+      try {
+        if (accessToken) {
+          const me = await get<UserInfo>("auth/me");
+          setAuth(me, accessToken);
+        }
+      } catch {
+        /* ignore: sidebar se mettra à jour au prochain /me */
+      }
       toast.success(t("toastSaved"));
     },
     onError: (e: unknown) => {
@@ -99,6 +116,26 @@ export default function OrganisationSettingsPage() {
               <div className="space-y-1.5 sm:col-span-2">
                 <Label htmlFor="org-nom">{t("labelNom")}</Label>
                 <Input id="org-nom" value={nom} onChange={(e) => setNom(e.target.value)} required />
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="org-titre">{t("labelTitreApp")}</Label>
+                <Input
+                  id="org-titre"
+                  value={titreApp}
+                  onChange={(e) => setTitreApp(e.target.value)}
+                  maxLength={120}
+                />
+                <p className="text-xs text-muted-foreground">{t("hintTitreApp")}</p>
+              </div>
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label htmlFor="org-slogan">{t("labelSlogan")}</Label>
+                <Input
+                  id="org-slogan"
+                  value={slogan}
+                  onChange={(e) => setSlogan(e.target.value)}
+                  maxLength={200}
+                />
+                <p className="text-xs text-muted-foreground">{t("hintSlogan")}</p>
               </div>
               <div className="space-y-1.5">
                 <Label htmlFor="org-type">{t("labelType")}</Label>

@@ -25,6 +25,13 @@ Exemple cron hôte (alerte mail via `mail`) :
 */2 * * * * curl -fsS https://votre-domaine/healthz | grep -q '"status":"UP"' || echo "HEALTH DOWN" | mail -s "gestion DOWN" ops@example.com
 ```
 
+Windows (Task Scheduler toutes les 2 min) :
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File C:\path\to\scripts\ops\probe-healthz.ps1 -Url https://votre-domaine/healthz
+# exit code 1 → déclencher alerte (email / webhook)
+```
+
 ## 5xx nginx
 
 Fichier d’accès typique (conteneur nginx) : `/var/log/nginx/access.log`.

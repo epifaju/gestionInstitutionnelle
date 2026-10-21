@@ -177,7 +177,12 @@ public class AuthService {
         if (!(principal instanceof CustomUserDetails details)) {
             throw BusinessException.unauthorized("TOKEN_INVALIDE");
         }
-        return UserInfo.from(details);
+        // Recharge org (titreApp/slogan) pour refléter les changements Admin sans re-login.
+        Utilisateur u =
+                utilisateurRepository
+                        .findById(details.getId())
+                        .orElseThrow(() -> BusinessException.notFound("USER_NOT_FOUND"));
+        return UserInfo.from(new CustomUserDetails(u));
     }
 
     @PreAuthorize("isAuthenticated()")

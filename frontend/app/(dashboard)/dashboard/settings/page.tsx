@@ -67,6 +67,8 @@ export default function SettingsPage() {
           role: string;
           organisationId: string;
           organisationNom: string | null;
+          titreApp?: string | null;
+          slogan?: string | null;
           langue?: string | null;
         };
         accessToken: string;
@@ -111,6 +113,8 @@ export default function SettingsPage() {
         role: string;
         organisationId: string;
         organisationNom: string | null;
+        titreApp?: string | null;
+        slogan?: string | null;
         langue?: string | null;
       }>("auth/me/langue", { langue });
 

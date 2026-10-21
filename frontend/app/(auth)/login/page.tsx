@@ -31,6 +31,8 @@ type LoginResponse = {
     role: string;
     organisationId: string;
     organisationNom: string | null;
+    titreApp?: string | null;
+    slogan?: string | null;
     langue?: string | null;
   };
 };

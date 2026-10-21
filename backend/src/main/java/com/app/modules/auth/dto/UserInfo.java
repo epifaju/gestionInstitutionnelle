@@ -12,6 +12,8 @@ public record UserInfo(
         String role,
         UUID organisationId,
         String organisationNom,
+        String titreApp,
+        String slogan,
         String langue
 ) {
     public static UserInfo from(CustomUserDetails user) {
@@ -23,6 +25,8 @@ public record UserInfo(
                 user.getUtilisateur().getRole().name(),
                 user.getOrganisationId(),
                 user.getOrganisationNom(),
+                user.getTitreApp(),
+                user.getSlogan(),
                 user.getUtilisateur().getLangue()
         );
     }

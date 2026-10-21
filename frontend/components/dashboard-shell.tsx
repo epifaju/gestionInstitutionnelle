@@ -32,6 +32,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
 
+  const brandName = (user?.titreApp?.trim() || ta("name")).trim();
+  const brandTagline = (user?.slogan?.trim() || ta("tagline")).trim();
+
   useEffect(() => {
     if (accessToken) return;
     let cancelled = false;
@@ -156,8 +159,8 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <div className="mb-8 flex items-center gap-2 text-foreground">
           <Building2 className="h-8 w-8 text-indigo-600" />
           <div>
-            <p className="text-sm font-semibold leading-tight">{ta("name")}</p>
-            <p className="text-xs text-muted-foreground">{ta("tagline")}</p>
+            <p className="text-sm font-semibold leading-tight">{brandName}</p>
+            <p className="text-xs text-muted-foreground">{brandTagline}</p>
           </div>
         </div>
         <nav className="flex flex-1 flex-col gap-0.5">
@@ -209,7 +212,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             <Button type="button" variant="ghost" size="icon" onClick={() => setMobileOpen(true)} aria-label={tc("menu")}>
               <Menu className="h-6 w-6 text-indigo-600" />
             </Button>
-            <span className="truncate font-semibold">{ta("name")}</span>
+            <span className="truncate font-semibold">{brandName}</span>
           </div>
           <div className="flex items-center gap-2">
             <NotificationBell />

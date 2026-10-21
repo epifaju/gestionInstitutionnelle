@@ -41,6 +41,8 @@ export type AuditLogResponse = {
 export type OrganisationSettings = {
   id: string;
   nom: string;
+  titreApp: string | null;
+  slogan: string | null;
   type: string;
   pays: string | null;
   deviseDefaut: string;
@@ -52,6 +54,8 @@ export type OrganisationSettings = {
 
 export type OrganisationSettingsUpdateRequest = {
   nom: string;
+  titreApp?: string | null;
+  slogan?: string | null;
   type: string;
   pays?: string | null;
   deviseDefaut: string;

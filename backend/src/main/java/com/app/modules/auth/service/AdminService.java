@@ -148,6 +148,8 @@ public class AdminService {
         Map<String, Object> avant = snapshotOrg(org);
 
         org.setNom(req.nom().trim());
+        org.setTitreApp(trimToNull(req.titreApp()));
+        org.setSlogan(trimToNull(req.slogan()));
         org.setType(req.type().trim());
         org.setPays(trimToNull(req.pays()));
         org.setDeviseDefaut(req.deviseDefaut().trim().toUpperCase());
@@ -249,6 +251,8 @@ public class AdminService {
         return new OrganisationSettingsResponse(
                 org.getId(),
                 org.getNom(),
+                org.getTitreApp(),
+                org.getSlogan(),
                 org.getType(),
                 org.getPays(),
                 org.getDeviseDefaut(),
@@ -261,6 +265,8 @@ public class AdminService {
     private static Map<String, Object> snapshotOrg(Organisation org) {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("nom", org.getNom());
+        m.put("titreApp", org.getTitreApp());
+        m.put("slogan", org.getSlogan());
         m.put("type", org.getType());
         m.put("pays", org.getPays());
         m.put("deviseDefaut", org.getDeviseDefaut());

@@ -26,6 +26,14 @@ public class Organisation {
     @Column(nullable = false, length = 200)
     private String nom;
 
+    /** Titre affiché dans la barre latérale (repli i18n App.name si null). */
+    @Column(name = "titre_app", length = 120)
+    private String titreApp;
+
+    /** Slogan affiché sous le titre (repli i18n App.tagline si null). */
+    @Column(length = 200)
+    private String slogan;
+
     @Column(nullable = false, length = 50)
     private String type;
 
